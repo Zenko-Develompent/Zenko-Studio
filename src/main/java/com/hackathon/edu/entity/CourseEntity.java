@@ -20,10 +20,10 @@ import java.util.UUID;
 @Table(name = "cours")
 @Getter
 @Setter
-public class CoursEntity {
+public class CourseEntity {
     @Id
     @Column(name = "cours_id", nullable = false, updatable = false)
-    private UUID coursId;
+    private UUID courseId;
 
     @Column(unique = true, nullable = false, length = 50)
     private String name;
@@ -46,8 +46,8 @@ public class CoursEntity {
     @PrePersist
     void prePersist() {
         OffsetDateTime now = OffsetDateTime.now();
-        if (coursId == null) {
-            coursId = UUID.randomUUID();
+        if (courseId == null) {
+            courseId = UUID.randomUUID();
         }
         if (createdAt == null) {
             createdAt = now;

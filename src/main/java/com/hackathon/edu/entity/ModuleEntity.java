@@ -37,7 +37,7 @@ public class ModuleEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "course_id", nullable = false)
-    private CoursEntity course;
+    private CourseEntity course;
 
     @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LessonEntity> lessons = new ArrayList<>();
