@@ -28,7 +28,7 @@ public class CoursEntity {
     private String description;
 
     @Column(name = "category")
-    private String cztegory;
+    private String category;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

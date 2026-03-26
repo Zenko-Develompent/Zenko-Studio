@@ -21,10 +21,10 @@ public class CourseLessonEntity {
     @Column(name = "course_lesson_id", nullable = false, updatable = false)
     private UUID moduleId;
 
-    @Column(name = "lesson_id", nullable = false, updatable = false)
+    @Column(name = "lesson_id", nullable = false, updatable = false) // связь с уроком 
     private LessonEntity lessonid;
     
-    @Column(name = "course_id", nullable = false, updatable = false)
+    @Column(name = "course_id", nullable = false, updatable = false) // связь с курсом если удалён либо урок либо курс удалить запись 
     private CoursEntity courseid;
 
     @Column(name = "created_at", nullable = false, updatable = false)

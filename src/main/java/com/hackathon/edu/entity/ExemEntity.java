@@ -27,6 +27,12 @@ public class ExemEntity {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "project_id")
+    private ProjectEntityes project; //связь с project
+
+    @Column(name = "module_id")
+    private ModuleEntity moduleId; // связь с модулем мягкая 
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 

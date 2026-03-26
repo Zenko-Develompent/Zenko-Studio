@@ -24,6 +24,9 @@ public class LessonEntity {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "xp")
+    private Integer xp = 0;
+
     @Column(nullable = false, length = 50)
     private String name;
 
