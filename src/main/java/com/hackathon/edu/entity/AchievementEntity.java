@@ -1,8 +1,10 @@
 package com.hackathon.edu.entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -10,6 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -27,13 +31,23 @@ public class AchievementEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, updatable = false)
+    @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
+
+    @OneToMany(mappedBy = "achievement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AchievementUserEntity> users = new ArrayList<>();
 
     @PrePersist
     void prePersist() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (achievementId == null) {
+            achievementId = UUID.randomUUID();
+        }
+        if (createdAt == null) {
+            createdAt = now;
+        }
         if (updatedAt == null) {
-            updatedAt = OffsetDateTime.now();
+            updatedAt = now;
         }
     }
 

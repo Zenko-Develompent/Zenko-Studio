@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "module")
+@Table(name = "project")
 @Getter
 @Setter
 public class ProjectEntity {
@@ -29,11 +29,24 @@ public class ProjectEntity {
 
     @Column(name = "test_file")
     private String testFile;
-   
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
     @PrePersist
     void prePersist() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (projectId == null) {
+            projectId = UUID.randomUUID();
+        }
+        if (createdAt == null) {
+            createdAt = now;
+        }
         if (updatedAt == null) {
-            updatedAt = OffsetDateTime.now();
+            updatedAt = now;
         }
     }
 

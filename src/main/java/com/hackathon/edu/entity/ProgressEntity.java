@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "module")
+@Table(name = "progress")
 @Getter
 @Setter
 public class ProgressEntity {
@@ -27,13 +27,20 @@ public class ProgressEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false, updatable = false)
+    @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
     @PrePersist
     void prePersist() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (progressId == null) {
+            progressId = UUID.randomUUID();
+        }
+        if (createdAt == null) {
+            createdAt = now;
+        }
         if (updatedAt == null) {
-            updatedAt = OffsetDateTime.now();
+            updatedAt = now;
         }
     }
 
