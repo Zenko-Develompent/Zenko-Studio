@@ -13,16 +13,19 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "achievement")
+@Table(name = "module_lesson")
 @Getter
 @Setter
-public class AchievementEntity {
+public class ModuleLessonEntity {
     @Id
-    @Column(name = "achievement_id", nullable = false, updatable = false)
-    private UUID achievementId;
+    @Column(name = "module_lesson_id", nullable = false, updatable = false)
+    private UUID moduleLessonId;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String name;
+    @Column(name = "lesson_id", nullable = false, updatable = false) // связь с уроком 
+    private LessonEntity lessonid;
+    
+    @Column(name = "module_id", nullable = false, updatable = false) // связь с курсом если удалён либо урок либо модуль удалить запись 
+    private CoursEntity courseid;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

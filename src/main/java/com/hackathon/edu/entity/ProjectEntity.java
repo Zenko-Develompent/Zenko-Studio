@@ -19,7 +19,7 @@ import java.util.UUID;
 public class ProjectEntity {
     @Id
     @Column(name = "project_id", nullable = false, updatable = false)
-    private UUID moduleId;
+    private UUID projectId;
 
     @Column(nullable = false, length = 50)
     private String name;
@@ -29,9 +29,6 @@ public class ProjectEntity {
 
     @Column(name = "test_file")
     private String testFile;
-
-    @Column(name = "lesson_id")
-    private LessonEntity lessonid; // связь с уроком 
    
     @PrePersist
     void prePersist() {

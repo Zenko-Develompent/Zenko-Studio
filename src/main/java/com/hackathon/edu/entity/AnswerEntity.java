@@ -19,7 +19,7 @@ import java.util.UUID;
 public class AnswerEntity {
     @Id
     @Column(name = "answer_id", nullable = false, updatable = false)
-    private UUID questId;
+    private UUID answerId;
 
     @Column( nullable = false, length = 50)
     private String name;

@@ -13,18 +13,18 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "module")
+@Table(name = "course_module")
 @Getter
 @Setter
-public class CourseLessonEntity {
+public class CourseModuleEntity {
     @Id
-    @Column(name = "course_lesson_id", nullable = false, updatable = false)
-    private UUID moduleId;
+    @Column(name = "course_module_id", nullable = false, updatable = false)
+    private UUID courseModuleId;
 
     @Column(name = "lesson_id", nullable = false, updatable = false) // связь с уроком 
     private LessonEntity lessonid;
     
-    @Column(name = "course_id", nullable = false, updatable = false) // связь с курсом если удалён либо урок либо курс удалить запись 
+    @Column(name = "module_id", nullable = false, updatable = false) // связь с курсом если удалён либо модуль либо курс удалить запись 
     private CoursEntity courseid;
 
     @Column(name = "created_at", nullable = false, updatable = false)

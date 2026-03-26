@@ -19,7 +19,7 @@ import java.util.UUID;
 public class LessonEntity {
     @Id
     @Column(name = "lesson_id", nullable = false, updatable = false)
-    private UUID moduleId;
+    private UUID lessonId;
 
     @Column(name = "description")
     private String description;

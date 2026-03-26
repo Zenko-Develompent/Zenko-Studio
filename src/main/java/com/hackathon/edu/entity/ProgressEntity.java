@@ -19,7 +19,7 @@ import java.util.UUID;
 public class ProgressEntity {
     @Id
     @Column(name = "progress_id", nullable = false, updatable = false)
-    private UUID moduleId;
+    private UUID progressId;
 
     @Column(name = "procent")
     private Integer procent = 0;
