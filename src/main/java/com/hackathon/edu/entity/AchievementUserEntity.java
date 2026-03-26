@@ -16,13 +16,16 @@ import java.util.UUID;
 @Table(name = "achievement")
 @Getter
 @Setter
-public class AchievementEntity {
+public class AchievementUserEntity {
     @Id
-    @Column(name = "achievement_id", nullable = false, updatable = false)
-    private UUID achievementId;
+    @Column(name = "achievement_user_id", nullable = false, updatable = false)
+    private UUID achievementUserId;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String name;
+    @Column(name = "achievement_id", nullable = false, updatable = false) // связь с ачивками каскадная
+    private AchievementEntity achievementId; // связь с пользователем если удалён удалять запись
+
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UserEntity userId;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

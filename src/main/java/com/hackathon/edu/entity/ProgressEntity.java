@@ -13,16 +13,16 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "achievement")
+@Table(name = "module")
 @Getter
 @Setter
-public class AchievementEntity {
+public class ProgressEntity {
     @Id
-    @Column(name = "achievement_id", nullable = false, updatable = false)
-    private UUID achievementId;
+    @Column(name = "progress_id", nullable = false, updatable = false)
+    private UUID progressId;
 
-    @Column(unique = true, nullable = false, length = 50)
-    private String name;
+    @Column(name = "procent")
+    private Integer procent = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
