@@ -5,11 +5,12 @@ import com.hackathon.edu.entity.CourseEntity;
 import com.hackathon.edu.entity.ExemEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
-import com.hackathon.edu.entity.QuestEntity;
 import com.hackathon.edu.entity.QuizEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.CourseRepository;
+import com.hackathon.edu.repository.LessonRepository;
+import com.hackathon.edu.repository.ModuleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -33,15 +34,9 @@ public class CourseService {
             .comparing(LessonEntity::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
             .thenComparing(LessonEntity::getLessonId, Comparator.nullsLast(Comparator.naturalOrder()));
 
-    private static final Comparator<QuestEntity> QUESTION_ORDER = Comparator
-            .comparing(QuestEntity::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(QuestEntity::getQuestId, Comparator.nullsLast(Comparator.naturalOrder()));
-
-    private static final Comparator<TasksEntity> TASK_ORDER = Comparator
-            .comparing(TasksEntity::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(TasksEntity::getTasksId, Comparator.nullsLast(Comparator.naturalOrder()));
-
     private final CourseRepository courseRepository;
+    private final ModuleRepository moduleRepository;
+    private final LessonRepository lessonRepository;
 
     public CourseDTO.CourseListResponse listCourses(int page, int size) {
         int safePage = Math.max(page, 0);
@@ -117,6 +112,8 @@ public class CourseService {
     }
 
     private CourseDTO.CourseListItem toCourseListItem(CourseEntity course) {
+        long modules = moduleRepository.countByCourse_CourseId(course.getCourseId());
+        long lessons = lessonRepository.countByCourseId(course.getCourseId());
 
         return new CourseDTO.CourseListItem(
                 course.getCourseId(),
@@ -125,7 +122,7 @@ public class CourseService {
                 course.getCategory(),
                 modules,
                 lessons
-        );
+            );
     }
 
     private CourseDTO.CourseModuleItem toCourseModuleItem(ModuleEntity module) {
@@ -138,6 +135,7 @@ public class CourseService {
                 toExamId(module.getExam())
         );
     }
+
     private UUID toExamId(ExemEntity exam) {
         return exam == null ? null : exam.getExemId();
     }
