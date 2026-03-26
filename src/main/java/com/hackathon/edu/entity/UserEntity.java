@@ -2,7 +2,10 @@ package com.hackathon.edu.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -40,11 +43,15 @@ public class UserEntity {
     @Column(name = "level")
     private Integer level = 0;
 
-    @Column(name = "level")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
     private RoleEntity role;
 
     @PrePersist
     void prePersist() {
+        if (userId == null) {
+            userId = UUID.randomUUID();
+        }
         if (updatedAt == null) {
             updatedAt = OffsetDateTime.now();
         }

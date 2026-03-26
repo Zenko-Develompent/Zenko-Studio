@@ -8,6 +8,7 @@ import com.hackathon.edu.dto.RegisterRequest;
 import com.hackathon.edu.service.AuthService;
 import com.hackathon.edu.util.CookieUtils;
 import com.hackathon.edu.util.RequestInfoResolver;
+import jakarta.validation.Valid;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +35,9 @@ public class AuthController {
     private final AppSecurityProperties properties;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authService.register(request.username(), request.email(), request.password()));
+                .body(authService.register(request.username(), request.password(), request.age(), request.role()));
     }
 
     @PostMapping("/login")

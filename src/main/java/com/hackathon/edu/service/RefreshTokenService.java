@@ -86,9 +86,7 @@ public class RefreshTokenService {
         row.setFamilyId(familyId);
         row.setUserId(userId);
         row.setTokenHash(hash);
-        row.setDeviceId(deviceId);
         row.setIp(ip);
-        row.setUa(userAgent);
         row.setExpiresAt(refreshExp);
         refreshTokenRepository.save(row);
 

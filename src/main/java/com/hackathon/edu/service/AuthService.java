@@ -1,6 +1,5 @@
 package com.hackathon.edu.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hackathon.edu.config.AppSecurityProperties;
 import com.hackathon.edu.dto.AuthResponse;
 import com.hackathon.edu.dto.AuthUserDto;
@@ -9,31 +8,31 @@ import com.hackathon.edu.dto.LogoutRequest;
 import com.hackathon.edu.dto.RefreshRequest;
 import com.hackathon.edu.dto.RegisterResponse;
 import com.hackathon.edu.dto.WebSessionDto;
-import com.hackathon.edu.entity.LocalCredentialEntity;
 import com.hackathon.edu.entity.RefreshTokenEntity;
+import com.hackathon.edu.entity.RoleEntity;
 import com.hackathon.edu.entity.UserEntity;
 import com.hackathon.edu.entity.WebSessionEntity;
-import com.hackathon.edu.entity.UserEntity;
 import com.hackathon.edu.exception.ApiException;
-import com.hackathon.edu.repository.LocalCredentialRepository;
 import com.hackathon.edu.repository.RefreshTokenRepository;
-import com.hackathon.edu.repository.UserRepository;
+import com.hackathon.edu.repository.RoleRepository;
 import com.hackathon.edu.repository.UserRepository;
 import com.hackathon.edu.security.JwtService;
 import com.hackathon.edu.security.PasswordHasher;
-import com.hackathon.edu.util.EmailValidator;
 import com.hackathon.edu.util.PasswordPolicy;
 import com.hackathon.edu.util.ProfileUrlBuilder;
 import com.hackathon.edu.util.RequestInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -41,19 +40,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
-    private final LocalCredentialRepository localCredentialRepository;
-    private final UserEntity userProfileRepository;
+    private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final WebSessionService webSessionService;
     private final JwtService jwtService;
     private final AppSecurityProperties props;
-    private final ObjectMapper objectMapper;
 
     private final ConcurrentHashMap<String, long[]> loginRateLimit = new ConcurrentHashMap<>();
 
     @Transactional
-    public RegisterResponse register(String usernameRaw, String password, BirthDate) {
+    public RegisterResponse register(String usernameRaw, String password, Integer ageRaw, String roleRaw) {
         String username = usernameRaw == null ? null : usernameRaw.trim();
 
         if (username == null || !username.matches("[A-Za-z0-9_]{3,16}")) {
@@ -62,22 +59,43 @@ public class AuthService {
         if (!PasswordPolicy.accept(password)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "weak_password");
         }
+        if (ageRaw == null || ageRaw < 1 || ageRaw > 120) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_age");
+        }
+
+        String role = normalizeRoleInput(roleRaw);
+        if (role == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_role");
+        }
+
         if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ApiException(HttpStatus.CONFLICT, "conflict");
         }
 
         String uniqueUsername = ensureUniqueUsername(username);
-
         UserEntity user = new UserEntity();
         user.setUsername(uniqueUsername);
-        user.getPassword();
-        user.getBirthDate();
-        user.getRole();
-        user.getXp();
-        
-        user = userRepository.save(user);
-        
+        user.setPassword(PasswordHasher.hash(password.toCharArray()));
+        if (user.getXp() == null) {
+            user.setXp(0);
+        }
+        if (user.getLevel() == null) {
+            user.setLevel(0);
+        }
+        user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(ageRaw));
+        user.setRole(resolveRole(role));
+        try {
+            user = userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ApiException(HttpStatus.CONFLICT, "conflict");
+        }
 
+        return new RegisterResponse(
+                user.getUserId().toString(),
+                user.getUsername(),
+                ageRaw,
+                role
+        );
     }
 
     @Transactional
@@ -87,40 +105,24 @@ public class AuthService {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "too_many_attempts");
         }
 
-        String id = firstNonBlank(request.id(), request.email(), request.username());
+        String identifier = firstNonBlank(request.id(), request.username());
         String password = request.password();
-        if (id == null || password == null || password.isBlank()) {
+        if (identifier == null || password == null || password.isBlank()) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "bad_request");
         }
 
-        UUID userId;
-        if (EmailValidator.isValid(id)) {
-            userId = localCredentialRepository.findByEmailIgnoreCase(id)
-                    .map(LocalCredentialEntity::getUserId)
-                    .orElse(null);
-        } else {
-            userId = userRepository.findByUsernameIgnoreCase(id)
-                    .map(UserEntity::getId)
-                    .orElse(null);
-        }
-
-        if (userId == null) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials");
-        }
-
-        LocalCredentialEntity cred = localCredentialRepository.findById(userId).orElse(null);
-        if (cred == null || !PasswordHasher.verify(password.toCharArray(), cred.getPasswordHash())) {
+        UserEntity user = findUserByIdentifier(identifier);
+        if (user == null || !PasswordHasher.verify(password.toCharArray(), user.getPassword())) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials");
         }
 
         loginClear(ip);
 
+        UUID userId = user.getUserId();
         String deviceId = UUID.randomUUID().toString();
         WebSessionEntity session = webSessionService.createSession(userId, deviceId, requestInfo.userAgent(), requestInfo.ip());
         RefreshTokenService.TokenPair pair = refreshTokenService.issue(userId, deviceId, requestInfo.ip(), requestInfo.userAgent());
-
-        AuthUserDto user = toUserDto(requireUser(userId), cred, userProfileRepository.findById(userId).orElse(null));
-        return buildLoginResult(pair, session, deviceId, user);
+        return buildLoginResult(pair, session, deviceId, toUserDto(user));
     }
 
     @Transactional
@@ -150,14 +152,11 @@ public class AuthService {
         }
 
         UUID userId = row.getUserId();
-        String deviceId = firstNonBlank(deviceHeader, deviceCookie, row.getDeviceId(), UUID.randomUUID().toString());
+        String deviceId = firstNonBlank(deviceHeader, deviceCookie, UUID.randomUUID().toString());
         WebSessionEntity session = resolveOrCreateSession(userId, sessionHeader, sessionCookie, deviceId, requestInfo);
-
         RefreshTokenService.TokenPair pair = refreshTokenService.rotate(row, deviceId, requestInfo.ip(), requestInfo.userAgent());
-        LocalCredentialEntity cred = localCredentialRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "invalid"));
-        AuthUserDto user = toUserDto(requireUser(userId), cred, userProfileRepository.findById(userId).orElse(null));
-        return buildLoginResult(pair, session, deviceId, user);
+        UserEntity user = requireUser(userId);
+        return buildLoginResult(pair, session, deviceId, toUserDto(user));
     }
 
     @Transactional
@@ -221,7 +220,12 @@ public class AuthService {
         return props.getSessionTtlSec();
     }
 
-    private LoginResult buildLoginResult(RefreshTokenService.TokenPair pair, WebSessionEntity session, String deviceId, AuthUserDto user) {
+    private LoginResult buildLoginResult(
+            RefreshTokenService.TokenPair pair,
+            WebSessionEntity session,
+            String deviceId,
+            AuthUserDto user
+    ) {
         AuthResponse body = new AuthResponse(
                 pair.accessToken(),
                 pair.accessExp().toString(),
@@ -252,59 +256,92 @@ public class AuthService {
         return webSessionService.createSession(userId, deviceId, requestInfo.userAgent(), requestInfo.ip());
     }
 
-    private AuthUserDto toUserDto(UserEntity user, LocalCredentialEntity cred, UserProfileEntity profile) {
-        UserProfileEntity p = profile == null ? defaultProfile(user.getId()) : profile;
-        Object socialLinks = parseJsonOrFallback(p.getSocialLinks(), List.of());
+    private AuthUserDto toUserDto(UserEntity user) {
+        UUID userId = user.getUserId();
+        LocalDate birthDate = user.getBirthDate();
         return new AuthUserDto(
-                user.getId().toString(),
+                userId.toString(),
                 user.getUsername(),
-                cred.getEmail(),
-                cred.isEmailVerified(),
-                p.getDisplayName(),
-                p.getBio(),
-                p.getLocation(),
-                p.getWebsite(),
-                p.getBirthDate() == null ? null : p.getBirthDate().toString(),
-                ProfileUrlBuilder.avatarUrl(user.getId(), p.getAvatarRev()),
-                ProfileUrlBuilder.bannerUrl(user.getId(), p.getBannerRev()),
-                ProfileUrlBuilder.wallpaperUrl(user.getId(), p.getWallpaperRev()),
-                p.getProfileTheme(),
-                p.getCustomThemeColor1(),
-                p.getCustomThemeColor2(),
-                p.getUserStatus(),
-                p.getCustomStatus(),
-                socialLinks
+                user.getUsername(),
+                "",
+                "",
+                "",
+                birthDate == null ? null : birthDate.toString(),
+                birthDate == null ? null : calculateAge(birthDate),
+                toApiRole(user.getRole()),
+                ProfileUrlBuilder.avatarUrl(userId, 0),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of()
         );
     }
 
-    private Object parseJsonOrFallback(String json, Object fallback) {
-        if (json == null || json.isBlank()) {
-            return fallback;
+    private UserEntity findUserByIdentifier(String identifier) {
+        UUID userId = parseUuidOrNull(identifier);
+        if (userId != null) {
+            return userRepository.findById(userId).orElse(null);
         }
-        try {
-            return objectMapper.readValue(json, Object.class);
-        } catch (Exception e) {
-            return fallback;
+        return userRepository.findByUsernameIgnoreCase(identifier).orElse(null);
+    }
+
+    private RoleEntity resolveRole(String role) {
+        String dbRoleName = switch (role) {
+            case "parent" -> "PARENT";
+            case "student" -> "STUDENT";
+            default -> throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_role");
+        };
+
+        return roleRepository.findByNameIgnoreCase(dbRoleName)
+                .orElseGet(() -> {
+                    RoleEntity roleEntity = new RoleEntity();
+                    roleEntity.setUserId(UUID.randomUUID());
+                    roleEntity.setName(dbRoleName);
+                    try {
+                        return roleRepository.saveAndFlush(roleEntity);
+                    } catch (DataIntegrityViolationException ex) {
+                        return roleRepository.findByNameIgnoreCase(dbRoleName)
+                                .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
+                    }
+                });
+    }
+
+    private String normalizeRoleInput(String rawRole) {
+        if (rawRole == null || rawRole.isBlank()) {
+            return null;
         }
+        String value = rawRole.trim().toLowerCase(Locale.ROOT);
+        return switch (value) {
+            case "parent" -> "parent";
+            case "student" -> "student";
+            default -> null;
+        };
+    }
+
+    private String toApiRole(RoleEntity roleEntity) {
+        if (roleEntity == null || roleEntity.getName() == null || roleEntity.getName().isBlank()) {
+            return null;
+        }
+        String value = roleEntity.getName().trim().toLowerCase(Locale.ROOT);
+        return switch (value) {
+            case "parent" -> "parent";
+            case "student" -> "student";
+            default -> value;
+        };
+    }
+
+    private Integer calculateAge(LocalDate birthDate) {
+        int years = Period.between(birthDate, LocalDate.now(ZoneOffset.UTC)).getYears();
+        return Math.max(years, 0);
     }
 
     private UserEntity requireUser(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
-    }
-
-    private UserProfileEntity defaultProfile(UUID userId) {
-        UserProfileEntity p = new UserProfileEntity();
-        p.setUserId(userId);
-        p.setDisplayName("");
-        p.setBio("");
-        p.setLocation("");
-        p.setWebsite("");
-        p.setAvatarRev(0);
-        p.setBannerRev(0);
-        p.setWallpaperRev(0);
-        p.setSocialLinks("[]");
-        return p;
     }
 
     private String ensureUniqueUsername(String base) {

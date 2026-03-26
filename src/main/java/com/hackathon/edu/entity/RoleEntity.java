@@ -3,6 +3,7 @@ package com.hackathon.edu.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,4 +20,11 @@ public class RoleEntity {
 
     @Column(unique = true, nullable = false, length = 50)
     private String name;
+
+    @PrePersist
+    void prePersist() {
+        if (userId == null) {
+            userId = UUID.randomUUID();
+        }
+    }
 }
