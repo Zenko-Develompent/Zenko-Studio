@@ -40,7 +40,7 @@ public class UserEntity {
     @Column(name = "level")
     private Integer level = 0;
 
-    @Column(name = "level")
+    @Column(name = "role")
     private RoleEntity role;
 
     @PrePersist

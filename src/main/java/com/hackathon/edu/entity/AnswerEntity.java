@@ -13,16 +13,22 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "achievement")
+@Table(name = "answer")
 @Getter
 @Setter
-public class AchievementEntity {
+public class AnswerEntity {
     @Id
-    @Column(name = "achievement_id", nullable = false, updatable = false)
-    private UUID coursId;
+    @Column(name = "answer_id", nullable = false, updatable = false)
+    private UUID questId;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column( nullable = false, length = 50)
     private String name;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "correctly")
+    private Boolean correctly;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
