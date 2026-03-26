@@ -12,12 +12,12 @@ import com.hackathon.edu.dto.WebSessionDto;
 import com.hackathon.edu.entity.LocalCredentialEntity;
 import com.hackathon.edu.entity.RefreshTokenEntity;
 import com.hackathon.edu.entity.UserEntity;
-import com.hackathon.edu.entity.UserProfileEntity;
 import com.hackathon.edu.entity.WebSessionEntity;
+import com.hackathon.edu.entity.UserEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.LocalCredentialRepository;
 import com.hackathon.edu.repository.RefreshTokenRepository;
-import com.hackathon.edu.repository.UserProfileRepository;
+import com.hackathon.edu.repository.UserRepository;
 import com.hackathon.edu.repository.UserRepository;
 import com.hackathon.edu.security.JwtService;
 import com.hackathon.edu.security.PasswordHasher;
@@ -42,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthService {
     private final UserRepository userRepository;
     private final LocalCredentialRepository localCredentialRepository;
-    private final UserProfileRepository userProfileRepository;
+    private final UserEntity userProfileRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final WebSessionService webSessionService;
@@ -53,21 +53,16 @@ public class AuthService {
     private final ConcurrentHashMap<String, long[]> loginRateLimit = new ConcurrentHashMap<>();
 
     @Transactional
-    public RegisterResponse register(String usernameRaw, String emailRaw, String password) {
+    public RegisterResponse register(String usernameRaw, String password, BirthDate) {
         String username = usernameRaw == null ? null : usernameRaw.trim();
-        String email = emailRaw == null ? null : emailRaw.trim();
 
-        if (!EmailValidator.isValid(email)) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_email");
-        }
         if (username == null || !username.matches("[A-Za-z0-9_]{3,16}")) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_username");
         }
         if (!PasswordPolicy.accept(password)) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "weak_password");
         }
-        if (localCredentialRepository.existsByEmailIgnoreCase(email)
-                || userRepository.existsByUsernameIgnoreCase(username)) {
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ApiException(HttpStatus.CONFLICT, "conflict");
         }
 
@@ -75,33 +70,14 @@ public class AuthService {
 
         UserEntity user = new UserEntity();
         user.setUsername(uniqueUsername);
+        user.getPassword();
+        user.getBirthDate();
+        user.getRole();
+        user.getXp();
+        
         user = userRepository.save(user);
+        
 
-        LocalCredentialEntity cred = new LocalCredentialEntity();
-        cred.setUserId(user.getId());
-        cred.setEmail(email);
-        cred.setEmailVerified(false);
-        cred.setPasswordHash(PasswordHasher.hash(password.toCharArray()));
-        localCredentialRepository.save(cred);
-
-        UserProfileEntity profile = new UserProfileEntity();
-        profile.setUserId(user.getId());
-        profile.setDisplayName("");
-        profile.setBio("");
-        profile.setLocation("");
-        profile.setWebsite("");
-        profile.setAvatarRev(0);
-        profile.setBannerRev(0);
-        profile.setWallpaperRev(0);
-        profile.setSocialLinks("[]");
-        userProfileRepository.save(profile);
-
-        return new RegisterResponse(
-                user.getId().toString(),
-                user.getUsername(),
-                cred.getEmail(),
-                cred.isEmailVerified()
-        );
     }
 
     @Transactional

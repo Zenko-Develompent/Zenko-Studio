@@ -4,38 +4,54 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "user")
 @Getter
 @Setter
 public class UserEntity {
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
-    private UUID id;
+    @Column(name = "user_id", nullable = false, updatable = false)
+    private UUID userId;
 
-    @Column(name = "username", nullable = false, unique = true)
+    @Column(unique = true, nullable = false, length = 50)
     private String username;
 
-    @Column(name = "username_changed_at")
-    private OffsetDateTime usernameChangedAt;
+    @Column(nullable = false)
+    private String password;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+
+    @Column(name = "xp")
+    private Integer xp = 0;
+
+    @Column(name = "level")
+    private Integer level = 0;
+
+    @Column(name = "level")
+    private RoleEntity role;
 
     @PrePersist
     void prePersist() {
-        if (id == null) {
-            id = UUID.randomUUID();
+        if (updatedAt == null) {
+            updatedAt = OffsetDateTime.now();
         }
-        if (createdAt == null) {
-            createdAt = OffsetDateTime.now();
-        }
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = OffsetDateTime.now();
     }
 }

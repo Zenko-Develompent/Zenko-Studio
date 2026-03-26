@@ -1,5 +1,8 @@
 package com.hackathon.edu.entity;
 
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -7,9 +10,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "refresh_tokens")
@@ -29,14 +29,8 @@ public class RefreshTokenEntity {
     @Column(name = "token_hash", nullable = false)
     private byte[] tokenHash;
 
-    @Column(name = "device_id")
-    private String deviceId;
-
     @Column(name = "ip")
     private String ip;
-
-    @Column(name = "ua")
-    private String ua;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

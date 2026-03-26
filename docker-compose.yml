@@ -1,12 +1,35 @@
 version: '3.8'
 
 services:
-  db:
-    image: postgres:18
+  backend:
+    build: .
+    container_name: edu-backend
+    ports:
+      - "${BACKEND_PORT}:8080"
+    env_file:
+      - .env
+    depends_on:
+      - edu-db
+    networks:
+      - edu-network
+
+  edu-db:
+    image: postgres:15
     container_name: edu-db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     ports:
       - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - edu-network
+
+volumes:
+  pgdata:
+
+networks:
+  edu-network:
+    driver: bridge
