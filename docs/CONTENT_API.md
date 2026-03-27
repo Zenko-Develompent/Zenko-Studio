@@ -55,6 +55,8 @@
 - `quiz_not_found`
 - `exam_not_found`
 - `task_not_found`
+- `answer_not_in_question`
+- `quiz_question_out_of_order`
 
 Коды ошибок чтения markdown:
 
@@ -352,6 +354,108 @@ Query:
 
 - `404`: `quiz_not_found`
 
+#### `POST /api/quizzes/{quizId}/start`
+
+Старт или продолжение прохождения квиза для текущего пользователя.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "completed": false,
+  "question": {
+    "questionId": "uuid",
+    "name": "Вопрос 1",
+    "description": "Текст вопроса",
+    "index": 1,
+    "total": 5,
+    "options": [
+      {
+        "answerId": "uuid",
+        "name": "Вариант A",
+        "description": "..."
+      }
+    ]
+  },
+  "task": null
+}
+```
+
+Если квиз уже завершен:
+
+```json
+{
+  "completed": true,
+  "question": null,
+  "task": {
+    "taskId": "uuid",
+    "lessonId": "uuid",
+    "examId": null,
+    "name": "Практическая задача",
+    "description": "..."
+  }
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `quiz_not_found`
+
+#### `POST /api/quizzes/{quizId}/answer`
+
+Отправка ответа на текущий вопрос (строго по порядку).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body:
+
+```json
+{
+  "questionId": "uuid",
+  "answerId": "uuid"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "correct": true,
+  "completed": false,
+  "question": {
+    "questionId": "uuid",
+    "name": "Вопрос 2",
+    "description": "Текст вопроса",
+    "index": 2,
+    "total": 5,
+    "options": [
+      {
+        "answerId": "uuid",
+        "name": "Вариант A",
+        "description": "..."
+      }
+    ]
+  },
+  "task": null
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `quiz_not_found`
+- `400`: `answer_not_in_question`
+- `409`: `quiz_question_out_of_order`
+
 ### 3.5 Экзамены
 
 #### `GET /api/exams/{examId}`
@@ -488,6 +592,8 @@ services:
 9. `GET /api/lessons/{lessonId}/quiz`
 10. `GET /api/lessons/{lessonId}/task`
 11. `GET /api/quizzes/{quizId}/questions`
-12. `GET /api/exams/{examId}`
-13. `GET /api/exams/{examId}/questions`
-14. `GET /api/exams/{examId}/tasks`
+12. `POST /api/quizzes/{quizId}/start`
+13. `POST /api/quizzes/{quizId}/answer`
+14. `GET /api/exams/{examId}`
+15. `GET /api/exams/{examId}/questions`
+16. `GET /api/exams/{examId}/tasks`
