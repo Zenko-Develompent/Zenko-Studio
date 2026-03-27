@@ -13,6 +13,8 @@ RUN ./mvnw -q -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y docker.io
+
 COPY --from=build /app/target/*.jar app.jar
 
 COPY runner-images /app/runner-images
