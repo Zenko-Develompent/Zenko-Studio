@@ -49,8 +49,12 @@ public class LessonController {
     }
     //zenkmo
     @GetMapping("/{lessonId}")
-    public LessonDTO.LessonDetailResponse lesson(@PathVariable("lessonId") UUID lessonId) {
-        return lessonService.getLesson(lessonId);
+    public LessonDTO.LessonDetailResponse lesson(
+            @PathVariable("lessonId") UUID lessonId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return lessonService.getLesson(userId, lessonId);
     }
 
     @PutMapping("/{lessonId}")
@@ -80,8 +84,12 @@ public class LessonController {
     }
 
     @GetMapping("/{lessonId}/body")
-    public ResponseEntity<Resource> lessonBody(@PathVariable("lessonId") UUID lessonId) {
-        var resolved = lessonService.getLessonBodyFile(lessonId);
+    public ResponseEntity<Resource> lessonBody(
+            @PathVariable("lessonId") UUID lessonId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        var resolved = lessonService.getLessonBodyFile(userId, lessonId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resolved.filename() + "\"")
                 .contentType(MediaType.parseMediaType(resolved.contentType()))
@@ -89,13 +97,21 @@ public class LessonController {
     }
 
     @GetMapping("/{lessonId}/quiz")
-    public LessonDTO.LessonQuizResponse lessonQuiz(@PathVariable("lessonId") UUID lessonId) {
-        return lessonService.getLessonQuiz(lessonId);
+    public LessonDTO.LessonQuizResponse lessonQuiz(
+            @PathVariable("lessonId") UUID lessonId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        return lessonService.getLessonQuiz(userId, lessonId);
     }
 
     @GetMapping("/{lessonId}/task")
-    public LessonDTO.LessonTaskResponse lessonTask(@PathVariable("lessonId") UUID lessonId) {
-        return lessonService.getLessonTask(lessonId);
+    public LessonDTO.LessonTaskResponse lessonTask(
+            @PathVariable("lessonId") UUID lessonId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        return lessonService.getLessonTask(userId, lessonId);
     }
 
     @GetMapping("/{lessonId}/progress")
@@ -111,5 +127,12 @@ public class LessonController {
     public ResponseEntity<Void> deleteLesson(@PathVariable("lessonId") UUID lessonId) {
         lessonService.deleteLesson(lessonId);
         return ResponseEntity.noContent().build();
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }

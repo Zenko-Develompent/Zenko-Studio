@@ -16,7 +16,8 @@ public final class LessonDTO {
             String content,
             Integer xp,
             UUID quizId,
-            UUID taskId
+            UUID taskId,
+            Boolean unlocked
     ) {
     }
 

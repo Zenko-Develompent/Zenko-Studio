@@ -18,7 +18,8 @@ public final class ExamDTO {
             Integer xpReward,
             Integer coinReward,
             long questionsCount,
-            long tasksCount
+            long tasksCount,
+            Boolean unlocked
     ) {
     }
 

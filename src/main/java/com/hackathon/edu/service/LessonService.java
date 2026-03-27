@@ -28,6 +28,7 @@ public class LessonService {
     private final QuizRepository quizRepository;
     private final TasksRepository tasksRepository;
     private final LessonContentService lessonContentService;
+    private final LearningAccessService learningAccessService;
 
     @Transactional
     public LessonDTO.LessonDetailResponse createLesson(
@@ -68,6 +69,7 @@ public class LessonService {
                 content,
                 lesson.getXp(),
                 null,
+                null,
                 null
         );
     }
@@ -91,7 +93,8 @@ public class LessonService {
                 content,
                 lesson.getXp(),
                 toQuizId(lesson.getQuiz()),
-                toTaskId(lesson.getTask())
+                toTaskId(lesson.getTask()),
+                null
         );
     }
 
@@ -115,7 +118,8 @@ public class LessonService {
         lesson.setBody(body);
     }
 
-    public LessonContentService.ResolvedLessonFile getLessonBodyFile(UUID lessonId) {
+    public LessonContentService.ResolvedLessonFile getLessonBodyFile(UUID userId, UUID lessonId) {
+        learningAccessService.assertLessonUnlocked(userId, lessonId);
         LessonEntity lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(notFound("lesson_not_found"));
         return lessonContentService.resolveForDownload(lesson.getBody());
@@ -141,10 +145,13 @@ public class LessonService {
         lessonContentService.deleteLessonBodyIfExists(body);
     }
 
-    public LessonDTO.LessonDetailResponse getLesson(UUID lessonId) {
+    public LessonDTO.LessonDetailResponse getLesson(UUID userId, UUID lessonId) {
         LessonEntity lesson = lessonRepository.findWithRelationsByLessonId(lessonId)
                 .orElseThrow(notFound("lesson_not_found"));
-        String content = lessonContentService.readRawMarkdown(lesson.getBody());
+        Boolean unlocked = userId == null ? null : learningAccessService.isLessonUnlocked(userId, lessonId);
+        String content = Boolean.TRUE.equals(unlocked)
+                ? lessonContentService.readRawMarkdown(lesson.getBody())
+                : null;
 
         return new LessonDTO.LessonDetailResponse(
                 lesson.getLessonId(),
@@ -153,11 +160,13 @@ public class LessonService {
                 content,
                 lesson.getXp(),
                 toQuizId(lesson.getQuiz()),
-                toTaskId(lesson.getTask())
+                toTaskId(lesson.getTask()),
+                unlocked
         );
     }
 
-    public LessonDTO.LessonQuizResponse getLessonQuiz(UUID lessonId) {
+    public LessonDTO.LessonQuizResponse getLessonQuiz(UUID userId, UUID lessonId) {
+        learningAccessService.assertLessonUnlocked(userId, lessonId);
         QuizEntity quiz = quizRepository.findWithQuestsByLesson_LessonId(lessonId)
                 .orElseThrow(notFound("quiz_not_found"));
 
@@ -170,7 +179,8 @@ public class LessonService {
         );
     }
 
-    public LessonDTO.LessonTaskResponse getLessonTask(UUID lessonId) {
+    public LessonDTO.LessonTaskResponse getLessonTask(UUID userId, UUID lessonId) {
+        learningAccessService.assertLessonUnlocked(userId, lessonId);
         TasksEntity task = tasksRepository.findByLesson_LessonId(lessonId)
                 .orElseThrow(notFound("task_not_found"));
 

@@ -9,6 +9,7 @@ import com.hackathon.edu.entity.QuizEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.AnswerRepository;
 import com.hackathon.edu.repository.LessonRepository;
+import com.hackathon.edu.repository.QuestRepository;
 import com.hackathon.edu.repository.QuizAttemptRepository;
 import com.hackathon.edu.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
     private final LessonRepository lessonRepository;
+    private final QuestRepository questRepository;
     private final AnswerRepository answerRepository;
     private final GamificationService gamificationService;
     private final ProgressService progressService;
@@ -81,19 +83,27 @@ public class QuizService {
         return toQuizDetail(quiz);
     }
 
-    public QuizDTO.QuizDetailResponse getQuiz(UUID quizId) {
+    public QuizDTO.QuizDetailResponse getQuiz(UUID userId, UUID quizId) {
         QuizEntity quiz = quizRepository.findWithFlowByQuizId(quizId)
                 .orElseThrow(notFound("quiz_not_found"));
+        if (quiz.getLesson() != null && quiz.getLesson().getLessonId() != null) {
+            learningAccessService.assertLessonUnlocked(userId, quiz.getLesson().getLessonId());
+        }
         return toQuizDetail(quiz);
     }
 
-    public QuizDTO.QuizDetailResponse getQuizByLesson(UUID lessonId) {
+    public QuizDTO.QuizDetailResponse getQuizByLesson(UUID userId, UUID lessonId) {
+        learningAccessService.assertLessonUnlocked(userId, lessonId);
         QuizEntity quiz = quizRepository.findWithFlowByLesson_LessonId(lessonId)
                 .orElseThrow(notFound("quiz_not_found"));
         return toQuizDetail(quiz);
     }
 
-    public QuizDTO.AnswersResponse getQuestAnswers(UUID questId) {
+    public QuizDTO.AnswersResponse getQuestAnswers(UUID userId, UUID questId) {
+        QuestEntity question = questRepository.findById(questId)
+                .orElseThrow(notFound("quest_not_found"));
+        assertQuestionUnlocked(userId, question);
+
         List<QuizDTO.AnswerItem> items = answerRepository.findByQuest_QuestIdOrderByCreatedAtAsc(questId).stream()
                 .sorted(ANSWER_ORDER)
                 .map(answer -> new QuizDTO.AnswerItem(answer.getAnswerId(), answer.getName(), answer.getDescription()))
@@ -104,20 +114,21 @@ public class QuizService {
     public QuizDTO.CheckAnswerResponse checkQuestAnswer(UUID questId, UUID answerId, UUID userId) {
         AnswerEntity answer = answerRepository.findByAnswerIdAndQuest_QuestId(answerId, questId)
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "answer_not_in_question"));
-        if (userId != null && answer.getQuest() != null && answer.getQuest().getExam() != null) {
-            learningAccessService.assertExamUnlocked(userId, answer.getQuest().getExam());
-        }
+        assertQuestionUnlocked(userId, answer.getQuest());
 
         boolean correct = Boolean.TRUE.equals(answer.getCorrectly());
-        if (correct && userId != null) {
+        if (correct) {
             progressService.markExamQuestionCompleted(userId, answer.getQuest());
         }
         return new QuizDTO.CheckAnswerResponse(correct);
     }
 
-    public QuizDTO.QuestionsResponse getQuizQuestions(UUID quizId) {
+    public QuizDTO.QuestionsResponse getQuizQuestions(UUID userId, UUID quizId) {
         QuizEntity quiz = quizRepository.findWithQuestsByQuizId(quizId)
                 .orElseThrow(notFound("quiz_not_found"));
+        if (quiz.getLesson() != null && quiz.getLesson().getLessonId() != null) {
+            learningAccessService.assertLessonUnlocked(userId, quiz.getLesson().getLessonId());
+        }
 
         List<QuizDTO.QuestionItem> items = safeList(quiz.getQuests()).stream()
                 .sorted(QUESTION_ORDER)
@@ -285,6 +296,21 @@ public class QuizService {
                 .filter(answer -> answerId.equals(answer.getAnswerId()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private void assertQuestionUnlocked(UUID userId, QuestEntity question) {
+        if (question == null) {
+            return;
+        }
+        if (question.getQuiz() != null
+                && question.getQuiz().getLesson() != null
+                && question.getQuiz().getLesson().getLessonId() != null) {
+            learningAccessService.assertLessonUnlocked(userId, question.getQuiz().getLesson().getLessonId());
+            return;
+        }
+        if (question.getExam() != null) {
+            learningAccessService.assertExamUnlocked(userId, question.getExam());
+        }
     }
 
     private List<QuestEntity> orderedQuestions(QuizEntity quiz) {
