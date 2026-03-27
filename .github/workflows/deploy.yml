@@ -1,0 +1,36 @@
+name: Deploy to 2 servers
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-java:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Java server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.ZENKO1_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+            rm -rf /var/www/java-app
+            git clone git@github.com:Zenko-Develompent/backend-test.git /var/www/java-app
+
+            cd /var/www/java-app
+
+            echo "${{ secrets.ENV_SECRET }}" > .env
+
+            docker compose down -v
+            docker compose up -d --build
+
+      - name: Debug
+        run: echo "${{ secrets.ZENKO1_HOST }}"  
+  
