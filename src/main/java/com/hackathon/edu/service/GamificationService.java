@@ -43,11 +43,11 @@ public class GamificationService {
         triggerAchievement(userId, "exam_completed", Map.of("examId", exam.getExemId().toString()));
         return result;
     }
-
+    //ззенко
     public void triggerAchievement(UUID userId, String trigger, Map<String, String> context) {
         
     }
-
+    //Golovchenko
     private GrantResult grant(UUID userId, int xp, int coin) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));

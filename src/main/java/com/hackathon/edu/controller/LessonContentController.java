@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -25,6 +26,24 @@ import java.util.Map;
 public class LessonContentController {
     private final LessonContentService lessonContentService;
 
+    public record LessonContentListResponse(
+            List<LessonContentItem> items
+    ) {
+    }
+
+    public record LessonContentItem(
+            String body
+    ) {
+    }
+
+    @GetMapping
+    public LessonContentListResponse list() {
+        List<LessonContentItem> items = lessonContentService.listNamedMarkdownBodyLinks().stream()
+                .map(LessonContentItem::new)
+                .toList();
+        return new LessonContentListResponse(items);
+    }
+    //zenkob
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(
             @RequestParam("name") String name,

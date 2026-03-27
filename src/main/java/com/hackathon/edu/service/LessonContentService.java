@@ -35,7 +35,7 @@ public class LessonContentService {
         if (bodyPath == null || bodyPath.isBlank()) {
             return null;
         }
-
+        //Baturin
         bodyPath = normalizeBodyReference(bodyPath);
         Path resolvedPath = resolveBodyPath(bodyPath);
         Path markdownFile = resolveTextFile(resolvedPath);
@@ -112,6 +112,27 @@ public class LessonContentService {
 
     public String toNamedMarkdownBodyLink(String nameRaw) {
         return API_NAMED_PREFIX + normalizeNamed(nameRaw);
+    }
+
+    public List<String> listNamedMarkdownBodyLinks() {
+        Path dir = lessonsRoot.resolve("named").normalize();
+        if (!dir.startsWith(lessonsRoot) || !Files.exists(dir) || !Files.isDirectory(dir)) {
+            return List.of();
+        }
+
+        try (Stream<Path> stream = Files.list(dir)) {
+            return stream
+                    .filter(Files::isRegularFile)
+                    .map(path -> path.getFileName() == null ? "" : path.getFileName().toString())
+                    .filter(fileName -> fileName.toLowerCase(Locale.ROOT).endsWith(".md"))
+                    .map(fileName -> fileName.substring(0, fileName.length() - 3))
+                    .filter(name -> SAFE_NAME.matcher(name).matches())
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .map(name -> name)
+                    .toList();
+        } catch (IOException ex) {
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "lesson_content_list_failed");
+        }
     }
 
     public ResolvedLessonFile resolveNamedMarkdown(String nameRaw) {

@@ -26,7 +26,7 @@ public class QuestController {
     public QuizDTO.AnswersResponse questAnswers(@PathVariable("questId") UUID questId) {
         return quizService.getQuestAnswers(questId);
     }
-
+    //zenkoz
     @PostMapping("/{questId}/check")
     public QuizDTO.CheckAnswerResponse checkAnswer(
             @PathVariable("questId") UUID questId,

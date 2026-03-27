@@ -1,5 +1,5 @@
 package com.hackathon.edu.dto;
-
+//zzz
 public record AuthUserDto(
         String id,
         String username,

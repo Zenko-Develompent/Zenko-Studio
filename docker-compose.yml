@@ -11,7 +11,7 @@ services:
     environment:
       LESSON_CONTENT_ROOT: /data/lessons
     volumes:
-      - ${LESSON_CONTENT_HOST_PATH:-./lesson-content}:/data/lessons:ro
+      - ${LESSON_CONTENT_HOST_PATH:-./lesson-content}:/data/lessons:rw
     depends_on:
       - edu-db
     networks:
