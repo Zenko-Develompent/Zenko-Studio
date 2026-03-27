@@ -9,6 +9,11 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.seed")
 public class AppSeedProperties {
     private boolean enabled = false;
+    /**
+     * When enabled, seed runs only if it looks like the DB hasn't been seeded yet.
+     * This is a safety switch to avoid overwriting data (including admin password) on every restart.
+     */
+    private boolean onlyIfEmpty = true;
 
     private Admin admin = new Admin();
     private Course course = new Course();

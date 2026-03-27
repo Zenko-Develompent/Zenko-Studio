@@ -14,6 +14,8 @@ public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
 
     Optional<CourseEntity> findByNameIgnoreCase(String name);
 
+    boolean existsByCategoryIgnoreCase(String category);
+
     @EntityGraph(attributePaths = {"modules", "modules.exam"})
     Optional<CourseEntity> findWithModulesByCourseId(UUID courseId);
 
