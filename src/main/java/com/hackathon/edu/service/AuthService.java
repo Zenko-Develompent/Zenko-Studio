@@ -7,11 +7,9 @@ import com.hackathon.edu.dto.LoginRequest;
 import com.hackathon.edu.dto.LogoutRequest;
 import com.hackathon.edu.dto.RefreshRequest;
 import com.hackathon.edu.dto.RegisterResponse;
-import com.hackathon.edu.dto.WebSessionDto;
 import com.hackathon.edu.entity.RefreshTokenEntity;
 import com.hackathon.edu.entity.RoleEntity;
 import com.hackathon.edu.entity.UserEntity;
-import com.hackathon.edu.entity.WebSessionEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.RefreshTokenRepository;
 import com.hackathon.edu.repository.RoleRepository;
@@ -30,7 +28,6 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.Period;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +39,6 @@ public class AuthService {
     private final RoleRepository roleRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
-    private final WebSessionService webSessionService;
     private final JwtService jwtService;
     private final AppSecurityProperties props;
 
@@ -131,7 +127,7 @@ public class AuthService {
         user.setRole(adminRole);
         user = userRepository.saveAndFlush(user);
 
-        revokeTokensAndSessions(user.getUserId());
+        revokeTokens(user.getUserId());
 
         return new RegisterResponse(
                 user.getUserId().toString(),
@@ -162,20 +158,14 @@ public class AuthService {
         loginClear(ip);
 
         UUID userId = user.getUserId();
-        String deviceId = UUID.randomUUID().toString();
-        WebSessionEntity session = webSessionService.createSession(userId, deviceId, requestInfo.userAgent(), requestInfo.ip());
-        RefreshTokenService.TokenPair pair = refreshTokenService.issue(userId, deviceId, requestInfo.ip(), requestInfo.userAgent());
-        return buildLoginResult(pair, session, deviceId, toUserDto(user));
+        RefreshTokenService.TokenPair pair = refreshTokenService.issue(userId, requestInfo.ip());
+        return buildLoginResult(pair, toUserDto(user));
     }
 
     @Transactional
     public LoginResult refresh(
             RefreshRequest request,
             String refreshCookie,
-            String sessionHeader,
-            String deviceHeader,
-            String sessionCookie,
-            String deviceCookie,
             RequestInfo requestInfo
     ) {
         String presented = firstNonBlank(request == null ? null : request.refreshToken(), refreshCookie);
@@ -195,19 +185,15 @@ public class AuthService {
         }
 
         UUID userId = row.getUserId();
-        String deviceId = firstNonBlank(deviceHeader, deviceCookie, UUID.randomUUID().toString());
-        WebSessionEntity session = resolveOrCreateSession(userId, sessionHeader, sessionCookie, deviceId, requestInfo);
-        RefreshTokenService.TokenPair pair = refreshTokenService.rotate(row, deviceId, requestInfo.ip(), requestInfo.userAgent());
+        RefreshTokenService.TokenPair pair = refreshTokenService.rotate(row, requestInfo.ip());
         UserEntity user = requireUser(userId);
-        return buildLoginResult(pair, session, deviceId, toUserDto(user));
+        return buildLoginResult(pair, toUserDto(user));
     }
 
     @Transactional
     public void logout(
             LogoutRequest request,
-            String refreshCookie,
-            String sessionHeader,
-            String sessionCookie
+            String refreshCookie
     ) {
         String presented = firstNonBlank(request == null ? null : request.refreshToken(), refreshCookie);
         if (presented != null && presented.contains(".")) {
@@ -217,12 +203,6 @@ public class AuthService {
                         .ifPresent(row -> refreshTokenService.revokeFamily(row.getFamilyId()));
             } catch (ApiException ignore) {
             }
-        }
-
-        String sessionRaw = firstNonBlank(sessionHeader, sessionCookie);
-        UUID sessionId = parseUuidOrNull(sessionRaw);
-        if (sessionId != null) {
-            webSessionService.deactivate(sessionId);
         }
     }
 
@@ -234,39 +214,12 @@ public class AuthService {
         return jwtService.verify(token).userId();
     }
 
-    public List<WebSessionDto> listWebSessions(UUID userId, String currentSessionCookie) {
-        UUID current = parseUuidOrNull(currentSessionCookie);
-        return webSessionService.listActive(userId).stream()
-                .map(s -> new WebSessionDto(
-                        s.getSessionId().toString(),
-                        s.getDeviceId(),
-                        s.getUserAgent(),
-                        s.getIpAddress(),
-                        toIso(s.getCreatedAt()),
-                        toIso(s.getLastActivityAt()),
-                        toIso(s.getExpiresAt()),
-                        current != null && current.equals(s.getSessionId())
-                ))
-                .toList();
-    }
-
-    @Transactional
-    public void revokeWebSession(UUID userId, UUID sessionId) {
-        webSessionService.deactivateForUser(sessionId, userId);
-    }
-
     public long refreshMaxAgeSeconds() {
         return props.getRefreshTtlDays() * 86400L;
     }
 
-    public long sessionMaxAgeSeconds() {
-        return props.getSessionTtlSec();
-    }
-
     private LoginResult buildLoginResult(
             RefreshTokenService.TokenPair pair,
-            WebSessionEntity session,
-            String deviceId,
             AuthUserDto user
     ) {
         AuthResponse body = new AuthResponse(
@@ -274,29 +227,9 @@ public class AuthService {
                 pair.accessExp().toString(),
                 pair.refreshToken(),
                 pair.refreshExp().toString(),
-                session.getSessionId().toString(),
-                deviceId,
                 user
         );
-        return new LoginResult(body, pair.refreshToken(), session.getSessionId().toString(), deviceId);
-    }
-
-    private WebSessionEntity resolveOrCreateSession(
-            UUID userId,
-            String sessionHeader,
-            String sessionCookie,
-            String deviceId,
-            RequestInfo requestInfo
-    ) {
-        UUID sessionId = parseUuidOrNull(firstNonBlank(sessionHeader, sessionCookie));
-        if (sessionId != null) {
-            var active = webSessionService.getActive(sessionId);
-            if (active.isPresent() && active.get().getUserId().equals(userId)) {
-                webSessionService.touch(sessionId);
-                return active.get();
-            }
-        }
-        return webSessionService.createSession(userId, deviceId, requestInfo.userAgent(), requestInfo.ip());
+        return new LoginResult(body, pair.refreshToken());
     }
 
     private AuthUserDto toUserDto(UserEntity user) {
@@ -305,10 +238,11 @@ public class AuthService {
         return new AuthUserDto(
                 userId.toString(),
                 user.getUsername(),
-                null,
                 birthDate == null ? null : birthDate.toString(),
                 birthDate == null ? null : calculateAge(birthDate),
-                toApiRole(user.getRole())
+                toApiRole(user.getRole()),
+                user.getXp() == null ? 0 : user.getXp(),
+                user.getLevel() == null ? 0 : user.getLevel()
         );
     }
 
@@ -344,15 +278,13 @@ public class AuthService {
                 });
     }
 
-    private void revokeTokensAndSessions(UUID userId) {
+    private void revokeTokens(UUID userId) {
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
 
         refreshTokenRepository.findByUserIdAndRevokedAtIsNull(userId).stream()
                 .map(RefreshTokenEntity::getFamilyId)
                 .distinct()
                 .forEach(familyId -> refreshTokenRepository.revokeFamily(familyId, now));
-
-        webSessionService.listActive(userId).forEach(s -> webSessionService.deactivateForUser(s.getSessionId(), userId));
     }
 
     private String normalizeRoleInput(String rawRole) {
@@ -437,15 +369,9 @@ public class AuthService {
         return null;
     }
 
-    private String toIso(OffsetDateTime ts) {
-        return ts == null ? null : ts.toInstant().toString();
-    }
-
     public record LoginResult(
             AuthResponse responseBody,
-            String refreshTokenForCookie,
-            String sessionIdForCookie,
-            String deviceIdForCookie
+            String refreshTokenForCookie
     ) {
     }
 }
