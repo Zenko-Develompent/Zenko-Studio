@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.dto.exam;
+package com.hackathon.edu.dto.exam;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -47,6 +47,7 @@ public final class ExamDTO {
             UUID lessonId,
             String name,
             String description,
+            String runnerLanguage,
             Integer xpReward,
             Integer coinReward
     ) {

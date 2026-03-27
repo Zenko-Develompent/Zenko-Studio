@@ -60,6 +60,13 @@
 - `exam_not_completed`
 - `unauthorized`
 - `forbidden`
+- `runner_language_not_supported`
+- `task_expected_output_not_configured`
+- `task_language_mismatch`
+- `code_invalid`
+- `code_too_large`
+- `task_input_too_large`
+- `runner_unavailable`
 
 Коды ошибок чтения markdown:
 
@@ -77,6 +84,7 @@ HTTP-коды:
 - `403 Forbidden`: недостаточно прав (например, нужен admin).
 - `404 Not Found`: сущность или markdown не найден.
 - `409 Conflict`: для папки урока найдено более одного `.md`.
+- `503 Service Unavailable`: раннер временно недоступен.
 - `500 Internal Server Error`: непредвиденная ошибка.
 
 Глобальный формат для `500`:
@@ -326,6 +334,7 @@ Query:
   "examId": "uuid",
   "name": "Практическая задача",
   "description": "Решить задачу",
+  "runnerLanguage": "java",
   "xpReward": 20,
   "coinReward": 10
 }
@@ -523,6 +532,7 @@ Body:
       "lessonId": "uuid",
       "name": "Экзаменационный таск",
       "description": "Описание таска",
+      "runnerLanguage": "bash",
       "xpReward": 30,
       "coinReward": 15
     }
@@ -673,6 +683,99 @@ Body:
 - `403`: `forbidden`
 - `404`: `task_not_found`
 
+#### `PUT /api/tasks/{taskId}/runner`
+
+Обновляет конфиг раннера для таска (только для admin).
+Эталонный ответ и входные данные хранятся в БД и не отдаются в публичных API.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required, role `admin`)
+
+Body:
+
+```json
+{
+  "runnerLanguage": "java",
+  "expectedOutput": "Hello, world!",
+  "inputData": ""
+}
+```
+
+`runnerLanguage` может быть `null`/пустым (тогда ограничения по языку нет).
+`inputData` может быть `null`/пустым или отсутствовать (тогда задача запускается без входных данных).
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "runnerLanguage": "java",
+  "hasExpectedOutput": true,
+  "hasInputData": true
+}
+```
+
+Ошибки:
+
+- `400`: `runner_language_not_supported`
+- `401`: `unauthorized`
+- `403`: `forbidden`
+- `404`: `task_not_found`
+
+#### `POST /api/tasks/{taskId}/run`
+
+Запускает пользовательский код в sandbox Docker, сравнивает stdout с эталонным ответом таска.
+Входные данные (`stdin`) подставляются сервером из `task.inputData`; если `inputData` не задан, используется пустой ввод.
+Если результат корректный, таск отмечается завершенным (и при первом прохождении выдаются награды).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body:
+
+```json
+{
+  "language": "java",
+  "code": "public class Main { public static void main(String[] args) { System.out.println(\"Hello, world!\"); } }"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "language": "java",
+  "status": "ok",
+  "correct": true,
+  "stdout": "Hello, world!\n",
+  "stderr": "",
+  "exitCode": 0,
+  "timedOut": false,
+  "durationMs": 284,
+  "completed": true,
+  "firstCompletion": true,
+  "xpGranted": 20,
+  "coinGranted": 10
+}
+```
+
+`status`: `ok | compile_error | runtime_error | timeout`.
+
+Ошибки:
+
+- `400`: `runner_language_not_supported`
+- `400`: `code_invalid`
+- `400`: `code_too_large`
+- `401`: `unauthorized`
+- `404`: `task_not_found`
+- `409`: `task_expected_output_not_configured`
+- `409`: `task_language_mismatch`
+- `409`: `task_input_too_large`
+- `503`: `runner_unavailable`
+
 ### 3.7 Вопросы
 
 #### `GET /api/quests/{questId}/answers`
@@ -799,5 +902,7 @@ services:
 18. `PUT /api/exams/{examId}/rewards`
 19. `POST /api/tasks/{taskId}/complete`
 20. `PUT /api/tasks/{taskId}/rewards`
-21. `GET /api/quests/{questId}/answers`
-22. `POST /api/quests/{questId}/check`
+21. `PUT /api/tasks/{taskId}/runner`
+22. `POST /api/tasks/{taskId}/run`
+23. `GET /api/quests/{questId}/answers`
+24. `POST /api/quests/{questId}/check`

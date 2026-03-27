@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.service;
+package com.hackathon.edu.service;
 
 import com.hackathon.edu.config.AppSecurityProperties;
 import com.hackathon.edu.dto.AuthResponse;
@@ -224,6 +224,7 @@ public class AuthService {
         return jwtService.verify(token).userId();
     }
 
+    @Transactional(readOnly = true)
     public UUID requireAdminUserIdFromAccessHeader(String authorizationHeader) {
         UUID userId = requireUserIdFromAccessHeader(authorizationHeader);
         UserEntity user = requireUser(userId);

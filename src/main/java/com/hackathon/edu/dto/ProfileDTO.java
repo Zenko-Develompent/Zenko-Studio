@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.dto;
+package com.hackathon.edu.dto;
 
 import java.util.List;
 import java.util.UUID;

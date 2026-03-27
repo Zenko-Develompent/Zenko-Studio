@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.entity;
+package com.hackathon.edu.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.ConstraintMode;
@@ -46,6 +46,15 @@ public class TasksEntity {
 
     @Column(name = "coin_reward")
     private Integer coinReward = 0;
+
+    @Column(name = "runner_language", length = 16)
+    private String runnerLanguage;
+
+    @Column(name = "expected_output", columnDefinition = "text")
+    private String expectedOutput;
+
+    @Column(name = "input_data", columnDefinition = "text")
+    private String inputData;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

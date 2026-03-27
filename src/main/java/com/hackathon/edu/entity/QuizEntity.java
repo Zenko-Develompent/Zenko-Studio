@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.entity;
+package com.hackathon.edu.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

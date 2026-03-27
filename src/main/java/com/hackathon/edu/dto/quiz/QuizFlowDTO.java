@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.dto.quiz;
+package com.hackathon.edu.dto.quiz;
 
 import jakarta.validation.constraints.NotNull;
 

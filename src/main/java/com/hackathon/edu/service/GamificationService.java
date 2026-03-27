@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.service;
+package com.hackathon.edu.service;
 
 import com.hackathon.edu.entity.ExemEntity;
 import com.hackathon.edu.entity.QuizEntity;
@@ -43,11 +43,8 @@ public class GamificationService {
         return result;
     }
 
-    /**
-     * Placeholder trigger for achievements. Later we will attach real achievement rules here.
-     */
     public void triggerAchievement(UUID userId, String trigger, Map<String, String> context) {
-        // Intentionally left empty: achievement logic will be wired by trigger keys later.
+        
     }
 
     private GrantResult grant(UUID userId, int xp, int coin) {

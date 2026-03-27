@@ -40,7 +40,7 @@ public class LessonContentService {
         Path resolvedPath = resolveBodyPath(bodyPath);
         Path markdownFile = resolveTextFile(resolvedPath);
         try {
-            return Files.readString(markdownFile, StandardCharsets.UTF_8);
+            return stripBom(Files.readString(markdownFile, StandardCharsets.UTF_8));
         } catch (IOException ex) {
             throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "lesson_content_read_failed");
         }
@@ -264,6 +264,16 @@ public class LessonContentService {
             return null;
         }
         return fileName.substring(dot);
+    }
+
+    private String stripBom(String value) {
+        if (value == null || value.isEmpty()) {
+            return value;
+        }
+        if (value.charAt(0) == '\uFEFF') {
+            return value.substring(1);
+        }
+        return value;
     }
 
     private String contentType(Path path) {

@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.dto;
+package com.hackathon.edu.dto;
 
 public record AuthUserDto(
         String id,

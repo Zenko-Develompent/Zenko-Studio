@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.service;
+package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.lesson.LessonDTO;
 import com.hackathon.edu.entity.LessonEntity;
@@ -180,6 +180,7 @@ public class LessonService {
                 task.getExam() == null ? null : task.getExam().getExemId(),
                 task.getName(),
                 task.getDescription(),
+                task.getRunnerLanguage(),
                 safeInt(task.getXpReward()),
                 safeInt(task.getCoinReward())
         );

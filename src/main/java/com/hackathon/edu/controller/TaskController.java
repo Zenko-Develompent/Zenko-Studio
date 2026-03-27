@@ -1,8 +1,9 @@
-﻿package com.hackathon.edu.controller;
+package com.hackathon.edu.controller;
 
 import com.hackathon.edu.dto.task.TaskDTO;
 import com.hackathon.edu.service.AuthService;
 import com.hackathon.edu.service.ProgressService;
+import com.hackathon.edu.service.TaskRunnerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskController {
     private final ProgressService progressService;
+    private final TaskRunnerService taskRunnerService;
     private final AuthService authService;
 
     @PostMapping("/{taskId}/complete")
@@ -58,6 +60,47 @@ public class TaskController {
                 result.examId(),
                 result.xpReward(),
                 result.coinReward()
+        );
+    }
+
+    @PostMapping("/{taskId}/run")
+    public TaskDTO.RunResponse runTask(
+            @PathVariable("taskId") UUID taskId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
+            @Valid @RequestBody TaskDTO.RunRequest request
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        TaskRunnerService.TaskRunResult result = taskRunnerService.runTask(userId, taskId, request);
+        return new TaskDTO.RunResponse(
+                result.taskId(),
+                result.language(),
+                result.status(),
+                result.correct(),
+                result.stdout(),
+                result.stderr(),
+                result.exitCode(),
+                result.timedOut(),
+                result.durationMs(),
+                result.completed(),
+                result.firstCompletion(),
+                result.xpGranted(),
+                result.coinGranted()
+        );
+    }
+
+    @PutMapping("/{taskId}/runner")
+    public TaskDTO.RunnerConfigResponse updateRunnerConfig(
+            @PathVariable("taskId") UUID taskId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
+            @Valid @RequestBody TaskDTO.UpdateRunnerRequest request
+    ) {
+        authService.requireAdminUserIdFromAccessHeader(authorizationHeader);
+        TaskRunnerService.RunnerConfigResult result = taskRunnerService.updateRunnerConfig(taskId, request);
+        return new TaskDTO.RunnerConfigResponse(
+                result.taskId(),
+                result.runnerLanguage(),
+                result.hasExpectedOutput(),
+                result.hasInputData()
         );
     }
 }
