@@ -13,6 +13,7 @@ import com.hackathon.edu.repository.ExemRepository;
 import com.hackathon.edu.repository.TaskAttemptRepository;
 import com.hackathon.edu.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -155,7 +156,9 @@ public class ProgressService {
             activityEventService.recordExamCompleted(userId, examId, grant.xpGranted(), grant.coinGranted());
         }
 
-        examAttemptRepository.save(attempt);
+        if (firstCompletion) {
+            examAttemptRepository.save(attempt);
+        }
         return new ExamCompletionResult(
                 true,
                 firstCompletion,
@@ -184,7 +187,12 @@ public class ProgressService {
         created.setCompleted(false);
         created.setRewardGranted(false);
         created.setCompletedAt(null);
-        return examAttemptRepository.save(created);
+        try {
+            return examAttemptRepository.saveAndFlush(created);
+        } catch (DataIntegrityViolationException ex) {
+            return examAttemptRepository.findByExam_ExemIdAndUserId(exam.getExemId(), userId)
+                    .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
+        }
     }
 
     private Supplier<ApiException> notFound(String errorCode) {
