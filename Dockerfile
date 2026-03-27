@@ -13,15 +13,9 @@ RUN ./mvnw -q -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-
-RUN apt-get update && apt-get install -y docker.io && rm -rf /var/lib/apt/lists/*
-
-
 COPY --from=build /app/target/*.jar app.jar
-
 
 ENV BACKEND_PORT=8080
 EXPOSE 8080
-
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
