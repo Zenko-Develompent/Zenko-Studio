@@ -11,8 +11,7 @@ public final class QuizFlowDTO {
 
     public record StartResponse(
             boolean completed,
-            QuestionItem question,
-            TaskItem task
+            QuestionItem question
     ) {
     }
 
@@ -29,8 +28,7 @@ public final class QuizFlowDTO {
             boolean completed,
             int xpGranted,
             int coinGranted,
-            QuestionItem question,
-            TaskItem task
+            QuestionItem question
     ) {
     }
 
@@ -51,12 +49,4 @@ public final class QuizFlowDTO {
     ) {
     }
 
-    public record TaskItem(
-            UUID taskId,
-            UUID lessonId,
-            UUID examId,
-            String name,
-            String description
-    ) {
-    }
 }

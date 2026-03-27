@@ -31,8 +31,11 @@ public class ModuleController {
     private final AuthService authService;
 
     @GetMapping
-    public ModuleDTO.ModuleListResponse modulesByCourse(@RequestParam("courseId") UUID courseId) {
-        return moduleService.listModulesByCourse(courseId);
+    public ModuleDTO.ModuleListResponse modulesByCourse(
+            @RequestParam("courseId") UUID courseId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        return moduleService.listModulesByCourse(courseId, resolveOptionalUserId(authorizationHeader));
     }
 
     @GetMapping("/{moduleId}")
@@ -41,8 +44,11 @@ public class ModuleController {
     }
 
     @GetMapping("/{moduleId}/lessons")
-    public ModuleDTO.ModuleLessonsResponse moduleLessons(@PathVariable("moduleId") UUID moduleId) {
-        return moduleService.getModuleLessons(moduleId);
+    public ModuleDTO.ModuleLessonsResponse moduleLessons(
+            @PathVariable("moduleId") UUID moduleId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        return moduleService.getModuleLessons(moduleId, resolveOptionalUserId(authorizationHeader));
     }
 
     @GetMapping("/{moduleId}/exam")
@@ -76,5 +82,12 @@ public class ModuleController {
     public ResponseEntity<Void> deleteModule(@PathVariable("moduleId") UUID moduleId) {
         moduleService.deleteModule(moduleId);
         return ResponseEntity.noContent().build();
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }

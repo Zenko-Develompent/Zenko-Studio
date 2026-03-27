@@ -38,7 +38,8 @@ public final class ModuleDTO {
             String description,
             Integer xp,
             UUID quizId,
-            UUID taskId
+            UUID taskId,
+            Boolean unlocked
     ) {
     }
 
@@ -63,7 +64,8 @@ public final class ModuleDTO {
             String name,
             String description,
             long lessonCount,
-            UUID examId
+            UUID examId,
+            Boolean unlocked
     ) {
     }
 

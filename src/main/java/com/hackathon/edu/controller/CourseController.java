@@ -33,18 +33,27 @@ public class CourseController {
     }
 
     @GetMapping("/courses/{courseId}")
-    public CourseDTO.CourseDetailResponse course(@PathVariable("courseId") UUID courseId) {
-        return courseService.getCourse(courseId);
+    public CourseDTO.CourseDetailResponse course(
+            @PathVariable("courseId") UUID courseId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        return courseService.getCourse(courseId, resolveOptionalUserId(authorizationHeader));
     }
 
     @GetMapping("/courses/{courseId}/modules")
-    public CourseDTO.CourseModulesResponse courseModules(@PathVariable("courseId") UUID courseId) {
-        return courseService.getCourseModules(courseId);
+    public CourseDTO.CourseModulesResponse courseModules(
+            @PathVariable("courseId") UUID courseId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        return courseService.getCourseModules(courseId, resolveOptionalUserId(authorizationHeader));
     }
 
     @GetMapping("/courses/{courseId}/tree")
-    public CourseDTO.CourseTreeResponse courseTree(@PathVariable("courseId") UUID courseId) {
-        return courseService.getCourseTree(courseId);
+    public CourseDTO.CourseTreeResponse courseTree(
+            @PathVariable("courseId") UUID courseId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        return courseService.getCourseTree(courseId, resolveOptionalUserId(authorizationHeader));
     }
 
     @GetMapping("/courses/{courseId}/progress")
@@ -62,6 +71,13 @@ public class CourseController {
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(courseService.createCourse(request));
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }
 

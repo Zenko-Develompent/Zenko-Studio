@@ -3,6 +3,7 @@ package com.hackathon.edu.service;
 import com.hackathon.edu.dto.task.TaskDTO;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
+import com.hackathon.edu.repository.TaskAttemptRepository;
 import com.hackathon.edu.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,13 +16,32 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskRunnerService {
     private final TasksRepository tasksRepository;
+    private final TaskAttemptRepository taskAttemptRepository;
     private final CodeRunnerService codeRunnerService;
     private final ProgressService progressService;
+    private final LearningAccessService learningAccessService;
+
+    @Transactional
+    public TaskStartResult startTask(UUID userId, UUID taskId) {
+        TasksEntity task = tasksRepository.findById(taskId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "task_not_found"));
+
+        learningAccessService.assertTaskCanStart(userId, task);
+        boolean completed = taskAttemptRepository.existsByTask_TasksIdAndUserIdAndCompletedTrue(taskId, userId);
+
+        return new TaskStartResult(
+                task.getTasksId(),
+                task.getLesson() == null ? null : task.getLesson().getLessonId(),
+                task.getExam() == null ? null : task.getExam().getExemId(),
+                completed
+        );
+    }
 
     @Transactional
     public TaskRunResult runTask(UUID userId, UUID taskId, TaskDTO.RunRequest request) {
         TasksEntity task = tasksRepository.findById(taskId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "task_not_found"));
+        learningAccessService.assertTaskCanStart(userId, task);
 
         String expectedOutput = task.getExpectedOutput();
         if (expectedOutput == null) {
@@ -158,6 +178,14 @@ public class TaskRunnerService {
             boolean firstCompletion,
             int xpGranted,
             int coinGranted
+    ) {
+    }
+
+    public record TaskStartResult(
+            UUID taskId,
+            UUID lessonId,
+            UUID examId,
+            boolean completed
     ) {
     }
 

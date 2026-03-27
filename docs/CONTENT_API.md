@@ -58,6 +58,10 @@
 - `answer_not_in_question`
 - `quiz_question_out_of_order`
 - `exam_not_completed`
+- `module_locked`
+- `lesson_locked`
+- `lesson_quiz_not_completed`
+- `exam_locked`
 - `unauthorized`
 - `forbidden`
 - `runner_language_not_supported`
@@ -128,6 +132,13 @@ Query:
 
 #### `GET /api/courses/{courseId}`
 
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, в элементах `modules[]` заполняется `unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
+
 Ответ `200`:
 
 ```json
@@ -142,7 +153,8 @@ Query:
       "name": "Условия",
       "description": "if/else",
       "lessonCount": 6,
-      "examId": "uuid"
+      "examId": "uuid",
+      "unlocked": true
     }
   ]
 }
@@ -150,9 +162,17 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `course_not_found`
 
 #### `GET /api/courses/{courseId}/modules`
+
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, в элементах `items[]` заполняется `unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
 
 Ответ `200`:
 
@@ -164,7 +184,8 @@ Query:
       "name": "Условия",
       "description": "if/else",
       "lessonCount": 6,
-      "examId": "uuid"
+      "examId": "uuid",
+      "unlocked": true
     }
   ]
 }
@@ -172,9 +193,17 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `course_not_found`
 
 #### `GET /api/courses/{courseId}/tree`
+
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, заполняются `module.unlocked` и `lesson.unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
 
 Ответ `200`:
 
@@ -187,12 +216,14 @@ Query:
       "moduleId": "uuid",
       "name": "Условия",
       "examId": "uuid",
+      "unlocked": true,
       "lessons": [
         {
           "lessonId": "uuid",
           "name": "if",
           "quizId": "uuid",
-          "taskId": "uuid"
+          "taskId": "uuid",
+          "unlocked": true
         }
       ]
     }
@@ -202,6 +233,7 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `course_not_found`
 
 ### 3.2 Модули
@@ -233,6 +265,13 @@ Query:
 
 #### `GET /api/modules/{moduleId}/lessons`
 
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, в элементах `items[]` заполняется `unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
+
 Ответ `200`:
 
 ```json
@@ -244,7 +283,8 @@ Query:
       "description": "Введение",
       "xp": 10,
       "quizId": "uuid",
-      "taskId": "uuid"
+      "taskId": "uuid",
+      "unlocked": true
     }
   ]
 }
@@ -252,6 +292,7 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `module_not_found`
 
 #### `GET /api/modules/{moduleId}/exam`
@@ -398,8 +439,7 @@ Body: не требуется.
         "description": "..."
       }
     ]
-  },
-  "task": null
+  }
 }
 ```
 
@@ -408,21 +448,18 @@ Body: не требуется.
 ```json
 {
   "completed": true,
-  "question": null,
-  "task": {
-    "taskId": "uuid",
-    "lessonId": "uuid",
-    "examId": null,
-    "name": "Практическая задача",
-    "description": "..."
-  }
+  "question": null
 }
 ```
+
+Запуск практики выполняется отдельным API: `POST /api/tasks/{taskId}/start`.
 
 Ошибки:
 
 - `401`: `unauthorized`
 - `404`: `quiz_not_found`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
 
 #### `POST /api/quizzes/{quizId}/answer`
 
@@ -462,8 +499,7 @@ Body:
         "description": "..."
       }
     ]
-  },
-  "task": null
+  }
 }
 ```
 
@@ -473,6 +509,8 @@ Body:
 - `404`: `quiz_not_found`
 - `400`: `answer_not_in_question`
 - `409`: `quiz_question_out_of_order`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
 
 ### 3.5 Экзамены
 
@@ -576,6 +614,8 @@ Body: не требуется.
 - `401`: `unauthorized`
 - `404`: `exam_not_found`
 - `409`: `exam_not_completed`
+- `409`: `module_locked`
+- `409`: `exam_locked`
 
 #### `PUT /api/exams/{examId}/rewards`
 
@@ -617,6 +657,37 @@ Body:
 
 ### 3.6 Таски
 
+#### `POST /api/tasks/{taskId}/start`
+
+Отдельный старт практической задачи.  
+Для задач урока запуск доступен только после полного прохождения квиза этого урока.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "lessonId": "uuid",
+  "examId": null,
+  "completed": false
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `task_not_found`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
+- `409`: `lesson_quiz_not_completed`
+- `409`: `exam_locked`
+
 #### `POST /api/tasks/{taskId}/complete`
 
 Помечает таск завершенным для текущего пользователя.
@@ -647,6 +718,10 @@ Body: не требуется.
 
 - `401`: `unauthorized`
 - `404`: `task_not_found`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
+- `409`: `lesson_quiz_not_completed`
+- `409`: `exam_locked`
 
 #### `PUT /api/tasks/{taskId}/rewards`
 
@@ -774,6 +849,10 @@ Body:
 - `409`: `task_expected_output_not_configured`
 - `409`: `task_language_mismatch`
 - `409`: `task_input_too_large`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
+- `409`: `lesson_quiz_not_completed`
+- `409`: `exam_locked`
 - `503`: `runner_unavailable`
 
 ### 3.7 Вопросы
@@ -823,6 +902,8 @@ Body:
 
 - `400`: `answer_not_in_question`
 - `401`: `unauthorized` (только если передан невалидный токен)
+- `409`: `module_locked`
+- `409`: `exam_locked`
 
 ### 3.8 Прогресс
 
@@ -986,12 +1067,13 @@ services:
 16. `GET /api/exams/{examId}/tasks`
 17. `POST /api/exams/{examId}/complete`
 18. `PUT /api/exams/{examId}/rewards`
-19. `POST /api/tasks/{taskId}/complete`
-20. `PUT /api/tasks/{taskId}/rewards`
-21. `PUT /api/tasks/{taskId}/runner`
-22. `POST /api/tasks/{taskId}/run`
-23. `GET /api/quests/{questId}/answers`
-24. `POST /api/quests/{questId}/check`
-25. `GET /api/lessons/{lessonId}/progress`
-26. `GET /api/modules/{moduleId}/progress`
-27. `GET /api/courses/{courseId}/progress`
+19. `POST /api/tasks/{taskId}/start`
+20. `POST /api/tasks/{taskId}/complete`
+21. `PUT /api/tasks/{taskId}/rewards`
+22. `PUT /api/tasks/{taskId}/runner`
+23. `POST /api/tasks/{taskId}/run`
+24. `GET /api/quests/{questId}/answers`
+25. `POST /api/quests/{questId}/check`
+26. `GET /api/lessons/{lessonId}/progress`
+27. `GET /api/modules/{moduleId}/progress`
+28. `GET /api/courses/{courseId}/progress`

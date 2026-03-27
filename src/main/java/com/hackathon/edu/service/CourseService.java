@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -38,6 +39,7 @@ public class CourseService {
     private final CourseRepository courseRepository;
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
+    private final ProgressQueryService progressQueryService;
 
     public CourseDTO.CourseListResponse listCourses(int page, int size) {
         int safePage = Math.max(page, 0);
@@ -57,12 +59,19 @@ public class CourseService {
     }
 
     public CourseDTO.CourseDetailResponse getCourse(UUID courseId) {
+        return getCourse(courseId, null);
+    }
+
+    public CourseDTO.CourseDetailResponse getCourse(UUID courseId, UUID userId) {
         CourseEntity course = courseRepository.findWithModulesByCourseId(courseId)
                 .orElseThrow(notFound("course_not_found"));
 
-        List<CourseDTO.CourseModuleItem> modules = safeList(course.getModules()).stream()
+        List<ModuleEntity> orderedModules = safeList(course.getModules()).stream()
                 .sorted(MODULE_ORDER)
-                .map(this::toCourseModuleItem)
+                .toList();
+        Map<UUID, Boolean> unlockedMap = buildModuleUnlockedMap(orderedModules, userId);
+        List<CourseDTO.CourseModuleItem> modules = orderedModules.stream()
+                .map(module -> toCourseModuleItem(module, userId == null ? null : unlockedMap.get(module.getModuleId())))
                 .toList();
 
         return new CourseDTO.CourseDetailResponse(
@@ -75,38 +84,70 @@ public class CourseService {
     }
 
     public CourseDTO.CourseModulesResponse getCourseModules(UUID courseId) {
+        return getCourseModules(courseId, null);
+    }
+
+    public CourseDTO.CourseModulesResponse getCourseModules(UUID courseId, UUID userId) {
         CourseEntity course = courseRepository.findWithModulesByCourseId(courseId)
                 .orElseThrow(notFound("course_not_found"));
 
-        List<CourseDTO.CourseModuleItem> items = safeList(course.getModules()).stream()
+        List<ModuleEntity> orderedModules = safeList(course.getModules()).stream()
                 .sorted(MODULE_ORDER)
-                .map(this::toCourseModuleItem)
+                .toList();
+        Map<UUID, Boolean> unlockedMap = buildModuleUnlockedMap(orderedModules, userId);
+        List<CourseDTO.CourseModuleItem> items = orderedModules.stream()
+                .map(module -> toCourseModuleItem(module, userId == null ? null : unlockedMap.get(module.getModuleId())))
                 .toList();
 
         return new CourseDTO.CourseModulesResponse(items);
     }
 
     public CourseDTO.CourseTreeResponse getCourseTree(UUID courseId) {
+        return getCourseTree(courseId, null);
+    }
+
+    public CourseDTO.CourseTreeResponse getCourseTree(UUID courseId, UUID userId) {
         CourseEntity course = courseRepository.findWithTreeByCourseId(courseId)
                 .orElseThrow(notFound("course_not_found"));
 
-        List<CourseDTO.CourseTreeModuleItem> modules = safeList(course.getModules()).stream()
+        List<ModuleEntity> orderedModules = safeList(course.getModules()).stream()
                 .sorted(MODULE_ORDER)
-                .map(module -> new CourseDTO.CourseTreeModuleItem(
-                        module.getModuleId(),
-                        module.getName(),
-                        toExamId(module.getExam()),
-                        safeList(module.getLessons()).stream()
-                                .sorted(LESSON_ORDER)
-                                .map(lesson -> new CourseDTO.CourseTreeLessonItem(
-                                        lesson.getLessonId(),
-                                        lesson.getName(),
-                                        toQuizId(lesson.getQuiz()),
-                                        toTaskId(lesson.getTask())
-                                ))
-                                .toList()
-                ))
                 .toList();
+        Map<UUID, Boolean> moduleUnlocked = buildModuleUnlockedMap(orderedModules, userId);
+
+        List<CourseDTO.CourseTreeModuleItem> modules = new java.util.ArrayList<>(orderedModules.size());
+        for (ModuleEntity module : orderedModules) {
+            UUID moduleId = module.getModuleId();
+            Boolean unlocked = userId == null ? null : moduleUnlocked.get(moduleId);
+
+            List<LessonEntity> orderedLessons = safeList(module.getLessons()).stream()
+                    .sorted(LESSON_ORDER)
+                    .toList();
+            List<CourseDTO.CourseTreeLessonItem> lessonItems = new java.util.ArrayList<>(orderedLessons.size());
+            boolean previousCompleted = true;
+            for (LessonEntity lesson : orderedLessons) {
+                Boolean lessonUnlocked = null;
+                if (userId != null) {
+                    lessonUnlocked = Boolean.TRUE.equals(unlocked) && previousCompleted;
+                    previousCompleted = progressQueryService.getLessonProgress(userId, lesson.getLessonId()).completed();
+                }
+                lessonItems.add(new CourseDTO.CourseTreeLessonItem(
+                        lesson.getLessonId(),
+                        lesson.getName(),
+                        toQuizId(lesson.getQuiz()),
+                        toTaskId(lesson.getTask()),
+                        lessonUnlocked
+                ));
+            }
+
+            modules.add(new CourseDTO.CourseTreeModuleItem(
+                    moduleId,
+                    module.getName(),
+                    toExamId(module.getExam()),
+                    unlocked,
+                    lessonItems
+            ));
+        }
 
         return new CourseDTO.CourseTreeResponse(course.getCourseId(), course.getName(), modules);
     }
@@ -125,14 +166,15 @@ public class CourseService {
             );
     }
 
-    private CourseDTO.CourseModuleItem toCourseModuleItem(ModuleEntity module) {
+    private CourseDTO.CourseModuleItem toCourseModuleItem(ModuleEntity module, Boolean unlocked) {
         long lessonCount = safeList(module.getLessons()).size();
         return new CourseDTO.CourseModuleItem(
                 module.getModuleId(),
                 module.getName(),
                 module.getDescription(),
                 lessonCount,
-                toExamId(module.getExam())
+                toExamId(module.getExam()),
+                unlocked
         );
     }
 
@@ -154,6 +196,23 @@ public class CourseService {
 
     private static <T> List<T> safeList(List<T> items) {
         return items == null ? List.of() : items;
+    }
+
+    private Map<UUID, Boolean> buildModuleUnlockedMap(List<ModuleEntity> modules, UUID userId) {
+        if (userId == null) {
+            return Map.of();
+        }
+
+        Map<UUID, Boolean> unlocked = new java.util.HashMap<>();
+        boolean previousCompleted = true;
+        for (ModuleEntity module : modules) {
+            if (module == null || module.getModuleId() == null) {
+                continue;
+            }
+            unlocked.put(module.getModuleId(), previousCompleted);
+            previousCompleted = progressQueryService.getModuleProgress(userId, module.getModuleId()).completed();
+        }
+        return unlocked;
     }
 
 

@@ -31,11 +31,13 @@ public class ProgressService {
     private final ExamAttemptRepository examAttemptRepository;
     private final ExamQuestionProgressRepository examQuestionProgressRepository;
     private final GamificationService gamificationService;
+    private final LearningAccessService learningAccessService;
 
     @Transactional
     public TaskCompletionResult completeTask(UUID userId, UUID taskId) {
         TasksEntity task = tasksRepository.findById(taskId)
                 .orElseThrow(notFound("task_not_found"));
+        learningAccessService.assertTaskCanStart(userId, task);
 
         TaskAttemptEntity attempt = taskAttemptRepository.findByTask_TasksIdAndUserId(taskId, userId)
                 .orElseGet(() -> createTaskAttempt(task, userId));
@@ -103,6 +105,7 @@ public class ProgressService {
     public ExamCompletionResult completeExam(UUID userId, UUID examId) {
         ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
                 .orElseThrow(notFound("exam_not_found"));
+        learningAccessService.assertExamUnlocked(userId, exam);
 
         long totalQuestions = safeList(exam.getQuests()).size();
         long totalTasks = safeList(exam.getTasks()).size();

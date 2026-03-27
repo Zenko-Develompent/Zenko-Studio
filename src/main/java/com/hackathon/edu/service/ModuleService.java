@@ -30,6 +30,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ModuleService {
+    private static final Comparator<ModuleEntity> MODULE_ORDER = Comparator
+            .comparing(ModuleEntity::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+            .thenComparing(ModuleEntity::getModuleId, Comparator.nullsLast(Comparator.naturalOrder()));
+
     private static final Comparator<LessonEntity> LESSON_ORDER = Comparator
             .comparing(LessonEntity::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
             .thenComparing(LessonEntity::getLessonId, Comparator.nullsLast(Comparator.naturalOrder()));
@@ -39,6 +43,8 @@ public class ModuleService {
     private final LessonRepository lessonRepository;
     private final QuizRepository quizRepository;
     private final ExemRepository examRepository;
+    private final ProgressQueryService progressQueryService;
+    private final LearningAccessService learningAccessService;
 
     @Transactional
     public ModuleDTO.ModuleDetailResponse createModule(ModuleDTO.ModuleCreateRequest request) {
@@ -96,6 +102,10 @@ public class ModuleService {
     }
 
     public ModuleDTO.ModuleListResponse listModulesByCourse(UUID courseId) {
+        return listModulesByCourse(courseId, null);
+    }
+
+    public ModuleDTO.ModuleListResponse listModulesByCourse(UUID courseId, UUID userId) {
         if (!courseRepository.existsById(courseId)) {
             throw notFound("course_not_found").get();
         }
@@ -103,14 +113,20 @@ public class ModuleService {
         Map<UUID, Long> lessonCounts = lessonRepository.countLessonsByModuleForCourse(courseId).stream()
                 .collect(Collectors.toMap(LessonRepository.ModuleLessonCount::getModuleId, LessonRepository.ModuleLessonCount::getCnt));
 
-        List<ModuleDTO.ModuleListItem> items = moduleRepository.findByCourse_CourseIdOrderByNameAsc(courseId).stream()
+        List<ModuleEntity> modules = moduleRepository.findByCourse_CourseIdOrderByNameAsc(courseId).stream()
+                .sorted(MODULE_ORDER)
+                .toList();
+        Map<UUID, Boolean> unlockedMap = buildModuleUnlockedMap(modules, userId);
+
+        List<ModuleDTO.ModuleListItem> items = modules.stream()
                 .map(module -> new ModuleDTO.ModuleListItem(
                         module.getModuleId(),
                         module.getCourse() == null ? null : module.getCourse().getCourseId(),
                         module.getName(),
                         module.getDescription(),
                         lessonCounts.getOrDefault(module.getModuleId(), 0L),
-                        toExamId(module.getExam())
+                        toExamId(module.getExam()),
+                        userId == null ? null : unlockedMap.get(module.getModuleId())
                 ))
                 .toList();
 
@@ -141,20 +157,35 @@ public class ModuleService {
     }
 
     public ModuleDTO.ModuleLessonsResponse getModuleLessons(UUID moduleId) {
+        return getModuleLessons(moduleId, null);
+    }
+
+    public ModuleDTO.ModuleLessonsResponse getModuleLessons(UUID moduleId, UUID userId) {
         ModuleEntity module = moduleRepository.findWithLessonsByModuleId(moduleId)
                 .orElseThrow(notFound("module_not_found"));
 
-        List<ModuleDTO.LessonCard> items = safeList(module.getLessons()).stream()
+        Boolean moduleUnlocked = userId == null ? null : learningAccessService.isModuleUnlocked(userId, moduleId);
+        List<LessonEntity> orderedLessons = safeList(module.getLessons()).stream()
                 .sorted(LESSON_ORDER)
-                .map(lesson -> new ModuleDTO.LessonCard(
-                        lesson.getLessonId(),
-                        lesson.getName(),
-                        lesson.getDescription(),
-                        lesson.getXp(),
-                        toQuizId(lesson.getQuiz()),
-                        toTaskId(lesson.getTask())
-                ))
                 .toList();
+        List<ModuleDTO.LessonCard> items = new java.util.ArrayList<>(orderedLessons.size());
+        boolean previousCompleted = true;
+        for (LessonEntity lesson : orderedLessons) {
+            Boolean unlocked = null;
+            if (userId != null) {
+                unlocked = Boolean.TRUE.equals(moduleUnlocked) && previousCompleted;
+                previousCompleted = progressQueryService.getLessonProgress(userId, lesson.getLessonId()).completed();
+            }
+            items.add(new ModuleDTO.LessonCard(
+                    lesson.getLessonId(),
+                    lesson.getName(),
+                    lesson.getDescription(),
+                    lesson.getXp(),
+                    toQuizId(lesson.getQuiz()),
+                    toTaskId(lesson.getTask()),
+                    unlocked
+            ));
+        }
 
         return new ModuleDTO.ModuleLessonsResponse(items);
     }
@@ -246,5 +277,23 @@ public class ModuleService {
 
     private static <T> List<T> safeList(List<T> items) {
         return items == null ? List.of() : items;
+    }
+
+    private Map<UUID, Boolean> buildModuleUnlockedMap(List<ModuleEntity> modules, UUID userId) {
+        if (userId == null) {
+            return Map.of();
+        }
+
+        Map<UUID, Boolean> unlocked = new java.util.HashMap<>();
+        boolean previousCompleted = true;
+        for (ModuleEntity module : modules) {
+            if (module == null || module.getModuleId() == null) {
+                continue;
+            }
+            unlocked.put(module.getModuleId(), previousCompleted);
+            boolean moduleCompleted = progressQueryService.getModuleProgress(userId, module.getModuleId()).completed();
+            previousCompleted = moduleCompleted;
+        }
+        return unlocked;
     }
 }

@@ -22,6 +22,14 @@ public final class TaskDTO {
     ) {
     }
 
+    public record StartResponse(
+            UUID taskId,
+            UUID lessonId,
+            UUID examId,
+            boolean completed
+    ) {
+    }
+
     public record RewardResponse(
             UUID taskId,
             UUID lessonId,

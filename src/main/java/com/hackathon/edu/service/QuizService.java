@@ -6,7 +6,6 @@ import com.hackathon.edu.entity.AnswerEntity;
 import com.hackathon.edu.entity.QuestEntity;
 import com.hackathon.edu.entity.QuizAttemptEntity;
 import com.hackathon.edu.entity.QuizEntity;
-import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.AnswerRepository;
 import com.hackathon.edu.repository.LessonRepository;
@@ -41,6 +40,7 @@ public class QuizService {
     private final AnswerRepository answerRepository;
     private final GamificationService gamificationService;
     private final ProgressService progressService;
+    private final LearningAccessService learningAccessService;
 
     @Transactional
     public QuizDTO.QuizDetailResponse createLessonQuiz(UUID lessonId, QuizDTO.QuizCreateRequest request) {
@@ -102,6 +102,10 @@ public class QuizService {
     public QuizDTO.CheckAnswerResponse checkQuestAnswer(UUID questId, UUID answerId, UUID userId) {
         AnswerEntity answer = answerRepository.findByAnswerIdAndQuest_QuestId(answerId, questId)
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "answer_not_in_question"));
+        if (userId != null && answer.getQuest() != null && answer.getQuest().getExam() != null) {
+            learningAccessService.assertExamUnlocked(userId, answer.getQuest().getExam());
+        }
+
         boolean correct = Boolean.TRUE.equals(answer.getCorrectly());
         if (correct && userId != null) {
             progressService.markExamQuestionCompleted(userId, answer.getQuest());
@@ -125,18 +129,19 @@ public class QuizService {
     public QuizFlowDTO.StartResponse startQuiz(UUID userId, UUID quizId) {
         QuizEntity quiz = quizRepository.findWithFlowByQuizId(quizId)
                 .orElseThrow(notFound("quiz_not_found"));
+        learningAccessService.assertLessonQuizCanStart(userId, quiz);
+
         QuizAttemptEntity attempt = getOrCreateAttempt(userId, quiz);
         List<QuestEntity> questions = orderedQuestions(quiz);
         if (questions.isEmpty() || isCompleted(attempt, questions.size())) {
             markCompleted(attempt);
-            return new QuizFlowDTO.StartResponse(true, null, lessonTask(quiz));
+            return new QuizFlowDTO.StartResponse(true, null);
         }
 
         int currentIndex = safeIndex(attempt);
         return new QuizFlowDTO.StartResponse(
                 false,
-                toFlowQuestion(questions.get(currentIndex), currentIndex, questions.size()),
-                null
+                toFlowQuestion(questions.get(currentIndex), currentIndex, questions.size())
         );
     }
 
@@ -144,11 +149,13 @@ public class QuizService {
     public QuizFlowDTO.SubmitAnswerResponse submitAnswer(UUID userId, UUID quizId, QuizFlowDTO.SubmitAnswerRequest request) {
         QuizEntity quiz = quizRepository.findWithFlowByQuizId(quizId)
                 .orElseThrow(notFound("quiz_not_found"));
+        learningAccessService.assertLessonQuizCanStart(userId, quiz);
+
         QuizAttemptEntity attempt = getOrCreateAttempt(userId, quiz);
         List<QuestEntity> questions = orderedQuestions(quiz);
         if (questions.isEmpty() || isCompleted(attempt, questions.size())) {
             markCompleted(attempt);
-            return new QuizFlowDTO.SubmitAnswerResponse(true, true, 0, 0, null, lessonTask(quiz));
+            return new QuizFlowDTO.SubmitAnswerResponse(true, true, 0, 0, null);
         }
 
         int questionIndex = safeIndex(attempt);
@@ -169,8 +176,7 @@ public class QuizService {
                     false,
                     0,
                     0,
-                    toFlowQuestion(current, questionIndex, questions.size()),
-                    null
+                    toFlowQuestion(current, questionIndex, questions.size())
             );
         }
 
@@ -183,8 +189,7 @@ public class QuizService {
                     false,
                     0,
                     0,
-                    toFlowQuestion(questions.get(nextIndex), nextIndex, questions.size()),
-                    null
+                    toFlowQuestion(questions.get(nextIndex), nextIndex, questions.size())
             );
         }
 
@@ -201,8 +206,7 @@ public class QuizService {
                 true,
                 grant.xpGranted(),
                 grant.coinGranted(),
-                null,
-                lessonTask(quiz)
+                null
         );
     }
 
@@ -258,20 +262,6 @@ public class QuizService {
                 index + 1,
                 total,
                 options
-        );
-    }
-
-    private QuizFlowDTO.TaskItem lessonTask(QuizEntity quiz) {
-        TasksEntity task = quiz.getLesson() == null ? null : quiz.getLesson().getTask();
-        if (task == null) {
-            return null;
-        }
-        return new QuizFlowDTO.TaskItem(
-                task.getTasksId(),
-                task.getLesson() == null ? null : task.getLesson().getLessonId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
-                task.getName(),
-                task.getDescription()
         );
     }
 

@@ -24,6 +24,21 @@ public class TaskController {
     private final TaskRunnerService taskRunnerService;
     private final AuthService authService;
 
+    @PostMapping("/{taskId}/start")
+    public TaskDTO.StartResponse startTask(
+            @PathVariable("taskId") UUID taskId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        TaskRunnerService.TaskStartResult result = taskRunnerService.startTask(userId, taskId);
+        return new TaskDTO.StartResponse(
+                result.taskId(),
+                result.lessonId(),
+                result.examId(),
+                result.completed()
+        );
+    }
+
     @PostMapping("/{taskId}/complete")
     public TaskDTO.CompleteResponse completeTask(
             @PathVariable("taskId") UUID taskId,

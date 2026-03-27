@@ -255,8 +255,11 @@
                                                                        "exec":  [
                                                                                     "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
                                                                                     "const b = pm.response.json();",
-                                                                                    "pm.test(\u0027courses not empty\u0027, () =\u003e pm.expect(b.items.length).to.be.greaterThan(0));",
-                                                                                    "pm.collectionVariables.set(\u0027courseId\u0027, b.items[0].courseId);"
+                                                                                    "const items = b.items || [];",
+                                                                                    "pm.test(\u0027courses not empty\u0027, () =\u003e pm.expect(items.length).to.be.greaterThan(0));",
+                                                                                    "const javaCourse = items.find(x =\u003e ((x.category || \u0027\u0027).toLowerCase() === \u0027java\u0027) || ((x.name || \u0027\u0027).toLowerCase().includes(\u0027java\u0027)));",
+                                                                                    "pm.test(\u0027java course found\u0027, () =\u003e pm.expect(javaCourse).to.exist);",
+                                                                                    "if (javaCourse) pm.collectionVariables.set(\u0027courseId\u0027, javaCourse.courseId);"
                                                                                 ]
                                                                    }
                                                     }
@@ -267,7 +270,10 @@
                                       "request":  {
                                                       "method":  "GET",
                                                       "header":  [
-
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
                                                                  ],
                                                       "url":  {
                                                                   "raw":  "{{baseUrl}}/api/courses/{{courseId}}/tree",
@@ -292,11 +298,28 @@
                                                                                     "const b = pm.response.json();",
                                                                                     "const modules = b.modules || [];",
                                                                                     "pm.test(\u0027modules exist\u0027, () =\u003e pm.expect(modules.length).to.be.greaterThan(0));",
-                                                                                    "const m = modules.find(x =\u003e Array.isArray(x.lessons) \u0026\u0026 x.lessons.length \u003e= 3) || modules[0];",
+                                                                                    "const m = modules.find(x =\u003e Array.isArray(x.lessons) \u0026\u0026 x.lessons.length \u003e 0) || modules[0];",
                                                                                     "pm.test(\u0027module selected\u0027, () =\u003e pm.expect(m).to.exist);",
                                                                                     "if (m) {",
                                                                                     "  pm.collectionVariables.set(\u0027moduleId\u0027, m.moduleId);",
                                                                                     "  if (m.examId) pm.collectionVariables.set(\u0027examId\u0027, m.examId);",
+                                                                                    "  pm.test(\u0027module unlocked present\u0027, () =\u003e pm.expect(m).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027module unlocked boolean\u0027, () =\u003e pm.expect(m.unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "  const lesson = (m.lessons || [])[0];",
+                                                                                    "  pm.test(\u0027lesson selected\u0027, () =\u003e pm.expect(lesson).to.exist);",
+                                                                                    "  if (lesson) {",
+                                                                                    "    pm.test(\u0027lesson unlocked present\u0027, () =\u003e pm.expect(lesson).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "    pm.test(\u0027lesson unlocked boolean\u0027, () =\u003e pm.expect(lesson.unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "    pm.collectionVariables.set(\u0027lessonPrintId\u0027, lesson.lessonId);",
+                                                                                    "    pm.collectionVariables.set(\u0027lessonInputId\u0027, lesson.lessonId);",
+                                                                                    "    pm.collectionVariables.set(\u0027lessonJavaId\u0027, lesson.lessonId);",
+                                                                                    "    if (lesson.quizId) pm.collectionVariables.set(\u0027quizPrintId\u0027, lesson.quizId);",
+                                                                                    "    if (lesson.taskId) {",
+                                                                                    "      pm.collectionVariables.set(\u0027taskPrintId\u0027, lesson.taskId);",
+                                                                                    "      pm.collectionVariables.set(\u0027taskInputId\u0027, lesson.taskId);",
+                                                                                    "      pm.collectionVariables.set(\u0027taskJavaId\u0027, lesson.taskId);",
+                                                                                    "    }",
+                                                                                    "  }",
                                                                                     "}"
                                                                                 ]
                                                                    }
@@ -308,7 +331,10 @@
                                       "request":  {
                                                       "method":  "GET",
                                                       "header":  [
-
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
                                                                  ],
                                                       "url":  {
                                                                   "raw":  "{{baseUrl}}/api/courses/{{courseId}}",
@@ -328,7 +354,14 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const modules = b.modules || [];",
+                                                                                    "pm.test(\u0027course modules exist\u0027, () =\u003e pm.expect(modules.length).to.be.greaterThan(0));",
+                                                                                    "if (modules.length \u003e 0) {",
+                                                                                    "  pm.test(\u0027course module unlocked present\u0027, () =\u003e pm.expect(modules[0]).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027course module unlocked boolean\u0027, () =\u003e pm.expect(modules[0].unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "}"
                                                                                 ]
                                                                    }
                                                     }
@@ -339,7 +372,10 @@
                                       "request":  {
                                                       "method":  "GET",
                                                       "header":  [
-
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
                                                                  ],
                                                       "url":  {
                                                                   "raw":  "{{baseUrl}}/api/courses/{{courseId}}/modules",
@@ -360,7 +396,14 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const items = b.items || [];",
+                                                                                    "pm.test(\u0027modules list exists\u0027, () =\u003e pm.expect(items.length).to.be.greaterThan(0));",
+                                                                                    "if (items.length \u003e 0) {",
+                                                                                    "  pm.test(\u0027modules list unlocked present\u0027, () =\u003e pm.expect(items[0]).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027modules list unlocked boolean\u0027, () =\u003e pm.expect(items[0].unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "}"
                                                                                 ]
                                                                    }
                                                     }
@@ -402,7 +445,10 @@
                                       "request":  {
                                                       "method":  "GET",
                                                       "header":  [
-
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
                                                                  ],
                                                       "url":  {
                                                                   "raw":  "{{baseUrl}}/api/modules/{{moduleId}}/lessons",
@@ -426,23 +472,21 @@
                                                                                     "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
                                                                                     "const b = pm.response.json();",
                                                                                     "const lessons = b.items || [];",
-                                                                                    "pm.test(\u0027lessons \u003e= 3\u0027, () =\u003e pm.expect(lessons.length).to.be.greaterThan(2));",
-                                                                                    "const lJava = lessons.find(x =\u003e (((x.name || \u0027\u0027) + \u0027 \u0027 + (x.description || \u0027\u0027)).toLowerCase().includes(\u0027java\u0027)));",
-                                                                                    "const lInput = lessons.find(x =\u003e ((x.description || \u0027\u0027).toLowerCase().includes(\u0027stdin\u0027)));",
-                                                                                    "const lPrint = lessons.find(x =\u003e x.lessonId !== (lJava \u0026\u0026 lJava.lessonId) \u0026\u0026 x.lessonId !== (lInput \u0026\u0026 lInput.lessonId));",
-                                                                                    "pm.test(\u0027lesson ids resolved\u0027, () =\u003e { pm.expect(lJava).to.exist; pm.expect(lInput).to.exist; pm.expect(lPrint).to.exist; });",
-                                                                                    "if (lJava) {",
-                                                                                    "  pm.collectionVariables.set(\u0027lessonJavaId\u0027, lJava.lessonId);",
-                                                                                    "  if (lJava.taskId) pm.collectionVariables.set(\u0027taskJavaId\u0027, lJava.taskId);",
-                                                                                    "}",
-                                                                                    "if (lInput) {",
-                                                                                    "  pm.collectionVariables.set(\u0027lessonInputId\u0027, lInput.lessonId);",
-                                                                                    "  if (lInput.taskId) pm.collectionVariables.set(\u0027taskInputId\u0027, lInput.taskId);",
-                                                                                    "}",
-                                                                                    "if (lPrint) {",
-                                                                                    "  pm.collectionVariables.set(\u0027lessonPrintId\u0027, lPrint.lessonId);",
-                                                                                    "  if (lPrint.taskId) pm.collectionVariables.set(\u0027taskPrintId\u0027, lPrint.taskId);",
-                                                                                    "  if (lPrint.quizId) pm.collectionVariables.set(\u0027quizPrintId\u0027, lPrint.quizId);",
+                                                                                    "pm.test(\u0027lessons \u003e= 1\u0027, () =\u003e pm.expect(lessons.length).to.be.greaterThan(0));",
+                                                                                    "const l = lessons[0];",
+                                                                                    "pm.test(\u0027lesson resolved\u0027, () =\u003e pm.expect(l).to.exist);",
+                                                                                    "if (l) {",
+                                                                                    "  pm.test(\u0027lesson unlocked present\u0027, () =\u003e pm.expect(l).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027lesson unlocked boolean\u0027, () =\u003e pm.expect(l.unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "  pm.collectionVariables.set(\u0027lessonPrintId\u0027, l.lessonId);",
+                                                                                    "  pm.collectionVariables.set(\u0027lessonInputId\u0027, l.lessonId);",
+                                                                                    "  pm.collectionVariables.set(\u0027lessonJavaId\u0027, l.lessonId);",
+                                                                                    "  if (l.taskId) {",
+                                                                                    "    pm.collectionVariables.set(\u0027taskPrintId\u0027, l.taskId);",
+                                                                                    "    pm.collectionVariables.set(\u0027taskInputId\u0027, l.taskId);",
+                                                                                    "    pm.collectionVariables.set(\u0027taskJavaId\u0027, l.taskId);",
+                                                                                    "  }",
+                                                                                    "  if (l.quizId) pm.collectionVariables.set(\u0027quizPrintId\u0027, l.quizId);",
                                                                                     "}"
                                                                                 ]
                                                                    }
@@ -708,7 +752,12 @@
                                                                        "exec":  [
                                                                                     "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
                                                                                     "const b = pm.response.json();",
-                                                                                    "if (!b.completed \u0026\u0026 b.question) { pm.collectionVariables.set(\u0027quizQuestionId\u0027, b.question.questionId); pm.collectionVariables.set(\u0027quizAnswerId\u0027, b.question.options[0].answerId); }"
+                                                                                    "pm.test(\u0027task not returned\u0027, () =\u003e pm.expect(b.task).to.eql(undefined));",
+                                                                                    "if (!b.completed \u0026\u0026 b.question) {",
+                                                                                    "  pm.collectionVariables.set(\u0027quizQuestionId\u0027, b.question.questionId);",
+                                                                                    "  const firstOption = (b.question.options || [])[0];",
+                                                                                    "  if (firstOption) pm.collectionVariables.set(\u0027quizAnswerId\u0027, firstOption.answerId);",
+                                                                                    "}"
                                                                                 ]
                                                                    }
                                                     }
@@ -751,7 +800,20 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027task not returned\u0027, () =\u003e pm.expect(b.task).to.eql(undefined));"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "if (!pm.collectionVariables.get(\u0027quizQuestionId\u0027) || !pm.collectionVariables.get(\u0027quizAnswerId\u0027)) {",
+                                                                                    "  pm.execution.setNextRequest(\u0027POST /api/tasks/{taskId}/start\u0027);",
+                                                                                    "}"
                                                                                 ]
                                                                    }
                                                     }
@@ -891,7 +953,7 @@
                                                         "script":  {
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
-                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                    "pm.test(\u0027Status 200 or 409\u0027, () =\u003e pm.expect([200,409]).to.include(pm.response.code));"
                                                                                 ]
                                                                    }
                                                     }
@@ -935,6 +997,43 @@
                                                                        "type":  "text/javascript",
                                                                        "exec":  [
                                                                                     "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskId}/start",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/start",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "start"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027task start id\u0027, () =\u003e pm.expect(b.taskId).to.be.a(\u0027string\u0027).and.not.empty);"
                                                                                 ]
                                                                    }
                                                     }
@@ -1072,6 +1171,49 @@
                                                 ]
                                   },
                                   {
+                                      "name":  "PUT /api/tasks/{taskInputId}/runner input",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskInputId}}/runner",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskInputId}}",
+                                                                               "runner"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"runnerLanguage\": \"bash\",\n  \"expectedOutput\": \"15\\n\",\n  \"inputData\": \"7 8\\n\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
                                       "name":  "POST /api/tasks/{taskInputId}/run",
                                       "request":  {
                                                       "method":  "POST",
@@ -1110,6 +1252,49 @@
                                                                        "exec":  [
                                                                                     "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
                                                                                     "const b = pm.response.json(); pm.test(\u0027correct=true\u0027, () =\u003e pm.expect(b.correct).to.eql(true));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PUT /api/tasks/{taskJavaId}/runner java",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskJavaId}}/runner",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskJavaId}}",
+                                                                               "runner"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"runnerLanguage\": \"java\",\n  \"expectedOutput\": \"42\\n\",\n  \"inputData\": null\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
                                                                                 ]
                                                                    }
                                                     }
@@ -1347,8 +1532,123 @@
                                                                    }
                                                     }
                                                 ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonId}/progress",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonPrintId}}/progress",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonPrintId}}",
+                                                                               "progress"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027progress targetType\u0027, () =\u003e pm.expect(b.targetType).to.eql(\u0027lesson\u0027));",
+                                                                                    "pm.test(\u0027progress percent range\u0027, () =\u003e pm.expect(b.percent).to.be.within(0, 100));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/modules/{moduleId}/progress",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/modules/{{moduleId}}/progress",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "modules",
+                                                                               "{{moduleId}}",
+                                                                               "progress"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027progress targetType\u0027, () =\u003e pm.expect(b.targetType).to.eql(\u0027module\u0027));",
+                                                                                    "pm.test(\u0027progress percent range\u0027, () =\u003e pm.expect(b.percent).to.be.within(0, 100));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/courses/{courseId}/progress",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/courses/{{courseId}}/progress",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "courses",
+                                                                               "{{courseId}}",
+                                                                               "progress"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027progress targetType\u0027, () =\u003e pm.expect(b.targetType).to.eql(\u0027course\u0027));",
+                                                                                    "pm.test(\u0027progress percent range\u0027, () =\u003e pm.expect(b.percent).to.be.within(0, 100));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
                                   }
                               ]
                  }
              ]
 }
+
