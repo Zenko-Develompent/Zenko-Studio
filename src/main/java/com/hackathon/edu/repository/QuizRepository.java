@@ -13,5 +13,7 @@ public interface QuizRepository extends JpaRepository<QuizEntity, UUID> {
 
     @EntityGraph(attributePaths = {"lesson", "quests"})
     Optional<QuizEntity> findWithQuestsByLesson_LessonId(UUID lessonId);
-}
 
+    @EntityGraph(attributePaths = {"lesson", "lesson.task", "quests", "quests.answers"})
+    Optional<QuizEntity> findWithFlowByQuizId(UUID quizId);
+}
