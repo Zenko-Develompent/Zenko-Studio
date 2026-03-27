@@ -15,7 +15,11 @@ WORKDIR /app
 
 COPY --from=build /app/target/*.jar app.jar
 
+COPY runner-images /app/runner-images
+COPY load-runner-images.sh /app/load-runner-images.sh
+RUN chmod +x /app/load-runner-images.sh
+
 ENV BACKEND_PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["/bin/sh", "-c", "/app/load-runner-images.sh && java -jar app.jar"]
