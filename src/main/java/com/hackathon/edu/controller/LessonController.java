@@ -64,6 +64,15 @@ public class LessonController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{lessonId}/body-link")
+    public ResponseEntity<Void> setLessonBodyLink(
+            @PathVariable("lessonId") UUID lessonId,
+            @Valid @RequestBody LessonDTO.LessonBodyLinkRequest request
+    ) {
+        lessonService.setLessonBodyLink(lessonId, request.body());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{lessonId}/body")
     public ResponseEntity<Resource> lessonBody(@PathVariable("lessonId") UUID lessonId) {
         var resolved = lessonService.getLessonBodyFile(lessonId);

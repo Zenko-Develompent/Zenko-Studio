@@ -46,4 +46,10 @@ public final class LessonDTO {
             Integer xp
     ) {
     }
+
+    public record LessonBodyLinkRequest(
+            @NotBlank
+            String body
+    ) {
+    }
 }

@@ -17,9 +17,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Stream;
+import java.util.regex.Pattern;
 
 @Service
 public class LessonContentService {
+    private static final Pattern SAFE_NAME = Pattern.compile("^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$");
+    private static final String API_NAMED_PREFIX = "/api/lesson-content/";
     private final Path lessonsRoot;
 
     public LessonContentService(@Value("${app.content.lessons-root:}") String lessonsRoot) {
@@ -33,6 +36,7 @@ public class LessonContentService {
             return null;
         }
 
+        bodyPath = normalizeBodyReference(bodyPath);
         Path resolvedPath = resolveBodyPath(bodyPath);
         Path markdownFile = resolveTextFile(resolvedPath);
         try {
@@ -76,10 +80,57 @@ public class LessonContentService {
         }
     }
 
+    public String storeNamedMarkdown(String nameRaw, MultipartFile file) {
+        String name = normalizeNamed(nameRaw);
+        if (file == null || file.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_content_empty");
+        }
+
+        try {
+            Path dir = lessonsRoot.resolve("named");
+            Files.createDirectories(dir);
+
+            Path target = dir.resolve(name + ".md").normalize();
+            if (!target.startsWith(lessonsRoot)) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_content_path_invalid");
+            }
+            if (Files.exists(target)) {
+                throw new ApiException(HttpStatus.CONFLICT, "lesson_content_name_taken");
+            }
+
+            try (var input = file.getInputStream()) {
+                Files.copy(input, target, StandardCopyOption.REPLACE_EXISTING);
+            }
+
+            return lessonsRoot.relativize(target).toString().replace('\\', '/');
+        } catch (ApiException ex) {
+            throw ex;
+        } catch (IOException ex) {
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "lesson_content_write_failed");
+        }
+    }
+
+    public String toNamedMarkdownBodyLink(String nameRaw) {
+        return API_NAMED_PREFIX + normalizeNamed(nameRaw);
+    }
+
+    public ResolvedLessonFile resolveNamedMarkdown(String nameRaw) {
+        try {
+            String name = normalizeNamed(nameRaw);
+            return resolveForDownload("named/" + name + ".md");
+        } catch (ApiException ex) {
+            if (ex.getStatus() == HttpStatus.BAD_REQUEST) {
+                throw new ApiException(HttpStatus.NOT_FOUND, "lesson_content_not_found");
+            }
+            throw ex;
+        }
+    }
+
     public ResolvedLessonFile resolveForDownload(String bodyPath) {
         if (bodyPath == null || bodyPath.isBlank()) {
             throw new ApiException(HttpStatus.NOT_FOUND, "lesson_content_not_found");
         }
+        bodyPath = normalizeBodyReference(bodyPath);
         Path resolvedPath = resolveBodyPath(bodyPath);
         Path filePath = resolveTextFile(resolvedPath);
         String name = filePath.getFileName() == null ? "lesson" : filePath.getFileName().toString();
@@ -90,6 +141,7 @@ public class LessonContentService {
         if (bodyPath == null || bodyPath.isBlank()) {
             return;
         }
+        bodyPath = normalizeBodyReference(bodyPath);
         try {
             Path resolvedPath = resolveBodyPath(bodyPath);
             if (Files.isRegularFile(resolvedPath) && isSupportedFile(resolvedPath)) {
@@ -97,6 +149,29 @@ public class LessonContentService {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    private String normalizeBodyReference(String bodyPath) {
+        String value = bodyPath.trim();
+        if (value.startsWith(API_NAMED_PREFIX)) {
+            String name = value.substring(API_NAMED_PREFIX.length());
+            return "named/" + normalizeNamed(name) + ".md";
+        }
+        return value;
+    }
+
+    private String normalizeNamed(String nameRaw) {
+        if (nameRaw == null || nameRaw.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_content_name_invalid");
+        }
+        String name = nameRaw.trim();
+        if (name.toLowerCase(Locale.ROOT).endsWith(".md")) {
+            name = name.substring(0, name.length() - 3);
+        }
+        if (!SAFE_NAME.matcher(name).matches()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_content_name_invalid");
+        }
+        return name;
     }
 
     public record ResolvedLessonFile(Path path, String filename, String contentType) {

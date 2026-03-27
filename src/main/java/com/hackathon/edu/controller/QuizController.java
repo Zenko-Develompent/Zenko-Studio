@@ -23,6 +23,24 @@ public class QuizController {
     private final QuizService quizService;
     private final AuthService authService;
 
+    @PostMapping("/lessons/{lessonId}")
+    public QuizDTO.QuizDetailResponse createLessonQuiz(
+            @PathVariable("lessonId") UUID lessonId,
+            @Valid @RequestBody QuizDTO.QuizCreateRequest request
+    ) {
+        return quizService.createLessonQuiz(lessonId, request);
+    }
+
+    @GetMapping("/lessons/{lessonId}")
+    public QuizDTO.QuizDetailResponse quizByLesson(@PathVariable("lessonId") UUID lessonId) {
+        return quizService.getQuizByLesson(lessonId);
+    }
+
+    @GetMapping("/{quizId}")
+    public QuizDTO.QuizDetailResponse quiz(@PathVariable("quizId") UUID quizId) {
+        return quizService.getQuiz(quizId);
+    }
+
     @GetMapping("/{quizId}/questions")
     public QuizDTO.QuestionsResponse quizQuestions(@PathVariable("quizId") UUID quizId) {
         return quizService.getQuizQuestions(quizId);

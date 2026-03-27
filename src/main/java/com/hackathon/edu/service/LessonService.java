@@ -106,6 +106,15 @@ public class LessonService {
         lessonContentService.deleteLessonBodyIfExists(previous);
     }
 
+    @Transactional
+    public void setLessonBodyLink(UUID lessonId, String body) {
+        LessonEntity lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(notFound("lesson_not_found"));
+
+        lessonContentService.resolveForDownload(body);
+        lesson.setBody(body);
+    }
+
     public LessonContentService.ResolvedLessonFile getLessonBodyFile(UUID lessonId) {
         LessonEntity lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(notFound("lesson_not_found"));

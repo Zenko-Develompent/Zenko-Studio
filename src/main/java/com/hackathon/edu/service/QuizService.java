@@ -8,6 +8,8 @@ import com.hackathon.edu.entity.QuizAttemptEntity;
 import com.hackathon.edu.entity.QuizEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
+import com.hackathon.edu.repository.AnswerRepository;
+import com.hackathon.edu.repository.LessonRepository;
 import com.hackathon.edu.repository.QuizAttemptRepository;
 import com.hackathon.edu.repository.QuizRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,69 @@ public class QuizService {
 
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
+    private final LessonRepository lessonRepository;
+    private final AnswerRepository answerRepository;
+
+    @Transactional
+    public QuizDTO.QuizDetailResponse createLessonQuiz(UUID lessonId, QuizDTO.QuizCreateRequest request) {
+        var lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(notFound("lesson_not_found"));
+
+        if (quizRepository.findWithQuestsByLesson_LessonId(lessonId).isPresent()) {
+            throw new ApiException(HttpStatus.CONFLICT, "quiz_already_exists");
+        }
+
+        QuizEntity quiz = new QuizEntity();
+        quiz.setLesson(lesson);
+        quiz.setName(request.name());
+        quiz.setDescription(request.description());
+
+        for (QuizDTO.QuestionCreateRequest q : safeList(request.questions())) {
+            QuestEntity quest = new QuestEntity();
+            quest.setQuiz(quiz);
+            quest.setName(q.name());
+            quest.setDescription(q.description());
+            quiz.getQuests().add(quest);
+
+            for (QuizDTO.AnswerCreateRequest a : safeList(q.answers())) {
+                AnswerEntity answer = new AnswerEntity();
+                answer.setQuest(quest);
+                answer.setName(a.name());
+                answer.setDescription(a.description());
+                answer.setCorrectly(Boolean.TRUE.equals(a.correct()));
+                quest.getAnswers().add(answer);
+            }
+        }
+
+        quiz = quizRepository.saveAndFlush(quiz);
+        return toQuizDetail(quiz);
+    }
+
+    public QuizDTO.QuizDetailResponse getQuiz(UUID quizId) {
+        QuizEntity quiz = quizRepository.findWithFlowByQuizId(quizId)
+                .orElseThrow(notFound("quiz_not_found"));
+        return toQuizDetail(quiz);
+    }
+
+    public QuizDTO.QuizDetailResponse getQuizByLesson(UUID lessonId) {
+        QuizEntity quiz = quizRepository.findWithFlowByLesson_LessonId(lessonId)
+                .orElseThrow(notFound("quiz_not_found"));
+        return toQuizDetail(quiz);
+    }
+
+    public QuizDTO.AnswersResponse getQuestAnswers(UUID questId) {
+        List<QuizDTO.AnswerItem> items = answerRepository.findByQuest_QuestIdOrderByCreatedAtAsc(questId).stream()
+                .sorted(ANSWER_ORDER)
+                .map(answer -> new QuizDTO.AnswerItem(answer.getAnswerId(), answer.getName(), answer.getDescription()))
+                .toList();
+        return new QuizDTO.AnswersResponse(items);
+    }
+
+    public QuizDTO.CheckAnswerResponse checkQuestAnswer(UUID questId, UUID answerId) {
+        AnswerEntity answer = answerRepository.findByAnswerIdAndQuest_QuestId(answerId, questId)
+                .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "answer_not_in_question"));
+        return new QuizDTO.CheckAnswerResponse(Boolean.TRUE.equals(answer.getCorrectly()));
+    }
 
     public QuizDTO.QuestionsResponse getQuizQuestions(UUID quizId) {
         QuizEntity quiz = quizRepository.findWithQuestsByQuizId(quizId)
@@ -122,6 +187,29 @@ public class QuizService {
                 question.getExam() == null ? null : question.getExam().getExemId(),
                 question.getName(),
                 question.getDescription()
+        );
+    }
+
+    private QuizDTO.QuizDetailResponse toQuizDetail(QuizEntity quiz) {
+        List<QuizDTO.QuestionDetailItem> questions = safeList(quiz.getQuests()).stream()
+                .sorted(QUESTION_ORDER)
+                .map(q -> new QuizDTO.QuestionDetailItem(
+                        q.getQuestId(),
+                        q.getName(),
+                        q.getDescription(),
+                        safeList(q.getAnswers()).stream()
+                                .sorted(ANSWER_ORDER)
+                                .map(a -> new QuizDTO.AnswerItem(a.getAnswerId(), a.getName(), a.getDescription()))
+                                .toList()
+                ))
+                .toList();
+
+        return new QuizDTO.QuizDetailResponse(
+                quiz.getQuizId(),
+                quiz.getLesson() == null ? null : quiz.getLesson().getLessonId(),
+                quiz.getName(),
+                quiz.getDescription(),
+                questions
         );
     }
 
