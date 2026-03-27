@@ -147,7 +147,6 @@ public class ModuleService {
                         lesson.getLessonId(),
                         lesson.getName(),
                         lesson.getDescription(),
-                        lesson.getBody(),
                         lesson.getXp(),
                         toQuizId(lesson.getQuiz()),
                         toTaskId(lesson.getTask())

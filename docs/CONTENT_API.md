@@ -1,51 +1,45 @@
 # Content API Documentation
 
-Документация по контент-ручкам, добавленным в `ContentController`.
+Документация по текущим read-ручкам контента и загрузке markdown для уроков.
 
 - Базовый префикс: `/api`
 - Формат ответов: `application/json`
-- Текущая версия: `v1`
+- Аутентификация: сейчас для этих GET-ручек не требуется
 
 ## 1. Общие правила
 
-### 1.1. Типы данных
+### 1.1 Типы
 
-- `UUID` -> строка в формате UUID (пример: `"a3b8d3e4-1c2b-4e77-ae6d-0abf12345678"`).
-- `string` -> текстовая строка.
-- `int` -> целое число.
-- `long` -> целое число (в JSON также приходит числом).
-- `nullable` -> поле может быть `null`.
+- `UUID`: строка UUID.
+- `string`: строка.
+- `int`: целое число.
+- `long`: целое число.
+- `nullable`: поле может быть `null`.
 
-### 1.2. Аутентификация
+### 1.2 Пагинация
 
-Для текущих контент-ручек в контроллере отдельная авторизация не требуется.
+Для `GET /api/courses`:
 
-### 1.3. Пагинация
-
-`GET /api/courses` принимает:
-
-- `page` (`int`, по умолчанию `0`)
-- `size` (`int`, по умолчанию `20`)
+- `page` (`int`, default `0`)
+- `size` (`int`, default `20`)
 
 Ограничения на бэке:
 
-- `page < 0` приводится к `0`
-- `size < 1` приводится к `1`
-- `size > 100` приводится к `100`
+- `page < 0` -> `0`
+- `size < 1` -> `1`
+- `size > 100` -> `100`
 
-### 1.4. Сортировка в ответах
+### 1.3 Сортировки
 
-- Курсы: по `name` ASC (из репозитория).
-- Модули внутри курса: `name` ASC, затем `moduleId`.
-- Уроки внутри модуля: `name` ASC, затем `lessonId`.
-- Вопросы: `createdAt` ASC, затем `questId`.
-- Таски экзамена: `createdAt` ASC, затем `tasksId`.
+- Курсы: `name ASC`.
+- Модули в курсе: `name ASC`, затем `moduleId`.
+- Уроки в модуле: `name ASC`, затем `lessonId`.
+- Вопросы: `createdAt ASC`, затем `questId`.
+- Таски экзамена: `createdAt ASC`, затем `tasksId`.
 
-## 2. Формат ошибок
+## 2. Ошибки
 
-### 2.1. Ошибки уровня API (бизнес-ошибки)
-
-Возвращаются в формате:
+Формат бизнес-ошибки:
 
 ```json
 {
@@ -53,7 +47,7 @@
 }
 ```
 
-### 2.2. Коды ошибок, которые используются в контент-ручках
+Основные коды ошибок контента:
 
 - `course_not_found`
 - `module_not_found`
@@ -62,14 +56,23 @@
 - `exam_not_found`
 - `task_not_found`
 
-### 2.3. Общие HTTP-коды
+Коды ошибок чтения markdown:
 
-- `200 OK` -> успешный `GET`.
-- `404 Not Found` -> сущность не найдена (ошибки выше).
-- `400 Bad Request` -> некорректные входные данные (например, неверный UUID в path).
-- `500 Internal Server Error` -> непредвиденная ошибка.
+- `lesson_content_not_found`
+- `lesson_content_not_markdown`
+- `lesson_content_path_invalid`
+- `lesson_content_ambiguous`
+- `lesson_content_read_failed`
 
-Для `500` в глобальном обработчике предусмотрен формат:
+HTTP-коды:
+
+- `200 OK`: успех.
+- `400 Bad Request`: невалидный запрос/путь/тип файла.
+- `404 Not Found`: сущность или markdown не найден.
+- `409 Conflict`: для папки урока найдено более одного `.md`.
+- `500 Internal Server Error`: непредвиденная ошибка.
+
+Глобальный формат для `500`:
 
 ```json
 {
@@ -79,18 +82,16 @@
 
 ## 3. Эндпоинты
 
-## 3.1. Курсы
+### 3.1 Курсы
 
-### `GET /api/courses`
+#### `GET /api/courses`
 
-Возвращает список курсов.
+Query:
 
-#### Query-параметры
+- `page` (`int`, optional)
+- `size` (`int`, optional)
 
-- `page` (`int`, optional, default: `0`)
-- `size` (`int`, optional, default: `20`)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -110,17 +111,9 @@
 }
 ```
 
----
+#### `GET /api/courses/{courseId}`
 
-### `GET /api/courses/{courseId}`
-
-Возвращает детали курса + список модулей.
-
-#### Path-параметры
-
-- `courseId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -140,21 +133,13 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `course_not_found`
 
----
+#### `GET /api/courses/{courseId}/modules`
 
-### `GET /api/courses/{courseId}/modules`
-
-Возвращает только модули курса.
-
-#### Path-параметры
-
-- `courseId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -170,22 +155,13 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `course_not_found`
 
----
+#### `GET /api/courses/{courseId}/tree`
 
-### `GET /api/courses/{courseId}/tree`
-
-Возвращает дерево курса для фронта:
-`курс -> модули -> уроки`.
-
-#### Path-параметры
-
-- `courseId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -200,7 +176,6 @@
         {
           "lessonId": "uuid",
           "name": "if",
-          "body": "/content/lessons/if.md",
           "quizId": "uuid",
           "taskId": "uuid"
         }
@@ -210,21 +185,15 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `course_not_found`
 
-## 3.2. Модули
+### 3.2 Модули
 
-### `GET /api/modules/{moduleId}`
+#### `GET /api/modules/{moduleId}`
 
-Детали модуля + краткая инфа об экзамене.
-
-#### Path-параметры
-
-- `moduleId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -243,21 +212,13 @@
 
 `exam` может быть `null`.
 
-#### Ошибки
+Ошибки:
 
 - `404`: `module_not_found`
 
----
+#### `GET /api/modules/{moduleId}/lessons`
 
-### `GET /api/modules/{moduleId}/lessons`
-
-Список уроков модуля.
-
-#### Path-параметры
-
-- `moduleId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -266,7 +227,6 @@
       "lessonId": "uuid",
       "name": "if",
       "description": "Введение",
-      "body": "/content/lessons/if.md",
       "xp": 10,
       "quizId": "uuid",
       "taskId": "uuid"
@@ -275,21 +235,13 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `module_not_found`
 
----
+#### `GET /api/modules/{moduleId}/exam`
 
-### `GET /api/modules/{moduleId}/exam`
-
-Экзамен модуля (1:1).
-
-#### Path-параметры
-
-- `moduleId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -302,21 +254,17 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `exam_not_found`
 
-## 3.3. Уроки
+### 3.3 Уроки
 
-### `GET /api/lessons/{lessonId}`
+#### `GET /api/lessons/{lessonId}`
 
-Детали урока.
+Возвращает метаданные урока и `content` с raw markdown-текстом.
 
-#### Path-параметры
-
-- `lessonId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -324,28 +272,27 @@
   "moduleId": "uuid",
   "name": "if",
   "description": "Введение",
-  "body": "/content/lessons/if.md",
+  "content": "# Условные операторы\n\nТекст урока...",
   "xp": 10,
   "quizId": "uuid",
   "taskId": "uuid"
 }
 ```
 
-#### Ошибки
+`content` может быть `null`, если `lesson.body` пустой.
+
+Ошибки:
 
 - `404`: `lesson_not_found`
+- `404`: `lesson_content_not_found`
+- `400`: `lesson_content_not_markdown`
+- `400`: `lesson_content_path_invalid`
+- `409`: `lesson_content_ambiguous`
+- `500`: `lesson_content_read_failed`
 
----
+#### `GET /api/lessons/{lessonId}/quiz`
 
-### `GET /api/lessons/{lessonId}/quiz`
-
-Квиз урока (1:1).
-
-#### Path-параметры
-
-- `lessonId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -357,21 +304,13 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `quiz_not_found`
 
----
+#### `GET /api/lessons/{lessonId}/task`
 
-### `GET /api/lessons/{lessonId}/task`
-
-Таск урока (по текущей модели: максимум один).
-
-#### Path-параметры
-
-- `lessonId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -383,23 +322,17 @@
 }
 ```
 
-`examId` может быть `null` (если таск только урока).
+`examId` может быть `null`.
 
-#### Ошибки
+Ошибки:
 
 - `404`: `task_not_found`
 
-## 3.4. Квизы
+### 3.4 Квизы
 
-### `GET /api/quizzes/{quizId}/questions`
+#### `GET /api/quizzes/{quizId}/questions`
 
-Возвращает вопросы квиза.
-
-#### Path-параметры
-
-- `quizId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -415,21 +348,15 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `quiz_not_found`
 
-## 3.5. Экзамены
+### 3.5 Экзамены
 
-### `GET /api/exams/{examId}`
+#### `GET /api/exams/{examId}`
 
-Детали экзамена.
-
-#### Path-параметры
-
-- `examId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -442,21 +369,13 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `exam_not_found`
 
----
+#### `GET /api/exams/{examId}/questions`
 
-### `GET /api/exams/{examId}/questions`
-
-Вопросы экзамена.
-
-#### Path-параметры
-
-- `examId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -472,21 +391,13 @@
 }
 ```
 
-#### Ошибки
+Ошибки:
 
 - `404`: `exam_not_found`
 
----
+#### `GET /api/exams/{examId}/tasks`
 
-### `GET /api/exams/{examId}/tasks`
-
-Таски экзамена.
-
-#### Path-параметры
-
-- `examId` (`UUID`, required)
-
-#### Ответ `200`
+Ответ `200`:
 
 ```json
 {
@@ -502,15 +413,69 @@
 }
 ```
 
-`lessonId` может быть `null` (таск не привязан к уроку).
+`lessonId` может быть `null`.
 
-#### Ошибки
+Ошибки:
 
 - `404`: `exam_not_found`
 
-## 4. Быстрый список для фронтенда
+## 4. Файловая система уроков (.md)
 
-Маршруты для подключения:
+### 4.1 Что хранится в БД
+
+В `lesson.body` хранится служебный путь до markdown-контента.
+
+- Рекомендуемо: относительный путь, например `python/module-1/if.md`.
+- На фронт `lesson.body` больше не отдается.
+
+### 4.2 Конфиг backend
+
+`application.properties`:
+
+```properties
+app.content.lessons-root=${LESSON_CONTENT_ROOT:}
+```
+
+- Если `LESSON_CONTENT_ROOT` задан, относительный `lesson.body` резолвится от этого корня.
+- Если не задан, путь резолвится как есть (лучше не использовать в Docker).
+
+### 4.3 Docker и внешняя папка
+
+`docker-compose.yml`:
+
+```yaml
+services:
+  backend:
+    environment:
+      LESSON_CONTENT_ROOT: /data/lessons
+    volumes:
+      - ${LESSON_CONTENT_HOST_PATH:-./lesson-content}:/data/lessons:ro
+```
+
+- `LESSON_CONTENT_HOST_PATH`: реальная папка на хосте (вне контейнера).
+- `/data/lessons`: точка монтирования внутри контейнера.
+- `:ro`: backend читает файлы только на чтение.
+
+Пример:
+
+- `LESSON_CONTENT_HOST_PATH=/srv/edu-content/lessons`
+- `LESSON_CONTENT_ROOT=/data/lessons`
+- `lesson.body=python/module-1/if.md`
+
+Итоговый файл для чтения:
+
+- в контейнере: `/data/lessons/python/module-1/if.md`
+- на хосте: `/srv/edu-content/lessons/python/module-1/if.md`
+
+### 4.4 Правила для папки/файла
+
+- Если `lesson.body` указывает на `.md` файл, читается этот файл.
+- Если `lesson.body` указывает на папку:
+  - если в папке 0 `.md` -> `lesson_content_not_found`
+  - если в папке 1 `.md` -> читается этот файл
+  - если в папке >1 `.md` -> `lesson_content_ambiguous`
+
+## 5. Быстрый список ручек
 
 1. `GET /api/courses?page=0&size=20`
 2. `GET /api/courses/{courseId}`
@@ -526,4 +491,3 @@
 12. `GET /api/exams/{examId}`
 13. `GET /api/exams/{examId}/questions`
 14. `GET /api/exams/{examId}/tasks`
-

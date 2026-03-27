@@ -11,7 +11,7 @@ public final class LessonDTO {
             UUID moduleId,
             String name,
             String description,
-            String body,
+            String content,
             Integer xp,
             UUID quizId,
             UUID taskId
@@ -36,4 +36,3 @@ public final class LessonDTO {
     ) {
     }
 }
-

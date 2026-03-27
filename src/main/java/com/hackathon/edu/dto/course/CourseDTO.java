@@ -66,7 +66,6 @@ public final class CourseDTO {
     public record CourseTreeLessonItem(
             UUID lessonId,
             String name,
-            String body,
             UUID quizId,
             UUID taskId
     ) {

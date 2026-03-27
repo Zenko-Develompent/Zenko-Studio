@@ -100,7 +100,6 @@ public class CourseService {
                                 .map(lesson -> new CourseDTO.CourseTreeLessonItem(
                                         lesson.getLessonId(),
                                         lesson.getName(),
-                                        lesson.getBody(),
                                         toQuizId(lesson.getQuiz()),
                                         toTaskId(lesson.getTask())
                                 ))

@@ -23,17 +23,19 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final QuizRepository quizRepository;
     private final TasksRepository tasksRepository;
+    private final LessonContentService lessonContentService;
 
     public LessonDTO.LessonDetailResponse getLesson(UUID lessonId) {
         LessonEntity lesson = lessonRepository.findWithRelationsByLessonId(lessonId)
                 .orElseThrow(notFound("lesson_not_found"));
+        String content = lessonContentService.readRawMarkdown(lesson.getBody());
 
         return new LessonDTO.LessonDetailResponse(
                 lesson.getLessonId(),
                 lesson.getModule() == null ? null : lesson.getModule().getModuleId(),
                 lesson.getName(),
                 lesson.getDescription(),
-                lesson.getBody(),
+                content,
                 lesson.getXp(),
                 toQuizId(lesson.getQuiz()),
                 toTaskId(lesson.getTask())
@@ -78,4 +80,3 @@ public class LessonService {
         return () -> new ApiException(HttpStatus.NOT_FOUND, errorCode);
     }
 }
-

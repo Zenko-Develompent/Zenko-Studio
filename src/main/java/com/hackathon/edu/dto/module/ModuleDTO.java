@@ -37,7 +37,6 @@ public final class ModuleDTO {
             UUID lessonId,
             String name,
             String description,
-            String body,
             Integer xp,
             UUID quizId,
             UUID taskId
