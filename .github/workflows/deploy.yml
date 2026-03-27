@@ -26,6 +26,10 @@ jobs:
 
             cd /var/www/java-app
 
+            git lfs install
+
+            git lfs pull --include="runner-images/*"
+
             echo "${{ secrets.ENV_SECRET }}" > .env
 
             docker compose down -v
