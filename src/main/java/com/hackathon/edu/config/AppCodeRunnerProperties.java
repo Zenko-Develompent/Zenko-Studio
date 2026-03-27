@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class AppCodeRunnerProperties {
     private boolean enabled = true;
     private String dockerCommand = "docker";
+    private String workspaceRoot = "";
     private long timeoutMs = 5000;
     private int memoryMb = 128;
     private double cpus = 0.5d;

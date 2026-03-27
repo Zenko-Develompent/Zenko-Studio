@@ -3,6 +3,8 @@ package com.hackathon.edu.service;
 import com.hackathon.edu.config.AppCodeRunnerProperties;
 import com.hackathon.edu.exception.ApiException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class CodeRunnerService {
+    private static final Logger log = LoggerFactory.getLogger(CodeRunnerService.class);
+
     public static final String LANGUAGE_JAVA = "java";
     public static final String LANGUAGE_BASH = "bash";
 
@@ -38,7 +42,9 @@ public class CodeRunnerService {
 
         Path workspace = null;
         try {
-            workspace = Files.createTempDirectory("edu-runner-");
+            Path workspaceRoot = resolveWorkspaceRoot();
+            Files.createDirectories(workspaceRoot);
+            workspace = Files.createTempDirectory(workspaceRoot, "edu-runner-");
             Path stdinFile = workspace.resolve("stdin.txt");
             Path stdoutFile = workspace.resolve("stdout.txt");
             Path stderrFile = workspace.resolve("stderr.txt");
@@ -61,14 +67,20 @@ public class CodeRunnerService {
                 finished = process.waitFor(1, TimeUnit.SECONDS);
             }
             long durationMs = Duration.ofNanos(System.nanoTime() - startedNs).toMillis();
+            String dockerStderr = readLimited(dockerStderrFile, properties.getMaxOutputLength());
 
             if (!Files.exists(stdoutFile) || !Files.exists(stderrFile)) {
+                if (dockerStderr != null && !dockerStderr.isBlank()) {
+                    log.warn("Runner execution failed before output files were created. Docker stderr: {}", dockerStderr);
+                } else {
+                    log.warn("Runner execution failed before output files were created. language={}, workspace={}",
+                            language, workspace);
+                }
                 throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "runner_unavailable");
             }
 
             String stdout = readLimited(stdoutFile, properties.getMaxOutputLength());
             String stderr = readLimited(stderrFile, properties.getMaxOutputLength());
-            String dockerStderr = readLimited(dockerStderrFile, properties.getMaxOutputLength());
 
             Integer exitCode = finished ? process.exitValue() : null;
             String status = resolveStatus(language, finished, exitCode, stderr, dockerStderr);
@@ -77,6 +89,7 @@ public class CodeRunnerService {
             Thread.currentThread().interrupt();
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "runner_unavailable");
         } catch (IOException ex) {
+            log.warn("Runner IO error: {}", ex.getMessage());
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "runner_unavailable");
         } finally {
             deleteDirectoryQuietly(workspace);
@@ -160,6 +173,14 @@ public class CodeRunnerService {
     private long maxOutputBlocks(int maxOutputLength) {
         long bytes = Math.max(4096L, (long) maxOutputLength * 4L);
         return (bytes + 511L) / 512L;
+    }
+
+    private Path resolveWorkspaceRoot() {
+        String configured = properties.getWorkspaceRoot();
+        if (configured == null || configured.isBlank()) {
+            return Path.of(System.getProperty("java.io.tmpdir"));
+        }
+        return Path.of(configured);
     }
 
     private String resolveStatus(
