@@ -1,5 +1,11 @@
 package com.hackathon.edu.dto.course;
 
+import com.hackathon.edu.entity.ModuleEntity;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,5 +76,20 @@ public final class CourseDTO {
             UUID taskId
     ) {
     }
+
+    public record CreateCourseRequest(
+            //@NotNull UUID courseId,
+            @NotBlank @Size(max = 50) String name,
+            String description,
+            String category,
+            List<ModuleCreateRequest> modules
+            //@NotNull OffsetDateTime createdAt,
+            //@NotNull OffsetDateTime updatedAt
+    ) {}
+
+    public record ModuleCreateRequest(
+            @NotBlank String name,
+            String description
+    ) {}
 }
 

@@ -17,12 +17,12 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cours")
+@Table(name = "course")
 @Getter
 @Setter
 public class CourseEntity {
     @Id
-    @Column(name = "cours_id", nullable = false, updatable = false)
+    @Column(name = "course_id", nullable = false, updatable = false)
     private UUID courseId;
 
     @Column(unique = true, nullable = false, length = 50)
@@ -60,5 +60,10 @@ public class CourseEntity {
     @PreUpdate
     void preUpdate() {
         updatedAt = OffsetDateTime.now();
+    }
+
+    public void addModule(ModuleEntity module) {
+        modules.add(module);
+        module.setCourse(this);
     }
 }

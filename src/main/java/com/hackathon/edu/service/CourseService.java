@@ -1,6 +1,7 @@
 package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.course.CourseDTO;
+import com.hackathon.edu.dto.module.ModuleDTO;
 import com.hackathon.edu.entity.CourseEntity;
 import com.hackathon.edu.entity.ExemEntity;
 import com.hackathon.edu.entity.LessonEntity;
@@ -154,4 +155,53 @@ public class CourseService {
     private static <T> List<T> safeList(List<T> items) {
         return items == null ? List.of() : items;
     }
+
+
+//    ==========================
+
+    @Transactional
+    public CourseDTO.CourseDetailResponse createCourse(CourseDTO.CreateCourseRequest request) {
+        CourseEntity course = new CourseEntity();
+        course.setName(request.name());
+        course.setDescription(request.description());
+        course.setCategory(request.category());
+
+        course = courseRepository.save(course);
+
+        createModules(course, request.modules());
+
+        return getCourse(course.getCourseId());
+    }
+
+    private void createModules(CourseEntity course, List<CourseDTO.ModuleCreateRequest> modules) {
+
+        safeList(modules).forEach(request -> {
+            ModuleEntity module = new ModuleEntity();
+            module.setName(request.name());
+            module.setDescription(request.description());
+
+            course.addModule(module);
+        });
+    }
+
+//    private void attachModulesToCourse(CourseEntity course, List<UUID> moduleIds) {
+//
+//        for (UUID moduleId : safeList(moduleIds)) {
+//            if (moduleId == null) {
+//                continue;
+//            }
+//
+//            ModuleEntity Module = moduleRepository.findWithRelationsByModuleId(moduleId)
+//                    .orElseThrow(notFound("lesson_not_found"));
+//
+//            UUID lessonCourseId = module.getCourse() == null || module.getCourse().getCourse() == null
+//                    ? null
+//                    : lesson.getModule().getCourse().getCourseId();
+//            if (courseId != null && lessonCourseId != null && !courseId.equals(lessonCourseId)) {
+//                throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_course_mismatch");
+//            }
+//
+//            lesson.setModule(module);
+//        }
+//    }
 }
