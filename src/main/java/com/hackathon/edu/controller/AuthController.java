@@ -3,6 +3,7 @@ package com.hackathon.edu.controller;
 import com.hackathon.edu.config.AppSecurityProperties;
 import com.hackathon.edu.dto.LoginRequest;
 import com.hackathon.edu.dto.LogoutRequest;
+import com.hackathon.edu.dto.ProfileDTO;
 import com.hackathon.edu.dto.RefreshRequest;
 import com.hackathon.edu.dto.RegisterRequest;
 import com.hackathon.edu.service.AuthService;
@@ -15,8 +16,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -69,5 +72,12 @@ public class AuthController {
         authService.logout(request, refreshCookie);
         CookieUtils.clearAuthCookies(httpResponse, properties);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/profile")
+    public ProfileDTO.ProfileResponse profile(
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        return authService.getProfile(authService.requireUserIdFromAccessHeader(authorizationHeader));
     }
 }

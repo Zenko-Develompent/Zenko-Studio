@@ -5,12 +5,15 @@ import com.hackathon.edu.dto.AuthResponse;
 import com.hackathon.edu.dto.AuthUserDto;
 import com.hackathon.edu.dto.LoginRequest;
 import com.hackathon.edu.dto.LogoutRequest;
+import com.hackathon.edu.dto.ProfileDTO;
 import com.hackathon.edu.dto.RefreshRequest;
 import com.hackathon.edu.dto.RegisterResponse;
+import com.hackathon.edu.entity.AchievementUserEntity;
 import com.hackathon.edu.entity.RefreshTokenEntity;
 import com.hackathon.edu.entity.RoleEntity;
 import com.hackathon.edu.entity.UserEntity;
 import com.hackathon.edu.exception.ApiException;
+import com.hackathon.edu.repository.AchievementUserRepository;
 import com.hackathon.edu.repository.RefreshTokenRepository;
 import com.hackathon.edu.repository.RoleRepository;
 import com.hackathon.edu.repository.UserRepository;
@@ -37,6 +40,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final AchievementUserRepository achievementUserRepository;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
@@ -216,6 +220,19 @@ public class AuthService {
 
     public long refreshMaxAgeSeconds() {
         return props.getRefreshTtlDays() * 86400L;
+    }
+
+    public ProfileDTO.ProfileResponse getProfile(UUID userId) {
+        UserEntity user = requireUser(userId);
+        int level = user.getLevel() == null ? 0 : user.getLevel();
+
+        var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
+                .map(AchievementUserEntity::getAchievement)
+                .filter(a -> a != null && a.getAchievementId() != null && a.getName() != null)
+                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName()))
+                .toList();
+
+        return new ProfileDTO.ProfileResponse(user.getUsername(), level, achievements);
     }
 
     private LoginResult buildLoginResult(
