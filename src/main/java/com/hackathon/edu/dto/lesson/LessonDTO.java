@@ -34,7 +34,10 @@ public final class LessonDTO {
             UUID lessonId,
             UUID examId,
             String name,
-            String description
+            String description,
+            String runnerLanguage,
+            Integer xpReward,
+            Integer coinReward
     ) {
     }
 

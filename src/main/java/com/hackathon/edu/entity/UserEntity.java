@@ -43,6 +43,9 @@ public class UserEntity {
     @Column(name = "level")
     private Integer level = 0;
 
+    @Column(name = "coins")
+    private Integer coins = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
 
@@ -55,6 +58,9 @@ public class UserEntity {
         }
         if (updatedAt == null) {
             updatedAt = OffsetDateTime.now();
+        }
+        if (coins == null) {
+            coins = 0;
         }
     }
 

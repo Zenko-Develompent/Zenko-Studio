@@ -6,7 +6,6 @@ import com.hackathon.edu.entity.AnswerEntity;
 import com.hackathon.edu.entity.QuestEntity;
 import com.hackathon.edu.entity.QuizAttemptEntity;
 import com.hackathon.edu.entity.QuizEntity;
-import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.AnswerRepository;
 import com.hackathon.edu.repository.LessonRepository;
@@ -39,6 +38,10 @@ public class QuizService {
     private final QuizAttemptRepository quizAttemptRepository;
     private final LessonRepository lessonRepository;
     private final AnswerRepository answerRepository;
+    private final GamificationService gamificationService;
+    private final ProgressService progressService;
+    private final LearningAccessService learningAccessService;
+    private final ActivityEventService activityEventService;
 
     @Transactional
     public QuizDTO.QuizDetailResponse createLessonQuiz(UUID lessonId, QuizDTO.QuizCreateRequest request) {
@@ -53,6 +56,8 @@ public class QuizService {
         quiz.setLesson(lesson);
         quiz.setName(request.name());
         quiz.setDescription(request.description());
+        quiz.setXpReward(safeInt(request.xpReward()));
+        quiz.setCoinReward(safeInt(request.coinReward()));
 
         for (QuizDTO.QuestionCreateRequest q : safeList(request.questions())) {
             QuestEntity quest = new QuestEntity();
@@ -95,10 +100,18 @@ public class QuizService {
         return new QuizDTO.AnswersResponse(items);
     }
 
-    public QuizDTO.CheckAnswerResponse checkQuestAnswer(UUID questId, UUID answerId) {
+    public QuizDTO.CheckAnswerResponse checkQuestAnswer(UUID questId, UUID answerId, UUID userId) {
         AnswerEntity answer = answerRepository.findByAnswerIdAndQuest_QuestId(answerId, questId)
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "answer_not_in_question"));
-        return new QuizDTO.CheckAnswerResponse(Boolean.TRUE.equals(answer.getCorrectly()));
+        if (userId != null && answer.getQuest() != null && answer.getQuest().getExam() != null) {
+            learningAccessService.assertExamUnlocked(userId, answer.getQuest().getExam());
+        }
+
+        boolean correct = Boolean.TRUE.equals(answer.getCorrectly());
+        if (correct && userId != null) {
+            progressService.markExamQuestionCompleted(userId, answer.getQuest());
+        }
+        return new QuizDTO.CheckAnswerResponse(correct);
     }
 
     public QuizDTO.QuestionsResponse getQuizQuestions(UUID quizId) {
@@ -117,18 +130,19 @@ public class QuizService {
     public QuizFlowDTO.StartResponse startQuiz(UUID userId, UUID quizId) {
         QuizEntity quiz = quizRepository.findWithFlowByQuizId(quizId)
                 .orElseThrow(notFound("quiz_not_found"));
+        learningAccessService.assertLessonQuizCanStart(userId, quiz);
+
         QuizAttemptEntity attempt = getOrCreateAttempt(userId, quiz);
         List<QuestEntity> questions = orderedQuestions(quiz);
         if (questions.isEmpty() || isCompleted(attempt, questions.size())) {
             markCompleted(attempt);
-            return new QuizFlowDTO.StartResponse(true, null, lessonTask(quiz));
+            return new QuizFlowDTO.StartResponse(true, null);
         }
 
         int currentIndex = safeIndex(attempt);
         return new QuizFlowDTO.StartResponse(
                 false,
-                toFlowQuestion(questions.get(currentIndex), currentIndex, questions.size()),
-                null
+                toFlowQuestion(questions.get(currentIndex), currentIndex, questions.size())
         );
     }
 
@@ -136,11 +150,13 @@ public class QuizService {
     public QuizFlowDTO.SubmitAnswerResponse submitAnswer(UUID userId, UUID quizId, QuizFlowDTO.SubmitAnswerRequest request) {
         QuizEntity quiz = quizRepository.findWithFlowByQuizId(quizId)
                 .orElseThrow(notFound("quiz_not_found"));
+        learningAccessService.assertLessonQuizCanStart(userId, quiz);
+
         QuizAttemptEntity attempt = getOrCreateAttempt(userId, quiz);
         List<QuestEntity> questions = orderedQuestions(quiz);
         if (questions.isEmpty() || isCompleted(attempt, questions.size())) {
             markCompleted(attempt);
-            return new QuizFlowDTO.SubmitAnswerResponse(true, true, null, lessonTask(quiz));
+            return new QuizFlowDTO.SubmitAnswerResponse(true, true, 0, 0, null);
         }
 
         int questionIndex = safeIndex(attempt);
@@ -159,8 +175,9 @@ public class QuizService {
             return new QuizFlowDTO.SubmitAnswerResponse(
                     false,
                     false,
-                    toFlowQuestion(current, questionIndex, questions.size()),
-                    null
+                    0,
+                    0,
+                    toFlowQuestion(current, questionIndex, questions.size())
             );
         }
 
@@ -171,13 +188,36 @@ public class QuizService {
             return new QuizFlowDTO.SubmitAnswerResponse(
                     true,
                     false,
-                    toFlowQuestion(questions.get(nextIndex), nextIndex, questions.size()),
-                    null
+                    0,
+                    0,
+                    toFlowQuestion(questions.get(nextIndex), nextIndex, questions.size())
             );
         }
 
-        markCompleted(attempt);
-        return new QuizFlowDTO.SubmitAnswerResponse(true, true, null, lessonTask(quiz));
+        boolean firstCompletion = markCompleted(attempt);
+        GamificationService.GrantResult grant = GamificationService.GrantResult.none();
+        if (firstCompletion && !Boolean.TRUE.equals(attempt.getRewardGranted())) {
+            grant = gamificationService.grantLessonQuizReward(userId, quiz);
+            attempt.setRewardGranted(true);
+            quizAttemptRepository.save(attempt);
+        }
+        if (firstCompletion) {
+            activityEventService.recordQuizCompleted(
+                    userId,
+                    quiz.getLesson() == null ? null : quiz.getLesson().getLessonId(),
+                    quiz.getQuizId(),
+                    grant.xpGranted(),
+                    grant.coinGranted()
+            );
+        }
+
+        return new QuizFlowDTO.SubmitAnswerResponse(
+                true,
+                true,
+                grant.xpGranted(),
+                grant.coinGranted(),
+                null
+        );
     }
 
     private QuizDTO.QuestionItem toQuestionItem(QuestEntity question) {
@@ -209,6 +249,8 @@ public class QuizService {
                 quiz.getLesson() == null ? null : quiz.getLesson().getLessonId(),
                 quiz.getName(),
                 quiz.getDescription(),
+                safeInt(quiz.getXpReward()),
+                safeInt(quiz.getCoinReward()),
                 questions
         );
     }
@@ -230,20 +272,6 @@ public class QuizService {
                 index + 1,
                 total,
                 options
-        );
-    }
-
-    private QuizFlowDTO.TaskItem lessonTask(QuizEntity quiz) {
-        TasksEntity task = quiz.getLesson() == null ? null : quiz.getLesson().getTask();
-        if (task == null) {
-            return null;
-        }
-        return new QuizFlowDTO.TaskItem(
-                task.getTasksId(),
-                task.getLesson() == null ? null : task.getLesson().getLessonId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
-                task.getName(),
-                task.getDescription()
         );
     }
 
@@ -271,6 +299,7 @@ public class QuizService {
         created.setUserId(userId);
         created.setCurrentQuestionIndex(0);
         created.setCompleted(false);
+        created.setRewardGranted(false);
         created.setCompletedAt(null);
         try {
             return quizAttemptRepository.saveAndFlush(created);
@@ -280,12 +309,14 @@ public class QuizService {
         }
     }
 
-    private void markCompleted(QuizAttemptEntity attempt) {
-        if (!Boolean.TRUE.equals(attempt.getCompleted())) {
-            attempt.setCompleted(true);
-            attempt.setCompletedAt(OffsetDateTime.now());
-            quizAttemptRepository.save(attempt);
+    private boolean markCompleted(QuizAttemptEntity attempt) {
+        if (Boolean.TRUE.equals(attempt.getCompleted())) {
+            return false;
         }
+        attempt.setCompleted(true);
+        attempt.setCompletedAt(OffsetDateTime.now());
+        quizAttemptRepository.save(attempt);
+        return true;
     }
 
     private boolean isCompleted(QuizAttemptEntity attempt, int totalQuestions) {
@@ -303,5 +334,9 @@ public class QuizService {
 
     private static <T> List<T> safeList(List<T> items) {
         return items == null ? List.of() : items;
+    }
+
+    private int safeInt(Integer value) {
+        return value == null ? 0 : value;
     }
 }

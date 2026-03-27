@@ -1,225 +1,1654 @@
-{
-  "info": {
-    "name": "Zenko Auth Smoke",
-    "_postman_id": "b89f8652-7ad4-4d17-80b4-df40ac2f6f8c",
-    "description": "Smoke-тесты auth API для текущей схемы Zenko-Studio.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "variable": [
-    { "key": "baseUrl", "value": "http://127.0.0.1:34000" },
-    { "key": "username", "value": "" },
-    { "key": "password", "value": "Qwerty123" },
-    { "key": "age", "value": "14" },
-    { "key": "role", "value": "student" },
-    { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" }
-  ],
-  "item": [
-    {
-      "name": "Auth Smoke",
-      "item": [
-        {
-          "name": "POST /api/auth/register",
-          "event": [
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const suffix = Math.floor(Math.random() * 9000000) + 1000000;",
-                  "pm.collectionVariables.set('username', 'u' + suffix);"
-                ]
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
-                  "const body = pm.response.json();",
-                  "pm.test('Register response has userId', function () { pm.expect(body.userId).to.be.a('string').and.not.empty; });",
-                  "pm.test('Username returned', function () { pm.expect(body.username).to.eql(pm.collectionVariables.get('username')); });",
-                  "pm.test('Role returned', function () { pm.expect(body.role).to.eql(pm.collectionVariables.get('role')); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\",\n  \"age\": {{age}},\n  \"role\": \"{{role}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "register"]
-            }
-          }
-        },
-        {
-          "name": "POST /api/auth/login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "const body = pm.response.json();",
-                  "pm.test('Access token exists', function () { pm.expect(body.accessToken).to.be.a('string').and.not.empty; });",
-                  "pm.test('Refresh token exists', function () { pm.expect(body.refreshToken).to.be.a('string').and.not.empty; });",
-                  "pm.collectionVariables.set('accessToken', body.accessToken);",
-                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "login"]
-            }
-          }
-        },
-        {
-          "name": "GET /api/auth/sessions",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "const body = pm.response.json();",
-                  "pm.test('Sessions array exists', function () { pm.expect(Array.isArray(body.sessions)).to.eql(true); });",
-                  "pm.test('At least one active session', function () { pm.expect(body.sessions.length).to.be.greaterThan(0); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/sessions",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "sessions"]
-            }
-          }
-        },
-        {
-          "name": "POST /api/auth/refresh",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "const body = pm.response.json();",
-                  "pm.test('New access token exists', function () { pm.expect(body.accessToken).to.be.a('string').and.not.empty; });",
-                  "pm.test('Refresh token rotated', function () { pm.expect(body.refreshToken).to.be.a('string').and.not.empty; });",
-                  "pm.collectionVariables.set('accessToken', body.accessToken);",
-                  "pm.collectionVariables.set('refreshToken', body.refreshToken);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/refresh",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "refresh"]
-            }
-          }
-        },
-        {
-          "name": "POST /api/auth/logout",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
-                  "const body = pm.response.json();",
-                  "pm.test('Logout ok=true', function () { pm.expect(body.ok).to.eql(true); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "logout"]
-            }
-          }
-        },
-        {
-          "name": "POST /api/auth/refresh after logout (expect 401)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('Status is 401', function () { pm.response.to.have.status(401); });",
-                  "const body = pm.response.json();",
-                  "pm.test('Error is invalid', function () { pm.expect(body.error).to.eql('invalid'); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/refresh",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auth", "refresh"]
-            }
-          }
-        }
-      ]
-    }
-  ]
+﻿{
+    "info":  {
+                 "name":  "Zenko Content Smoke",
+                 "_postman_id":  "6d8de3d0-2ad6-45ad-a45b-a8d98e8a446e",
+                 "description":  "?????????? smoke-???? ??? ??????? content/auth/task runner ????? Zenko-Studio.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://127.0.0.1:8080"
+                     },
+                     {
+                         "key":  "studentUsername",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "studentPassword",
+                         "value":  "Stud12345"
+                     },
+                     {
+                         "key":  "adminAccessToken",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "studentAccessToken",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "courseId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "moduleId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "examId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "lessonPrintId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "lessonInputId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "lessonJavaId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "quizPrintId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "taskPrintId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "taskInputId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "taskJavaId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "quizQuestionId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "quizAnswerId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "firstExamQuestionId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "firstExamAnswerId",
+                         "value":  ""
+                     }
+                 ],
+    "item":  [
+                 {
+                     "name":  "Content Smoke",
+                     "item":  [
+                                  {
+                                      "name":  "POST /api/auth/login (admin)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"id\": \"admin\",\n  \"password\": \"Admin1234\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.collectionVariables.set(\u0027adminAccessToken\u0027, b.accessToken);",
+                                                                                    "pm.test(\u0027admin token exists\u0027, () =\u003e pm.expect(b.accessToken).to.be.a(\u0027string\u0027).and.not.empty);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/register (student)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "register"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"{{studentUsername}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"age\": 12,\n  \"role\": \"student\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "const suffix = String(Date.now()).slice(-6);",
+                                                                                    "pm.collectionVariables.set(\u0027studentUsername\u0027, \u0027st\u0027 + suffix);"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 201\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027student created\u0027, () =\u003e pm.expect(b.userId).to.be.a(\u0027string\u0027).and.not.empty);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/auth/login (student)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/auth/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "auth",
+                                                                               "login"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"id\": \"{{studentUsername}}\",\n  \"password\": \"{{studentPassword}}\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.collectionVariables.set(\u0027studentAccessToken\u0027, b.accessToken);",
+                                                                                    "pm.test(\u0027student token exists\u0027, () =\u003e pm.expect(b.accessToken).to.be.a(\u0027string\u0027).and.not.empty);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/courses",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/courses?page=0\u0026size=20",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "courses"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "page",
+                                                                                    "value":  "0"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "size",
+                                                                                    "value":  "20"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const items = b.items || [];",
+                                                                                    "pm.test(\u0027courses not empty\u0027, () =\u003e pm.expect(items.length).to.be.greaterThan(0));",
+                                                                                    "const javaCourse = items.find(x =\u003e ((x.category || \u0027\u0027).toLowerCase() === \u0027java\u0027) || ((x.name || \u0027\u0027).toLowerCase().includes(\u0027java\u0027)));",
+                                                                                    "pm.test(\u0027java course found\u0027, () =\u003e pm.expect(javaCourse).to.exist);",
+                                                                                    "if (javaCourse) pm.collectionVariables.set(\u0027courseId\u0027, javaCourse.courseId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/courses/{courseId}/tree",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/courses/{{courseId}}/tree",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "courses",
+                                                                               "{{courseId}}",
+                                                                               "tree"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const modules = b.modules || [];",
+                                                                                    "pm.test(\u0027modules exist\u0027, () =\u003e pm.expect(modules.length).to.be.greaterThan(0));",
+                                                                                    "const m = modules.find(x =\u003e Array.isArray(x.lessons) \u0026\u0026 x.lessons.length \u003e 0) || modules[0];",
+                                                                                    "pm.test(\u0027module selected\u0027, () =\u003e pm.expect(m).to.exist);",
+                                                                                    "if (m) {",
+                                                                                    "  pm.collectionVariables.set(\u0027moduleId\u0027, m.moduleId);",
+                                                                                    "  if (m.examId) pm.collectionVariables.set(\u0027examId\u0027, m.examId);",
+                                                                                    "  pm.test(\u0027module unlocked present\u0027, () =\u003e pm.expect(m).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027module unlocked boolean\u0027, () =\u003e pm.expect(m.unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "  const lesson = (m.lessons || [])[0];",
+                                                                                    "  pm.test(\u0027lesson selected\u0027, () =\u003e pm.expect(lesson).to.exist);",
+                                                                                    "  if (lesson) {",
+                                                                                    "    pm.test(\u0027lesson unlocked present\u0027, () =\u003e pm.expect(lesson).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "    pm.test(\u0027lesson unlocked boolean\u0027, () =\u003e pm.expect(lesson.unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "    pm.collectionVariables.set(\u0027lessonPrintId\u0027, lesson.lessonId);",
+                                                                                    "    pm.collectionVariables.set(\u0027lessonInputId\u0027, lesson.lessonId);",
+                                                                                    "    pm.collectionVariables.set(\u0027lessonJavaId\u0027, lesson.lessonId);",
+                                                                                    "    if (lesson.quizId) pm.collectionVariables.set(\u0027quizPrintId\u0027, lesson.quizId);",
+                                                                                    "    if (lesson.taskId) {",
+                                                                                    "      pm.collectionVariables.set(\u0027taskPrintId\u0027, lesson.taskId);",
+                                                                                    "      pm.collectionVariables.set(\u0027taskInputId\u0027, lesson.taskId);",
+                                                                                    "      pm.collectionVariables.set(\u0027taskJavaId\u0027, lesson.taskId);",
+                                                                                    "    }",
+                                                                                    "  }",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/courses/{courseId}",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/courses/{{courseId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "courses",
+                                                                               "{{courseId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const modules = b.modules || [];",
+                                                                                    "pm.test(\u0027course modules exist\u0027, () =\u003e pm.expect(modules.length).to.be.greaterThan(0));",
+                                                                                    "if (modules.length \u003e 0) {",
+                                                                                    "  pm.test(\u0027course module unlocked present\u0027, () =\u003e pm.expect(modules[0]).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027course module unlocked boolean\u0027, () =\u003e pm.expect(modules[0].unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/courses/{courseId}/modules",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/courses/{{courseId}}/modules",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "courses",
+                                                                               "{{courseId}}",
+                                                                               "modules"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const items = b.items || [];",
+                                                                                    "pm.test(\u0027modules list exists\u0027, () =\u003e pm.expect(items.length).to.be.greaterThan(0));",
+                                                                                    "if (items.length \u003e 0) {",
+                                                                                    "  pm.test(\u0027modules list unlocked present\u0027, () =\u003e pm.expect(items[0]).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027modules list unlocked boolean\u0027, () =\u003e pm.expect(items[0].unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/modules/{moduleId}",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/modules/{{moduleId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "modules",
+                                                                               "{{moduleId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/modules/{moduleId}/lessons",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/modules/{{moduleId}}/lessons",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "modules",
+                                                                               "{{moduleId}}",
+                                                                               "lessons"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "const lessons = b.items || [];",
+                                                                                    "pm.test(\u0027lessons \u003e= 1\u0027, () =\u003e pm.expect(lessons.length).to.be.greaterThan(0));",
+                                                                                    "const l = lessons[0];",
+                                                                                    "pm.test(\u0027lesson resolved\u0027, () =\u003e pm.expect(l).to.exist);",
+                                                                                    "if (l) {",
+                                                                                    "  pm.test(\u0027lesson unlocked present\u0027, () =\u003e pm.expect(l).to.have.property(\u0027unlocked\u0027));",
+                                                                                    "  pm.test(\u0027lesson unlocked boolean\u0027, () =\u003e pm.expect(l.unlocked).to.be.a(\u0027boolean\u0027));",
+                                                                                    "  pm.collectionVariables.set(\u0027lessonPrintId\u0027, l.lessonId);",
+                                                                                    "  pm.collectionVariables.set(\u0027lessonInputId\u0027, l.lessonId);",
+                                                                                    "  pm.collectionVariables.set(\u0027lessonJavaId\u0027, l.lessonId);",
+                                                                                    "  if (l.taskId) {",
+                                                                                    "    pm.collectionVariables.set(\u0027taskPrintId\u0027, l.taskId);",
+                                                                                    "    pm.collectionVariables.set(\u0027taskInputId\u0027, l.taskId);",
+                                                                                    "    pm.collectionVariables.set(\u0027taskJavaId\u0027, l.taskId);",
+                                                                                    "  }",
+                                                                                    "  if (l.quizId) pm.collectionVariables.set(\u0027quizPrintId\u0027, l.quizId);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/modules/{moduleId}/exam",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/modules/{{moduleId}}/exam",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "modules",
+                                                                               "{{moduleId}}",
+                                                                               "exam"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.collectionVariables.set(\u0027examId\u0027, b.examId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonPrintId}",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonPrintId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonPrintId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonPrintId}/quiz",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonPrintId}}/quiz",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonPrintId}}",
+                                                                               "quiz"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.collectionVariables.set(\u0027quizPrintId\u0027, b.quizId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonPrintId}/task",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonPrintId}}/task",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonPrintId}}",
+                                                                               "task"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.collectionVariables.set(\u0027taskPrintId\u0027, b.taskId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonInputId}/task",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonInputId}}/task",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonInputId}}",
+                                                                               "task"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.collectionVariables.set(\u0027taskInputId\u0027, b.taskId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonJavaId}/task",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonJavaId}}/task",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonJavaId}}",
+                                                                               "task"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.collectionVariables.set(\u0027taskJavaId\u0027, b.taskId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/quizzes/{quizId}/questions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/quizzes/{{quizPrintId}}/questions",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "quizzes",
+                                                                               "{{quizPrintId}}",
+                                                                               "questions"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/quizzes/{quizId}/start",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/quizzes/{{quizPrintId}}/start",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "quizzes",
+                                                                               "{{quizPrintId}}",
+                                                                               "start"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027task not returned\u0027, () =\u003e pm.expect(b.task).to.eql(undefined));",
+                                                                                    "if (!b.completed \u0026\u0026 b.question) {",
+                                                                                    "  pm.collectionVariables.set(\u0027quizQuestionId\u0027, b.question.questionId);",
+                                                                                    "  const firstOption = (b.question.options || [])[0];",
+                                                                                    "  if (firstOption) pm.collectionVariables.set(\u0027quizAnswerId\u0027, firstOption.answerId);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/quizzes/{quizId}/answer",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/quizzes/{{quizPrintId}}/answer",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "quizzes",
+                                                                               "{{quizPrintId}}",
+                                                                               "answer"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"questionId\": \"{{quizQuestionId}}\",\n  \"answerId\": \"{{quizAnswerId}}\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027task not returned\u0027, () =\u003e pm.expect(b.task).to.eql(undefined));"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "if (!pm.collectionVariables.get(\u0027quizQuestionId\u0027) || !pm.collectionVariables.get(\u0027quizAnswerId\u0027)) {",
+                                                                                    "  pm.execution.setNextRequest(\u0027POST /api/tasks/{taskId}/start\u0027);",
+                                                                                    "}"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/exams/{examId}",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/exams/{{examId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "exams",
+                                                                               "{{examId}}"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/exams/{examId}/questions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/exams/{{examId}}/questions",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "exams",
+                                                                               "{{examId}}",
+                                                                               "questions"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); if (b.items \u0026\u0026 b.items.length \u003e 0) pm.collectionVariables.set(\u0027firstExamQuestionId\u0027, b.items[0].questId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/quests/{questId}/answers",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/quests/{{firstExamQuestionId}}/answers",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "quests",
+                                                                               "{{firstExamQuestionId}}",
+                                                                               "answers"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.collectionVariables.set(\u0027firstExamAnswerId\u0027, b.items[0].answerId);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/quests/{questId}/check",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/quests/{{firstExamQuestionId}}/check",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "quests",
+                                                                               "{{firstExamQuestionId}}",
+                                                                               "check"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"answerId\": \"{{firstExamAnswerId}}\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 or 409\u0027, () =\u003e pm.expect([200,409]).to.include(pm.response.code));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PUT /api/tasks/{taskId}/rewards",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/rewards",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "rewards"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"xpReward\": 20,\n  \"coinReward\": 10\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskId}/start",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/start",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "start"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027task start id\u0027, () =\u003e pm.expect(b.taskId).to.be.a(\u0027string\u0027).and.not.empty);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PUT /api/tasks/{taskId}/runner",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/runner",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "runner"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"runnerLanguage\": \"bash\",\n  \"expectedOutput\": \"1\\n2\\n3\\n4\\n5\",\n  \"inputData\": null\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskId}/run wrong",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/run",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "run"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"language\": \"bash\",\n  \"code\": \"echo 999\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.test(\u0027correct=false\u0027, () =\u003e pm.expect(b.correct).to.eql(false));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskId}/run correct",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/run",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "run"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"language\": \"bash\",\n  \"code\": \"for i in 1 2 3 4 5; do echo $i; done\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.test(\u0027correct=true\u0027, () =\u003e pm.expect(b.correct).to.eql(true));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PUT /api/tasks/{taskInputId}/runner input",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskInputId}}/runner",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskInputId}}",
+                                                                               "runner"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"runnerLanguage\": \"bash\",\n  \"expectedOutput\": \"15\\n\",\n  \"inputData\": \"7 8\\n\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskInputId}/run",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskInputId}}/run",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskInputId}}",
+                                                                               "run"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"language\": \"bash\",\n  \"code\": \"read a b; echo $((a+b))\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.test(\u0027correct=true\u0027, () =\u003e pm.expect(b.correct).to.eql(true));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PUT /api/tasks/{taskJavaId}/runner java",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskJavaId}}/runner",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskJavaId}}",
+                                                                               "runner"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"runnerLanguage\": \"java\",\n  \"expectedOutput\": \"42\\n\",\n  \"inputData\": null\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskJavaId}/run compile",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskJavaId}}/run",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskJavaId}}",
+                                                                               "run"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"language\": \"java\",\n  \"code\": \"public class Main { public static void main(String[] args){ System.out.println(42) } }\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.test(\u0027compile_error\u0027, () =\u003e pm.expect(b.status).to.eql(\u0027compile_error\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskJavaId}/run ok",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskJavaId}}/run",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskJavaId}}",
+                                                                               "run"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"language\": \"java\",\n  \"code\": \"public class Main { public static void main(String[] args){ System.out.println(42); } }\"\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json(); pm.test(\u0027correct=true\u0027, () =\u003e pm.expect(b.correct).to.eql(true));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/tasks/{taskId}/complete",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/tasks/{{taskPrintId}}/complete",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "tasks",
+                                                                               "{{taskPrintId}}",
+                                                                               "complete"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/exams/{examId}/tasks",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/exams/{{examId}}/tasks",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "exams",
+                                                                               "{{examId}}",
+                                                                               "tasks"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "POST /api/exams/{examId}/complete",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/exams/{{examId}}/complete",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "exams",
+                                                                               "{{examId}}",
+                                                                               "complete"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 or 409\u0027, () =\u003e pm.expect([200,409]).to.include(pm.response.code));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "PUT /api/exams/{examId}/rewards",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{adminAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/exams/{{examId}}/rewards",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "exams",
+                                                                               "{{examId}}",
+                                                                               "rewards"
+                                                                           ]
+                                                              },
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"xpReward\": 100,\n  \"coinReward\": 50\n}"
+                                                               }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/lessons/{lessonId}/progress",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/lessons/{{lessonPrintId}}/progress",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "lessons",
+                                                                               "{{lessonPrintId}}",
+                                                                               "progress"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027progress targetType\u0027, () =\u003e pm.expect(b.targetType).to.eql(\u0027lesson\u0027));",
+                                                                                    "pm.test(\u0027progress percent range\u0027, () =\u003e pm.expect(b.percent).to.be.within(0, 100));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/modules/{moduleId}/progress",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/modules/{{moduleId}}/progress",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "modules",
+                                                                               "{{moduleId}}",
+                                                                               "progress"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027progress targetType\u0027, () =\u003e pm.expect(b.targetType).to.eql(\u0027module\u0027));",
+                                                                                    "pm.test(\u0027progress percent range\u0027, () =\u003e pm.expect(b.percent).to.be.within(0, 100));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  },
+                                  {
+                                      "name":  "GET /api/courses/{courseId}/progress",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{studentAccessToken}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/api/courses/{{courseId}}/progress",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "courses",
+                                                                               "{{courseId}}",
+                                                                               "progress"
+                                                                           ]
+                                                              }
+                                                  },
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const b = pm.response.json();",
+                                                                                    "pm.test(\u0027progress targetType\u0027, () =\u003e pm.expect(b.targetType).to.eql(\u0027course\u0027));",
+                                                                                    "pm.test(\u0027progress percent range\u0027, () =\u003e pm.expect(b.percent).to.be.within(0, 100));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ]
+                                  }
+                              ]
+                 }
+             ]
 }
+

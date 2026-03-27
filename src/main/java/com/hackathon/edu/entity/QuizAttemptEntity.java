@@ -44,6 +44,9 @@ public class QuizAttemptEntity {
     @Column(name = "completed", nullable = false)
     private Boolean completed = false;
 
+    @Column(name = "reward_granted", nullable = false)
+    private Boolean rewardGranted = false;
+
     @Column(name = "started_at", nullable = false, updatable = false)
     private OffsetDateTime startedAt;
 
@@ -64,6 +67,9 @@ public class QuizAttemptEntity {
         }
         if (completed == null) {
             completed = false;
+        }
+        if (rewardGranted == null) {
+            rewardGranted = false;
         }
         if (startedAt == null) {
             startedAt = now;

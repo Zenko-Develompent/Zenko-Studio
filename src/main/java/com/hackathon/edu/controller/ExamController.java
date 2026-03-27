@@ -1,10 +1,16 @@
 package com.hackathon.edu.controller;
 
 import com.hackathon.edu.dto.exam.ExamDTO;
+import com.hackathon.edu.service.AuthService;
 import com.hackathon.edu.service.ExamService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ExamController {
     private final ExamService examService;
+    private final AuthService authService;
 
     @GetMapping("/{examId}")
     public ExamDTO.ExamDetailResponse exam(@PathVariable("examId") UUID examId) {
@@ -30,5 +37,23 @@ public class ExamController {
     public ExamDTO.TasksResponse examTasks(@PathVariable("examId") UUID examId) {
         return examService.getExamTasks(examId);
     }
-}
 
+    @PostMapping("/{examId}/complete")
+    public ExamDTO.CompleteResponse completeExam(
+            @PathVariable("examId") UUID examId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        return examService.completeExam(userId, examId);
+    }
+
+    @PutMapping("/{examId}/rewards")
+    public ExamDTO.ExamDetailResponse updateExamRewards(
+            @PathVariable("examId") UUID examId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
+            @Valid @RequestBody ExamDTO.UpdateRewardsRequest request
+    ) {
+        authService.requireAdminUserIdFromAccessHeader(authorizationHeader);
+        return examService.updateExamRewards(examId, request);
+    }
+}

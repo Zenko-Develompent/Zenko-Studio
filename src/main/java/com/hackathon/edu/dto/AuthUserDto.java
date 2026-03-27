@@ -7,6 +7,7 @@ public record AuthUserDto(
         Integer age,
         String role,
         Integer xp,
-        Integer level
+        Integer level,
+        Integer coins
 ) {
 }

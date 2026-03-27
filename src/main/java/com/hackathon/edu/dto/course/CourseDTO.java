@@ -47,7 +47,8 @@ public final class CourseDTO {
             String name,
             String description,
             long lessonCount,
-            UUID examId
+            UUID examId,
+            Boolean unlocked
     ) {
     }
 
@@ -62,6 +63,7 @@ public final class CourseDTO {
             UUID moduleId,
             String name,
             UUID examId,
+            Boolean unlocked,
             List<CourseTreeLessonItem> lessons
     ) {
     }
@@ -70,7 +72,8 @@ public final class CourseDTO {
             UUID lessonId,
             String name,
             UUID quizId,
-            UUID taskId
+            UUID taskId,
+            Boolean unlocked
     ) {
     }
 

@@ -81,6 +81,9 @@ public class AuthService {
         if (user.getLevel() == null) {
             user.setLevel(0);
         }
+        if (user.getCoins() == null) {
+            user.setCoins(0);
+        }
         user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(ageRaw));
         user.setRole(resolveRole(role));
         try {
@@ -126,6 +129,9 @@ public class AuthService {
         }
         if (user.getLevel() == null) {
             user.setLevel(0);
+        }
+        if (user.getCoins() == null) {
+            user.setCoins(0);
         }
         user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(age));
         user.setRole(adminRole);
@@ -218,13 +224,28 @@ public class AuthService {
         return jwtService.verify(token).userId();
     }
 
+    @Transactional(readOnly = true)
+    public UUID requireAdminUserIdFromAccessHeader(String authorizationHeader) {
+        UUID userId = requireUserIdFromAccessHeader(authorizationHeader);
+        UserEntity user = requireUser(userId);
+        String role = user.getRole() == null || user.getRole().getName() == null
+                ? ""
+                : user.getRole().getName().trim().toLowerCase(Locale.ROOT);
+        if (!"admin".equals(role)) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "forbidden");
+        }
+        return userId;
+    }
+
     public long refreshMaxAgeSeconds() {
         return props.getRefreshTtlDays() * 86400L;
     }
 
     public ProfileDTO.ProfileResponse getProfile(UUID userId) {
         UserEntity user = requireUser(userId);
+        int xp = user.getXp() == null ? 0 : user.getXp();
         int level = user.getLevel() == null ? 0 : user.getLevel();
+        int coins = user.getCoins() == null ? 0 : user.getCoins();
 
         var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
                 .map(AchievementUserEntity::getAchievement)
@@ -232,7 +253,7 @@ public class AuthService {
                 .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName()))
                 .toList();
 
-        return new ProfileDTO.ProfileResponse(user.getUsername(), level, achievements);
+        return new ProfileDTO.ProfileResponse(user.getUsername(), xp, level, coins, achievements);
     }
 
     private LoginResult buildLoginResult(
@@ -259,7 +280,8 @@ public class AuthService {
                 birthDate == null ? null : calculateAge(birthDate),
                 toApiRole(user.getRole()),
                 user.getXp() == null ? 0 : user.getXp(),
-                user.getLevel() == null ? 0 : user.getLevel()
+                user.getLevel() == null ? 0 : user.getLevel(),
+                user.getCoins() == null ? 0 : user.getCoins()
         );
     }
 

@@ -17,6 +17,8 @@ public final class QuizDTO {
             UUID lessonId,
             String name,
             String description,
+            Integer xpReward,
+            Integer coinReward,
             List<QuestionDetailItem> questions
     ) {
     }
@@ -46,6 +48,8 @@ public final class QuizDTO {
             @Size(max = 50)
             String name,
             String description,
+            Integer xpReward,
+            Integer coinReward,
             @NotEmpty
             List<QuestionCreateRequest> questions
     ) {

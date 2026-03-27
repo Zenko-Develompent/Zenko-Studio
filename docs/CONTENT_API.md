@@ -4,7 +4,7 @@
 
 - Базовый префикс: `/api`
 - Формат ответов: `application/json`
-- Аутентификация: сейчас для этих GET-ручек не требуется
+- Аутентификация: для большинства read GET-ручек не требуется, но progress-ручки (`/progress`) требуют `Authorization: Bearer <access_token>`.
 
 ## 1. Общие правила
 
@@ -57,6 +57,22 @@
 - `task_not_found`
 - `answer_not_in_question`
 - `quiz_question_out_of_order`
+- `exam_not_completed`
+- `module_locked`
+- `lesson_locked`
+- `lesson_quiz_not_completed`
+- `exam_locked`
+- `unauthorized`
+- `forbidden`
+- `runner_language_not_supported`
+- `task_expected_output_not_configured`
+- `task_language_mismatch`
+- `code_invalid`
+- `code_too_large`
+- `task_input_too_large`
+- `runner_unavailable`
+- `community_period_invalid`
+- `community_metric_invalid`
 
 Коды ошибок чтения markdown:
 
@@ -70,8 +86,11 @@ HTTP-коды:
 
 - `200 OK`: успех.
 - `400 Bad Request`: невалидный запрос/путь/тип файла.
+- `401 Unauthorized`: отсутствует/невалидный access token.
+- `403 Forbidden`: недостаточно прав (например, нужен admin).
 - `404 Not Found`: сущность или markdown не найден.
 - `409 Conflict`: для папки урока найдено более одного `.md`.
+- `503 Service Unavailable`: раннер временно недоступен.
 - `500 Internal Server Error`: непредвиденная ошибка.
 
 Глобальный формат для `500`:
@@ -115,6 +134,13 @@ Query:
 
 #### `GET /api/courses/{courseId}`
 
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, в элементах `modules[]` заполняется `unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
+
 Ответ `200`:
 
 ```json
@@ -129,7 +155,8 @@ Query:
       "name": "Условия",
       "description": "if/else",
       "lessonCount": 6,
-      "examId": "uuid"
+      "examId": "uuid",
+      "unlocked": true
     }
   ]
 }
@@ -137,9 +164,17 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `course_not_found`
 
 #### `GET /api/courses/{courseId}/modules`
+
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, в элементах `items[]` заполняется `unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
 
 Ответ `200`:
 
@@ -151,7 +186,8 @@ Query:
       "name": "Условия",
       "description": "if/else",
       "lessonCount": 6,
-      "examId": "uuid"
+      "examId": "uuid",
+      "unlocked": true
     }
   ]
 }
@@ -159,9 +195,17 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `course_not_found`
 
 #### `GET /api/courses/{courseId}/tree`
+
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, заполняются `module.unlocked` и `lesson.unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
 
 Ответ `200`:
 
@@ -174,12 +218,14 @@ Query:
       "moduleId": "uuid",
       "name": "Условия",
       "examId": "uuid",
+      "unlocked": true,
       "lessons": [
         {
           "lessonId": "uuid",
           "name": "if",
           "quizId": "uuid",
-          "taskId": "uuid"
+          "taskId": "uuid",
+          "unlocked": true
         }
       ]
     }
@@ -189,6 +235,7 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `course_not_found`
 
 ### 3.2 Модули
@@ -220,6 +267,13 @@ Query:
 
 #### `GET /api/modules/{moduleId}/lessons`
 
+Headers (optional):
+
+- `Authorization: Bearer <access_token>`
+
+Если токен передан, в элементах `items[]` заполняется `unlocked` для текущего пользователя.
+Если токен не передан, `unlocked = null`.
+
 Ответ `200`:
 
 ```json
@@ -231,7 +285,8 @@ Query:
       "description": "Введение",
       "xp": 10,
       "quizId": "uuid",
-      "taskId": "uuid"
+      "taskId": "uuid",
+      "unlocked": true
     }
   ]
 }
@@ -239,6 +294,7 @@ Query:
 
 Ошибки:
 
+- `401`: `unauthorized` (только если передан невалидный токен)
 - `404`: `module_not_found`
 
 #### `GET /api/modules/{moduleId}/exam`
@@ -320,7 +376,10 @@ Query:
   "lessonId": "uuid",
   "examId": "uuid",
   "name": "Практическая задача",
-  "description": "Решить задачу"
+  "description": "Решить задачу",
+  "runnerLanguage": "java",
+  "xpReward": 20,
+  "coinReward": 10
 }
 ```
 
@@ -382,8 +441,7 @@ Body: не требуется.
         "description": "..."
       }
     ]
-  },
-  "task": null
+  }
 }
 ```
 
@@ -392,21 +450,18 @@ Body: не требуется.
 ```json
 {
   "completed": true,
-  "question": null,
-  "task": {
-    "taskId": "uuid",
-    "lessonId": "uuid",
-    "examId": null,
-    "name": "Практическая задача",
-    "description": "..."
-  }
+  "question": null
 }
 ```
+
+Запуск практики выполняется отдельным API: `POST /api/tasks/{taskId}/start`.
 
 Ошибки:
 
 - `401`: `unauthorized`
 - `404`: `quiz_not_found`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
 
 #### `POST /api/quizzes/{quizId}/answer`
 
@@ -431,6 +486,8 @@ Body:
 {
   "correct": true,
   "completed": false,
+  "xpGranted": 0,
+  "coinGranted": 0,
   "question": {
     "questionId": "uuid",
     "name": "Вопрос 2",
@@ -444,8 +501,7 @@ Body:
         "description": "..."
       }
     ]
-  },
-  "task": null
+  }
 }
 ```
 
@@ -455,6 +511,8 @@ Body:
 - `404`: `quiz_not_found`
 - `400`: `answer_not_in_question`
 - `409`: `quiz_question_out_of_order`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
 
 ### 3.5 Экзамены
 
@@ -468,6 +526,8 @@ Body:
   "moduleId": "uuid",
   "name": "Экзамен по модулю",
   "description": "Финальная проверка",
+  "xpReward": 100,
+  "coinReward": 50,
   "questionsCount": 10,
   "tasksCount": 2
 }
@@ -511,7 +571,10 @@ Body:
       "examId": "uuid",
       "lessonId": "uuid",
       "name": "Экзаменационный таск",
-      "description": "Описание таска"
+      "description": "Описание таска",
+      "runnerLanguage": "bash",
+      "xpReward": 30,
+      "coinReward": 15
     }
   ]
 }
@@ -522,6 +585,413 @@ Body:
 Ошибки:
 
 - `404`: `exam_not_found`
+
+#### `POST /api/exams/{examId}/complete`
+
+Помечает экзамен завершенным для текущего пользователя и выдает награду только при первом полном завершении.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "completed": true,
+  "firstCompletion": true,
+  "xpGranted": 100,
+  "coinGranted": 50,
+  "questionsDone": 10,
+  "questionsTotal": 10,
+  "tasksDone": 2,
+  "tasksTotal": 2
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `exam_not_found`
+- `409`: `exam_not_completed`
+- `409`: `module_locked`
+- `409`: `exam_locked`
+
+#### `PUT /api/exams/{examId}/rewards`
+
+Обновляет награды экзамена (только для admin).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required, role `admin`)
+
+Body:
+
+```json
+{
+  "xpReward": 100,
+  "coinReward": 50
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "examId": "uuid",
+  "moduleId": "uuid",
+  "name": "Экзамен по модулю",
+  "description": "Финальная проверка",
+  "xpReward": 100,
+  "coinReward": 50,
+  "questionsCount": 10,
+  "tasksCount": 2
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `403`: `forbidden`
+- `404`: `exam_not_found`
+
+### 3.6 Таски
+
+#### `POST /api/tasks/{taskId}/start`
+
+Отдельный старт практической задачи.  
+Для задач урока запуск доступен только после полного прохождения квиза этого урока.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "lessonId": "uuid",
+  "examId": null,
+  "completed": false
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `task_not_found`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
+- `409`: `lesson_quiz_not_completed`
+- `409`: `exam_locked`
+
+#### `POST /api/tasks/{taskId}/complete`
+
+Помечает таск завершенным для текущего пользователя.
+Награда выдается только при первом прохождении таска в рамках урока (`examId = null`).
+Для экзаменационных тасков (`examId != null`) отдельная награда не выдается.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "lessonId": "uuid",
+  "examId": null,
+  "completed": true,
+  "firstCompletion": true,
+  "xpGranted": 20,
+  "coinGranted": 10
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `task_not_found`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
+- `409`: `lesson_quiz_not_completed`
+- `409`: `exam_locked`
+
+#### `PUT /api/tasks/{taskId}/rewards`
+
+Обновляет награды таска (только для admin).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required, role `admin`)
+
+Body:
+
+```json
+{
+  "xpReward": 20,
+  "coinReward": 10
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "lessonId": "uuid",
+  "examId": null,
+  "xpReward": 20,
+  "coinReward": 10
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `403`: `forbidden`
+- `404`: `task_not_found`
+
+#### `PUT /api/tasks/{taskId}/runner`
+
+Обновляет конфиг раннера для таска (только для admin).
+Эталонный ответ и входные данные хранятся в БД и не отдаются в публичных API.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required, role `admin`)
+
+Body:
+
+```json
+{
+  "runnerLanguage": "java",
+  "expectedOutput": "Hello, world!",
+  "inputData": ""
+}
+```
+
+`runnerLanguage` может быть `null`/пустым (тогда ограничения по языку нет).
+`inputData` может быть `null`/пустым или отсутствовать (тогда задача запускается без входных данных).
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "runnerLanguage": "java",
+  "hasExpectedOutput": true,
+  "hasInputData": true
+}
+```
+
+Ошибки:
+
+- `400`: `runner_language_not_supported`
+- `401`: `unauthorized`
+- `403`: `forbidden`
+- `404`: `task_not_found`
+
+#### `POST /api/tasks/{taskId}/run`
+
+Запускает пользовательский код в sandbox Docker, сравнивает stdout с эталонным ответом таска.
+Входные данные (`stdin`) подставляются сервером из `task.inputData`; если `inputData` не задан, используется пустой ввод.
+Если результат корректный, таск отмечается завершенным (и при первом прохождении выдаются награды).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body:
+
+```json
+{
+  "language": "java",
+  "code": "public class Main { public static void main(String[] args) { System.out.println(\"Hello, world!\"); } }"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "language": "java",
+  "status": "ok",
+  "correct": true,
+  "stdout": "Hello, world!\n",
+  "stderr": "",
+  "exitCode": 0,
+  "timedOut": false,
+  "durationMs": 284,
+  "completed": true,
+  "firstCompletion": true,
+  "xpGranted": 20,
+  "coinGranted": 10
+}
+```
+
+`status`: `ok | compile_error | runtime_error | timeout`.
+
+Ошибки:
+
+- `400`: `runner_language_not_supported`
+- `400`: `code_invalid`
+- `400`: `code_too_large`
+- `401`: `unauthorized`
+- `404`: `task_not_found`
+- `409`: `task_expected_output_not_configured`
+- `409`: `task_language_mismatch`
+- `409`: `task_input_too_large`
+- `409`: `module_locked`
+- `409`: `lesson_locked`
+- `409`: `lesson_quiz_not_completed`
+- `409`: `exam_locked`
+- `503`: `runner_unavailable`
+
+### 3.7 Вопросы
+
+#### `GET /api/quests/{questId}/answers`
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "answerId": "uuid",
+      "name": "Вариант A",
+      "description": "..."
+    }
+  ]
+}
+```
+
+#### `POST /api/quests/{questId}/check`
+
+Проверяет ответ на вопрос.
+`Authorization` необязателен: если передан и ответ правильный для экзаменационного вопроса, фиксируется прогресс вопроса для пользователя.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (optional)
+
+Body:
+
+```json
+{
+  "answerId": "uuid"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "correct": true
+}
+```
+
+Ошибки:
+
+- `400`: `answer_not_in_question`
+- `401`: `unauthorized` (только если передан невалидный токен)
+- `409`: `module_locked`
+- `409`: `exam_locked`
+
+### 3.8 Прогресс
+
+#### `GET /api/lessons/{lessonId}/progress`
+
+Возвращает прогресс пользователя по уроку.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "targetId": "uuid",
+  "targetType": "lesson",
+  "percent": 50,
+  "completed": false,
+  "doneItems": 1,
+  "totalItems": 2
+}
+```
+
+`percent` возвращается всегда (`100` означает, что урок полностью пройден).
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `lesson_not_found`
+
+#### `GET /api/modules/{moduleId}/progress`
+
+Возвращает прогресс пользователя по модулю.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "targetId": "uuid",
+  "targetType": "module",
+  "percent": 33,
+  "completed": false,
+  "doneItems": 1,
+  "totalItems": 3
+}
+```
+
+Для модуля учитываются уроки модуля и экзамен модуля.
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `module_not_found`
+
+#### `GET /api/courses/{courseId}/progress`
+
+Возвращает прогресс пользователя по курсу.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "targetId": "uuid",
+  "targetType": "course",
+  "percent": 7,
+  "completed": false,
+  "doneItems": 1,
+  "totalItems": 15
+}
+```
+
+Для курса агрегируется прогресс по всем модулям курса.
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `course_not_found`
 
 ## 4. Файловая система уроков (.md)
 
@@ -597,3 +1067,98 @@ services:
 14. `GET /api/exams/{examId}`
 15. `GET /api/exams/{examId}/questions`
 16. `GET /api/exams/{examId}/tasks`
+17. `POST /api/exams/{examId}/complete`
+18. `PUT /api/exams/{examId}/rewards`
+19. `POST /api/tasks/{taskId}/start`
+20. `POST /api/tasks/{taskId}/complete`
+21. `PUT /api/tasks/{taskId}/rewards`
+22. `PUT /api/tasks/{taskId}/runner`
+23. `POST /api/tasks/{taskId}/run`
+24. `GET /api/quests/{questId}/answers`
+25. `POST /api/quests/{questId}/check`
+26. `GET /api/lessons/{lessonId}/progress`
+27. `GET /api/modules/{moduleId}/progress`
+28. `GET /api/courses/{courseId}/progress`
+29. `GET /api/community/leaderboard?period=day|week|month&metric=activity|xp&limit=9`
+30. `GET /api/community/feed?limit=10`
+
+## 6. Community (Leaderboard + Feed)
+
+### `GET /api/community/leaderboard`
+
+Query:
+
+- `period` (`day | week | month`, optional, default `week`)
+- `metric` (`activity | xp`, optional, default `activity`)
+- `limit` (`int`, optional, default `9`, min `1`, max `9`)
+
+Response `200`:
+
+```json
+{
+  "period": "week",
+  "metric": "activity",
+  "fromInclusive": "2026-03-20T10:00:00Z",
+  "toInclusive": "2026-03-27T10:00:00Z",
+  "items": [
+    {
+      "rank": 1,
+      "userId": "uuid",
+      "username": "student_1",
+      "score": 145
+    }
+  ]
+}
+```
+
+Errors:
+
+- `400`: `community_period_invalid`
+- `400`: `community_metric_invalid`
+
+### `GET /api/community/feed`
+
+Query:
+
+- `limit` (`int`, optional, default `10`, min `1`, max `100`)
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "eventId": "uuid",
+      "createdAt": "2026-03-27T10:02:00Z",
+      "userId": "uuid",
+      "username": "student_1",
+      "eventType": "quiz_completed",
+      "activityScore": 10,
+      "xpGranted": 12,
+      "coinGranted": 6,
+      "progressPercent": 100,
+      "lessonId": "uuid",
+      "quizId": "uuid",
+      "taskId": null,
+      "examId": null,
+      "details": null
+    }
+  ]
+}
+```
+
+Current event types written by backend:
+
+- `quiz_completed`
+- `task_completed`
+- `exam_completed`
+- `level_up`
+
+Anti-farming rule for ranking:
+
+- Completion events are written only on `firstCompletion=true` (no repeated farming from reruns/retries).
+
+Reserved event types (for next steps):
+
+- `achievement_unlocked`
+- `streak_day`

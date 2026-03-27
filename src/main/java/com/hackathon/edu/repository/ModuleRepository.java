@@ -31,4 +31,16 @@ public interface ModuleRepository extends JpaRepository<ModuleEntity, UUID> {
 
     @EntityGraph(attributePaths = {"lessons", "lessons.quiz", "lessons.task"})
     Optional<ModuleEntity> findWithLessonsByModuleId(UUID moduleId);
+
+    @EntityGraph(attributePaths = {"course", "exam", "lessons", "lessons.quiz", "lessons.task"})
+    @Query("""
+            select m
+            from ModuleEntity m
+            join m.lessons l
+            where l.lessonId = :lessonId
+            """)
+    Optional<ModuleEntity> findWithCourseExamAndLessonsByLessonId(@Param("lessonId") UUID lessonId);
+
+    @EntityGraph(attributePaths = {"course", "exam", "lessons", "lessons.quiz", "lessons.task"})
+    Optional<ModuleEntity> findWithCourseExamAndLessonsByExam_ExemId(UUID examId);
 }

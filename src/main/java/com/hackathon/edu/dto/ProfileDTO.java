@@ -9,7 +9,9 @@ public final class ProfileDTO {
 
     public record ProfileResponse(
             String username,
+            int xp,
             int level,
+            int coins,
             List<AchievementItem> achievements
     ) {
     }

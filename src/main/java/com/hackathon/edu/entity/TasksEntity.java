@@ -41,6 +41,21 @@ public class TasksEntity {
     @JoinColumn(name = "lesson_id", unique = true, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private LessonEntity lesson;
 
+    @Column(name = "xp_reward")
+    private Integer xpReward = 0;
+
+    @Column(name = "coin_reward")
+    private Integer coinReward = 0;
+
+    @Column(name = "runner_language", length = 16)
+    private String runnerLanguage;
+
+    @Column(name = "expected_output", columnDefinition = "text")
+    private String expectedOutput;
+
+    @Column(name = "input_data", columnDefinition = "text")
+    private String inputData;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -58,6 +73,12 @@ public class TasksEntity {
         }
         if (updatedAt == null) {
             updatedAt = now;
+        }
+        if (xpReward == null) {
+            xpReward = 0;
+        }
+        if (coinReward == null) {
+            coinReward = 0;
         }
     }
 

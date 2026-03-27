@@ -179,7 +179,10 @@ public class LessonService {
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
                 task.getExam() == null ? null : task.getExam().getExemId(),
                 task.getName(),
-                task.getDescription()
+                task.getDescription(),
+                task.getRunnerLanguage(),
+                safeInt(task.getXpReward()),
+                safeInt(task.getCoinReward())
         );
     }
 
@@ -193,5 +196,9 @@ public class LessonService {
 
     private Supplier<ApiException> notFound(String errorCode) {
         return () -> new ApiException(HttpStatus.NOT_FOUND, errorCode);
+    }
+
+    private int safeInt(Integer value) {
+        return value == null ? 0 : value;
     }
 }
