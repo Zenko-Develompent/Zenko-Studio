@@ -295,10 +295,17 @@ public class AuthService {
         var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
                 .map(AchievementUserEntity::getAchievement)
                 .filter(a -> a != null && a.getAchievementId() != null && a.getName() != null)
-                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName(), a.getIcon()))
+                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName(), a.getDescription(), a.getIcon()))
                 .toList();
 
-        return new ProfileDTO.PrivateProfileResponse(user.getUsername(), xp, level, coins, achievements);
+        return new ProfileDTO.PrivateProfileResponse(
+                user.getUsername(),
+                toApiRole(user.getRole()),
+                xp,
+                level,
+                coins,
+                achievements
+        );
     }
 
     @Transactional(readOnly = true)
@@ -327,10 +334,16 @@ public class AuthService {
         var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
                 .map(AchievementUserEntity::getAchievement)
                 .filter(a -> a != null && a.getAchievementId() != null && a.getName() != null)
-                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName(), a.getIcon()))
+                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName(), a.getDescription(), a.getIcon()))
                 .toList();
 
-        return new ProfileDTO.PublicProfileResponse(user.getUsername(), level, exp, achievements);
+        return new ProfileDTO.PublicProfileResponse(
+                user.getUsername(),
+                toApiRole(user.getRole()),
+                level,
+                exp,
+                achievements
+        );
     }
 
     private LoginResult buildLoginResult(
@@ -491,3 +504,4 @@ public class AuthService {
     ) {
     }
 }
+

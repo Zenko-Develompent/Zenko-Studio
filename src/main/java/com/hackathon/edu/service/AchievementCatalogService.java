@@ -64,7 +64,14 @@ public class AchievementCatalogService {
                 throw new IllegalStateException("Achievement catalog is empty");
             }
             return raw.stream()
-                    .filter(it -> it != null && hasText(it.code()) && hasText(it.name()) && hasText(it.icon()))
+                    .filter(it -> it != null && hasText(it.code()) && hasText(it.name()))
+                    .map(it -> new AchievementDefinition(
+                            it.code().trim(),
+                            it.name().trim(),
+                            safeText(it.description()),
+                            hasText(it.icon()) ? it.icon().trim() : "🏆",
+                            it.order()
+                    ))
                     .sorted(Comparator.comparingInt(AchievementDefinition::order))
                     .toList();
         } catch (Exception ex) {
@@ -76,9 +83,14 @@ public class AchievementCatalogService {
         return value != null && !value.isBlank();
     }
 
+    private String safeText(String value) {
+        return value == null ? "" : value.trim();
+    }
+
     public record AchievementDefinition(
             String code,
             String name,
+            String description,
             String icon,
             int order
     ) {

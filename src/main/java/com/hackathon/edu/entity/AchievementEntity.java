@@ -31,6 +31,9 @@ public class AchievementEntity {
     @Column(unique = true, nullable = false, length = 120)
     private String name;
 
+    @Column(name = "description", length = 500)
+    private String description;
+
     @Column(name = "icon", length = 255)
     private String icon;
 

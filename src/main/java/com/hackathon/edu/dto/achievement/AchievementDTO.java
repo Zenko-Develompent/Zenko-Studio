@@ -9,6 +9,7 @@ public final class AchievementDTO {
     public record AchievementItem(
             String code,
             String name,
+            String description,
             String icon,
             int order,
             boolean unlocked

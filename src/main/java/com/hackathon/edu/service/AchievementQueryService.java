@@ -33,6 +33,7 @@ public class AchievementQueryService {
                 .map(def -> new AchievementDTO.AchievementItem(
                         def.code(),
                         def.name(),
+                        def.description(),
                         def.icon(),
                         def.order(),
                         finalUnlockedCodes.contains(def.code())
