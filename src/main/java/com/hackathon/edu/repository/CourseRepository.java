@@ -12,6 +12,8 @@ import java.util.UUID;
 public interface CourseRepository extends JpaRepository<CourseEntity, UUID> {
     Page<CourseEntity> findAllByOrderByNameAsc(Pageable pageable);
 
+    Optional<CourseEntity> findByNameIgnoreCase(String name);
+
     @EntityGraph(attributePaths = {"modules", "modules.exam"})
     Optional<CourseEntity> findWithModulesByCourseId(UUID courseId);
 

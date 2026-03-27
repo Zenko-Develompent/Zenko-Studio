@@ -32,4 +32,6 @@ public interface LessonRepository extends JpaRepository<LessonEntity, UUID> {
 
     @EntityGraph(attributePaths = {"module", "quiz", "task"})
     Optional<LessonEntity> findWithRelationsByLessonId(UUID lessonId);
+
+    Optional<LessonEntity> findByModule_ModuleIdAndNameIgnoreCase(UUID moduleId, String name);
 }

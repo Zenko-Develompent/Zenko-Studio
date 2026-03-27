@@ -99,6 +99,50 @@ public class AuthService {
     }
 
     @Transactional
+    public RegisterResponse upsertAdmin(String usernameRaw, String password, Integer ageRaw) {
+        String username = usernameRaw == null ? null : usernameRaw.trim();
+
+        if (username == null || !username.matches("[A-Za-z0-9_]{3,16}")) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_username");
+        }
+        if (!PasswordPolicy.accept(password)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "weak_password");
+        }
+
+        int age = ageRaw == null ? 30 : ageRaw;
+        if (age < 1 || age > 120) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_age");
+        }
+
+        RoleEntity adminRole = ensureRoleByDbName("ADMIN");
+
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username).orElse(null);
+        if (user == null) {
+            user = new UserEntity();
+            user.setUsername(username);
+        }
+        user.setPassword(PasswordHasher.hash(password.toCharArray()));
+        if (user.getXp() == null) {
+            user.setXp(0);
+        }
+        if (user.getLevel() == null) {
+            user.setLevel(0);
+        }
+        user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(age));
+        user.setRole(adminRole);
+        user = userRepository.saveAndFlush(user);
+
+        revokeTokensAndSessions(user.getUserId());
+
+        return new RegisterResponse(
+                user.getUserId().toString(),
+                user.getUsername(),
+                age,
+                "admin"
+        );
+    }
+
+    @Transactional
     public LoginResult login(LoginRequest request, RequestInfo requestInfo) {
         String ip = requestInfo.ip();
         if (!loginAllowed(ip)) {
@@ -263,20 +307,10 @@ public class AuthService {
                 userId.toString(),
                 user.getUsername(),
                 user.getUsername(),
-                "",
-                "",
-                "",
                 birthDate == null ? null : birthDate.toString(),
                 birthDate == null ? null : calculateAge(birthDate),
                 toApiRole(user.getRole()),
                 ProfileUrlBuilder.avatarUrl(userId, 0),
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
                 List.of()
         );
     }
@@ -295,7 +329,10 @@ public class AuthService {
             case "student" -> "STUDENT";
             default -> throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_role");
         };
+        return ensureRoleByDbName(dbRoleName);
+    }
 
+    private RoleEntity ensureRoleByDbName(String dbRoleName) {
         return roleRepository.findByNameIgnoreCase(dbRoleName)
                 .orElseGet(() -> {
                     RoleEntity roleEntity = new RoleEntity();
@@ -308,6 +345,17 @@ public class AuthService {
                                 .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
                     }
                 });
+    }
+
+    private void revokeTokensAndSessions(UUID userId) {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
+
+        refreshTokenRepository.findByUserIdAndRevokedAtIsNull(userId).stream()
+                .map(RefreshTokenEntity::getFamilyId)
+                .distinct()
+                .forEach(familyId -> refreshTokenRepository.revokeFamily(familyId, now));
+
+        webSessionService.listActive(userId).forEach(s -> webSessionService.deactivateForUser(s.getSessionId(), userId));
     }
 
     private String normalizeRoleInput(String rawRole) {

@@ -14,6 +14,8 @@ public interface ModuleRepository extends JpaRepository<ModuleEntity, UUID> {
     @EntityGraph(attributePaths = {"course", "exam"})
     List<ModuleEntity> findByCourse_CourseIdOrderByNameAsc(UUID courseId);
 
+    Optional<ModuleEntity> findByCourse_CourseIdAndNameIgnoreCase(UUID courseId, String name);
+
     @EntityGraph(attributePaths = {"course", "exam"})
     Optional<ModuleEntity> findWithCourseAndExamByModuleId(UUID moduleId);
 
