@@ -11,6 +11,7 @@ services:
     volumes:
       - ${LESSON_CONTENT_HOST_PATH:-./lesson-content}:/data/lessons:rw
       - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
     depends_on:
       - edu-db
     networks:
