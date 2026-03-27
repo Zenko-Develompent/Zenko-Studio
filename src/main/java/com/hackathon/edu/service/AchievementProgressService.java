@@ -227,6 +227,7 @@ public class AchievementProgressService {
         AchievementEntity achievement = achievementRepository.findByCode(definition.code())
                 .orElseGet(() -> createAchievement(definition));
         achievement.setName(definition.name());
+        achievement.setDescription(definition.description());
         achievement.setIcon(definition.icon());
         achievement = achievementRepository.save(achievement);
 
@@ -246,6 +247,7 @@ public class AchievementProgressService {
         AchievementEntity entity = new AchievementEntity();
         entity.setCode(definition.code());
         entity.setName(definition.name());
+        entity.setDescription(definition.description());
         entity.setIcon(definition.icon());
         return entity;
     }

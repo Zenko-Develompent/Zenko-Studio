@@ -9,6 +9,7 @@ public final class ProfileDTO {
 
     public record PrivateProfileResponse(
             String username,
+            String role,
             int xp,
             int level,
             int coins,
@@ -18,6 +19,7 @@ public final class ProfileDTO {
 
     public record PublicProfileResponse(
             String username,
+            String role,
             int level,
             int exp,
             List<AchievementItem> achievements
@@ -27,6 +29,7 @@ public final class ProfileDTO {
     public record AchievementItem(
             UUID achievementId,
             String name,
+            String description,
             String icon
     ) {
     }

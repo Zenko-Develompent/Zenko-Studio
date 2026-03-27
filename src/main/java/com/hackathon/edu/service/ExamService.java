@@ -76,6 +76,7 @@ public class ExamService {
         return new ExamDTO.TasksResponse(items);
     }
 
+    @Transactional
     public ExamDTO.CompleteResponse completeExam(UUID userId, UUID examId) {
         ProgressService.ExamCompletionResult result = progressService.completeExam(userId, examId);
         return new ExamDTO.CompleteResponse(

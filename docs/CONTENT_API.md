@@ -1,4 +1,4 @@
-﻿# Content API Documentation
+# Content API Documentation
 
 Документация по текущим read-ручкам контента и загрузке markdown для уроков.
 
@@ -275,13 +275,16 @@ Headers:
 ```json
 {
   "username": "student_1",
+  "role": "student",
   "xp": 120,
   "level": 2,
   "coins": 35,
   "achievements": [
     {
       "achievementId": "uuid",
-      "name": "Первый шаг"
+      "name": "Первый шаг",
+      "description": "Пройти 1 урок.",
+      "icon": "🧩"
     }
   ]
 }
@@ -306,12 +309,15 @@ Headers:
 ```json
 {
   "username": "student_1",
+  "role": "student",
   "level": 2,
   "exp": 120,
   "achievements": [
     {
       "achievementId": "uuid",
-      "name": "Первый шаг"
+      "name": "Первый шаг",
+      "description": "Пройти 1 урок.",
+      "icon": "🧩"
     }
   ]
 }
@@ -321,6 +327,38 @@ Headers:
 
 Ошибки:
 
+- `404 user_not_found`
+
+#### `GET /api/users/by-username/{username}/profile`
+
+Публичный профиль пользователя по `username`.
+
+Headers:
+
+- не требуется
+
+Ответ `200`:
+
+```json
+{
+  "username": "student_1",
+  "role": "student",
+  "level": 2,
+  "exp": 120,
+  "achievements": [
+    {
+      "achievementId": "uuid",
+      "name": "Первый шаг",
+      "description": "Пройти 1 урок.",
+      "icon": "🧩"
+    }
+  ]
+}
+```
+
+Ошибки:
+
+- `400 invalid_username`
 - `404 user_not_found`
 
 ### 3.1 Курсы
@@ -2165,7 +2203,7 @@ Read-only дашборд ребёнка для родителя.
 ### 10.1 Общая логика
 
 - Каталог достижений хранится в `src/main/resources/catalog/achievements.json`.
-- При старте backend синхронизирует каталог в БД (код, имя, иконка).
+- При старте backend синхронизирует каталог в БД (код, имя, описание, иконка).
 - Иконка достижения (`icon`) возвращается как строка-эмодзи.
 - Прогресс достижений пересчитывается при ключевых действиях пользователя:
   - прохождение квизов/тасков/экзаменов,
@@ -2199,6 +2237,7 @@ Response `200`:
     {
       "code": "A01_FIRST_CODE",
       "name": "Первый код",
+      "description": "Пройти 1 урок.",
       "icon": "🧩",
       "order": 1,
       "unlocked": true
@@ -2206,6 +2245,7 @@ Response `200`:
     {
       "code": "A02_YOUNG_PROGRAMMER",
       "name": "Юный программист",
+      "description": "Пройти 10 уроков.",
       "icon": "🧒",
       "order": 2,
       "unlocked": false
@@ -2218,6 +2258,7 @@ Response `200`:
 
 - `code`: стабильный код достижения.
 - `name`: отображаемое имя.
+- `description`: описание условия получения.
 - `icon`: эмодзи-иконка.
 - `order`: порядок для сортировки в UI.
 - `unlocked`: открыто ли у пользователя.
@@ -2228,6 +2269,7 @@ Response `200`:
 
 - `GET /api/auth/profile` (приватный профиль текущего пользователя)
 - `GET /api/users/{userId}/profile` (публичный профиль пользователя)
+- `GET /api/users/by-username/{username}/profile` (публичный профиль по username)
 
 Формат элемента в профиле:
 
@@ -2235,6 +2277,7 @@ Response `200`:
 {
   "achievementId": "uuid",
   "name": "Первый код",
+  "description": "Пройти 1 урок.",
   "icon": "🧩"
 }
 ```

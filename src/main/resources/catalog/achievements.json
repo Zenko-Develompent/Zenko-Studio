@@ -1,55 +1,317 @@
 [
-  { "code": "A01_FIRST_CODE", "name": "Первый код", "icon": "🧩", "order": 1 },
-  { "code": "A02_YOUNG_PROGRAMMER", "name": "Юный программист", "icon": "🧒", "order": 2 },
-  { "code": "A03_CODE_MASTER", "name": "Код-мастер", "icon": "💻", "order": 3 },
-  { "code": "A04_KNOWLEDGE_SEEKER", "name": "Искатель знаний", "icon": "🔍", "order": 4 },
-  { "code": "A05_REPEAT_TO_REMEMBER", "name": "Повторяй и запоминай", "icon": "🔁", "order": 5 },
-
-  { "code": "A06_FOUND_FRIEND", "name": "Нашёл друга", "icon": "🤝", "order": 6 },
-  { "code": "A07_COOL_TEAM", "name": "Крутая команда", "icon": "👥", "order": 7 },
-  { "code": "A08_FRIENDLY_CLASS", "name": "Дружный класс", "icon": "🏫", "order": 8 },
-  { "code": "A09_STAR_SQUAD", "name": "Звёздный отряд", "icon": "🌟", "order": 9 },
-  { "code": "A10_FAMILY", "name": "Семья", "icon": "👨‍👩‍👧", "order": 10 },
-
-  { "code": "A11_FIRST_WORD", "name": "Первое слово", "icon": "💬", "order": 11 },
-  { "code": "A12_CURIOUS", "name": "Любопытный", "icon": "🙂", "order": 12 },
-  { "code": "A13_SOCIABLE", "name": "Общительный", "icon": "🗣️", "order": 13 },
-  { "code": "A14_DISCUSSION_LEADER", "name": "Лидер обсуждений", "icon": "📣", "order": 14 },
-  { "code": "A15_COMMUNITY_VOICE", "name": "Голос сообщества", "icon": "📢", "order": 15 },
-
-  { "code": "A16_ERROR_IS_EXPERIENCE", "name": "Ошибка — это опыт", "icon": "🐞", "order": 16 },
-  { "code": "A17_BUG_LOVER", "name": "Любитель багов", "icon": "🧪", "order": 17 },
-  { "code": "A19_MODEST_GENIUS", "name": "Скромный гений", "icon": "🤫", "order": 19 },
-
-  { "code": "A20_FIRST_STEPS_IT", "name": "Первые шаги в IT", "icon": "🚀", "order": 20 },
-  { "code": "A21_THIRST_FOR_KNOWLEDGE", "name": "Жажда знаний", "icon": "📈", "order": 21 },
-  { "code": "A22_ERUDITE", "name": "Эрудит", "icon": "🎓", "order": 22 },
-  { "code": "A23_SAGE", "name": "Мудрец", "icon": "🧠", "order": 23 },
-  { "code": "A24_LIVING_LEGEND", "name": "Живая легенда", "icon": "🦄", "order": 24 },
-
-  { "code": "A25_NEWBIE", "name": "Новичок", "icon": "🌱", "order": 25 },
-  { "code": "A26_EXPERIENCED_CODER", "name": "Опытный кодер", "icon": "🛠️", "order": 26 },
-  { "code": "A27_CODE_MASTER_LEVEL", "name": "Мастер кода", "icon": "⚙️", "order": 27 },
-  { "code": "A28_EXPERT", "name": "Эксперт", "icon": "🧩", "order": 28 },
-  { "code": "A29_PRO", "name": "Профи", "icon": "🏅", "order": 29 },
-  { "code": "A30_PROGRAMMING_GURU", "name": "Гуру программирования", "icon": "👑", "order": 30 },
-
-  { "code": "A31_FRIENDSHIP_AND_KNOWLEDGE", "name": "Дружба и знания", "icon": "🤜🤛", "order": 31 },
-  { "code": "A32_LONE_WOLF", "name": "Одинокий волк", "icon": "🐺", "order": 32 },
-  { "code": "A33_SOLO_GENIUS", "name": "Гений-одиночка", "icon": "🦊", "order": 33 },
-
-  { "code": "A34_POCKET_COINS", "name": "Карманные монетки", "icon": "🪙", "order": 34 },
-  { "code": "A35_SOLID_SAFE", "name": "Солидный сейф", "icon": "💰", "order": 35 },
-  { "code": "A36_REAL_RICH", "name": "Настоящий богач", "icon": "🏦", "order": 36 },
-  { "code": "A37_MILLIONAIRE", "name": "Миллионер", "icon": "💎", "order": 37 },
-  { "code": "A38_OIL_MAGNATE", "name": "Нефтяной магнат", "icon": "🛢️", "order": 38 },
-
-  { "code": "A39_FIRST_PURCHASE", "name": "Первая покупка", "icon": "🛍️", "order": 39 },
-  { "code": "A40_SHOPPING_LOVER", "name": "Любитель покупок", "icon": "🛒", "order": 40 },
-  { "code": "A41_GENEROUS_INVESTOR", "name": "Щедрый инвестор", "icon": "💸", "order": 41 },
-  { "code": "A42_COLLECTOR", "name": "Коллекционер", "icon": "📚", "order": 42 },
-  { "code": "A43_EMPTY_WALLET", "name": "Пустой кошелёк", "icon": "🪫", "order": 43 },
-  { "code": "A44_ECONOMICAL", "name": "Экономный", "icon": "🐷", "order": 44 },
-  { "code": "A45_BEAUTIFUL_USELESS", "name": "Красивый бесполезняк", "icon": "✨", "order": 45 },
-  { "code": "A46_KNOWLEDGE_OVER_MONEY", "name": "Знания дороже денег", "icon": "📘", "order": 46 }
+  {
+    "code": "A01_FIRST_CODE",
+    "name": "Первый код",
+    "description": "Пройти 1 урок.",
+    "icon": "🧩",
+    "order": 1
+  },
+  {
+    "code": "A02_YOUNG_PROGRAMMER",
+    "name": "Юный программист",
+    "description": "Пройти 10 уроков.",
+    "icon": "🧒",
+    "order": 2
+  },
+  {
+    "code": "A03_CODE_MASTER",
+    "name": "Код-мастер",
+    "description": "Пройти 50 уроков.",
+    "icon": "💻",
+    "order": 3
+  },
+  {
+    "code": "A04_KNOWLEDGE_SEEKER",
+    "name": "Искатель знаний",
+    "description": "Пройти все основные уроки.",
+    "icon": "🔍",
+    "order": 4
+  },
+  {
+    "code": "A05_REPEAT_TO_REMEMBER",
+    "name": "Повторяй и запоминай",
+    "description": "Пройти любой урок повторно.",
+    "icon": "🔁",
+    "order": 5
+  },
+  {
+    "code": "A06_FOUND_FRIEND",
+    "name": "Нашёл друга",
+    "description": "Добавить 1 друга.",
+    "icon": "🤝",
+    "order": 6
+  },
+  {
+    "code": "A07_COOL_TEAM",
+    "name": "Крутая команда",
+    "description": "Добавить 5 друзей.",
+    "icon": "👥",
+    "order": 7
+  },
+  {
+    "code": "A08_FRIENDLY_CLASS",
+    "name": "Дружный класс",
+    "description": "Добавить 10 друзей.",
+    "icon": "🏫",
+    "order": 8
+  },
+  {
+    "code": "A09_STAR_SQUAD",
+    "name": "Звёздный отряд",
+    "description": "Добавить 25 друзей.",
+    "icon": "🌟",
+    "order": 9
+  },
+  {
+    "code": "A10_FAMILY",
+    "name": "Семья",
+    "description": "Получить родительский контроль (стать ребёнком в связке parent-child).",
+    "icon": "👨‍👩‍👧",
+    "order": 10
+  },
+  {
+    "code": "A11_FIRST_WORD",
+    "name": "Первое слово",
+    "description": "Написать 1 сообщение в чате.",
+    "icon": "💬",
+    "order": 11
+  },
+  {
+    "code": "A12_CURIOUS",
+    "name": "Любопытный",
+    "description": "Написать 50 сообщений в чате.",
+    "icon": "🙂",
+    "order": 12
+  },
+  {
+    "code": "A13_SOCIABLE",
+    "name": "Общительный",
+    "description": "Написать 100 сообщений в чате.",
+    "icon": "🗣️",
+    "order": 13
+  },
+  {
+    "code": "A14_DISCUSSION_LEADER",
+    "name": "Лидер обсуждений",
+    "description": "Написать 500 сообщений в чате.",
+    "icon": "📣",
+    "order": 14
+  },
+  {
+    "code": "A15_COMMUNITY_VOICE",
+    "name": "Голос сообщества",
+    "description": "Написать 1000 сообщений в чате.",
+    "icon": "📢",
+    "order": 15
+  },
+  {
+    "code": "A16_ERROR_IS_EXPERIENCE",
+    "name": "Ошибка — это опыт",
+    "description": "Допустить первую ошибку выполнения кода.",
+    "icon": "🐞",
+    "order": 16
+  },
+  {
+    "code": "A17_BUG_LOVER",
+    "name": "Любитель багов",
+    "description": "Допустить 10 ошибок выполнения кода.",
+    "icon": "🧪",
+    "order": 17
+  },
+  {
+    "code": "A19_MODEST_GENIUS",
+    "name": "Скромный гений",
+    "description": "Написать 500 сообщений и не иметь ни одного друга.",
+    "icon": "🤫",
+    "order": 19
+  },
+  {
+    "code": "A20_FIRST_STEPS_IT",
+    "name": "Первые шаги в IT",
+    "description": "Достичь 1 уровня.",
+    "icon": "🚀",
+    "order": 20
+  },
+  {
+    "code": "A21_THIRST_FOR_KNOWLEDGE",
+    "name": "Жажда знаний",
+    "description": "Набрать 1 000 опыта.",
+    "icon": "📈",
+    "order": 21
+  },
+  {
+    "code": "A22_ERUDITE",
+    "name": "Эрудит",
+    "description": "Набрать 10 000 опыта.",
+    "icon": "🎓",
+    "order": 22
+  },
+  {
+    "code": "A23_SAGE",
+    "name": "Мудрец",
+    "description": "Набрать 100 000 опыта.",
+    "icon": "🧠",
+    "order": 23
+  },
+  {
+    "code": "A24_LIVING_LEGEND",
+    "name": "Живая легенда",
+    "description": "Набрать 1 000 000 опыта.",
+    "icon": "🦄",
+    "order": 24
+  },
+  {
+    "code": "A25_NEWBIE",
+    "name": "Новичок",
+    "description": "Достичь 5 уровня.",
+    "icon": "🌱",
+    "order": 25
+  },
+  {
+    "code": "A26_EXPERIENCED_CODER",
+    "name": "Опытный кодер",
+    "description": "Достичь 10 уровня.",
+    "icon": "🛠️",
+    "order": 26
+  },
+  {
+    "code": "A27_CODE_MASTER_LEVEL",
+    "name": "Мастер кода",
+    "description": "Достичь 25 уровня.",
+    "icon": "⚙️",
+    "order": 27
+  },
+  {
+    "code": "A28_EXPERT",
+    "name": "Эксперт",
+    "description": "Достичь 50 уровня.",
+    "icon": "🧩",
+    "order": 28
+  },
+  {
+    "code": "A29_PRO",
+    "name": "Профи",
+    "description": "Достичь 75 уровня.",
+    "icon": "🏅",
+    "order": 29
+  },
+  {
+    "code": "A30_PROGRAMMING_GURU",
+    "name": "Гуру программирования",
+    "description": "Достичь максимального 150 уровня.",
+    "icon": "🧙",
+    "order": 30
+  },
+  {
+    "code": "A31_FRIENDSHIP_AND_KNOWLEDGE",
+    "name": "Дружба и знания",
+    "description": "Достичь 20 уровня и иметь 10 друзей.",
+    "icon": "🤜🤛",
+    "order": 31
+  },
+  {
+    "code": "A32_LONE_WOLF",
+    "name": "Одинокий волк",
+    "description": "Достичь 20 уровня и не иметь друзей.",
+    "icon": "🐺",
+    "order": 32
+  },
+  {
+    "code": "A33_SOLO_GENIUS",
+    "name": "Гений-одиночка",
+    "description": "Иметь уровень выше 50 и не иметь друзей.",
+    "icon": "🦉",
+    "order": 33
+  },
+  {
+    "code": "A34_POCKET_COINS",
+    "name": "Карманные монетки",
+    "description": "Накопить 1 000 монет.",
+    "icon": "🪙",
+    "order": 34
+  },
+  {
+    "code": "A35_SOLID_SAFE",
+    "name": "Солидный сейф",
+    "description": "Накопить 10 000 монет.",
+    "icon": "💰",
+    "order": 35
+  },
+  {
+    "code": "A36_REAL_RICH",
+    "name": "Настоящий богач",
+    "description": "Накопить 100 000 монет.",
+    "icon": "🏦",
+    "order": 36
+  },
+  {
+    "code": "A37_MILLIONAIRE",
+    "name": "Миллионер",
+    "description": "Накопить 1 000 000 монет.",
+    "icon": "💎",
+    "order": 37
+  },
+  {
+    "code": "A38_OIL_MAGNATE",
+    "name": "Нефтяной магнат",
+    "description": "Накопить 10 000 000 монет.",
+    "icon": "🛢️",
+    "order": 38
+  },
+  {
+    "code": "A39_FIRST_PURCHASE",
+    "name": "Первая покупка",
+    "description": "Совершить первую покупку в магазине.",
+    "icon": "🛍️",
+    "order": 39
+  },
+  {
+    "code": "A40_SHOPPING_LOVER",
+    "name": "Любитель покупок",
+    "description": "Совершить 100 покупок.",
+    "icon": "🛒",
+    "order": 40
+  },
+  {
+    "code": "A41_GENEROUS_INVESTOR",
+    "name": "Щедрый инвестор",
+    "description": "Потратить 50 000 монет в магазине.",
+    "icon": "💸",
+    "order": 41
+  },
+  {
+    "code": "A42_COLLECTOR",
+    "name": "Коллекционер",
+    "description": "Купить все предметы хотя бы в одной группе магазина.",
+    "icon": "📚",
+    "order": 42
+  },
+  {
+    "code": "A43_EMPTY_WALLET",
+    "name": "Пустой кошелёк",
+    "description": "После хотя бы одной покупки остаться с 0 монет.",
+    "icon": "🪫",
+    "order": 43
+  },
+  {
+    "code": "A44_ECONOMICAL",
+    "name": "Экономный",
+    "description": "Накопить 50 000 монет, не сделав ни одной покупки.",
+    "icon": "🐷",
+    "order": 44
+  },
+  {
+    "code": "A45_BEAUTIFUL_USELESS",
+    "name": "Красивый бесполезняк",
+    "description": "Купить самый дорогой предмет в магазине.",
+    "icon": "✨",
+    "order": 45
+  },
+  {
+    "code": "A46_KNOWLEDGE_OVER_MONEY",
+    "name": "Знания дороже денег",
+    "description": "Накопить 100 000 монет и не купить ни одного улучшения.",
+    "icon": "📘",
+    "order": 46
+  }
 ]

@@ -22,6 +22,7 @@ public class AchievementCatalogSyncRunner implements CommandLineRunner {
                     .orElseGet(AchievementEntity::new);
             entity.setCode(definition.code());
             entity.setName(definition.name());
+            entity.setDescription(definition.description());
             entity.setIcon(definition.icon());
             achievementRepository.save(entity);
         }
