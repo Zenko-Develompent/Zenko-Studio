@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface FriendshipRepository extends JpaRepository<FriendshipEntity, UUID> {
     boolean existsByUserIdAndFriendUserId(UUID userId, UUID friendUserId);
 
+    long countByUserId(UUID userId);
+
     Optional<FriendshipEntity> findByUserIdAndFriendUserId(UUID userId, UUID friendUserId);
 
     List<FriendshipEntity> findByUserIdOrderByCreatedAtDesc(UUID userId);

@@ -46,6 +46,9 @@ public class UserEntity {
     @Column(name = "coins")
     private Integer coins = 0;
 
+    @Column(name = "xp_boost_charges")
+    private Integer xpBoostCharges = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
 
@@ -61,6 +64,9 @@ public class UserEntity {
         }
         if (coins == null) {
             coins = 0;
+        }
+        if (xpBoostCharges == null) {
+            xpBoostCharges = 0;
         }
     }
 

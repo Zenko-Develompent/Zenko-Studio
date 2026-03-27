@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ActivityEventRepository extends JpaRepository<ActivityEventEntity, UUID> {
+    long countByUser_UserIdAndEventType(UUID userId, String eventType);
+
     @Query("""
             select e.user.userId as userId,
                    e.user.username as username,

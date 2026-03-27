@@ -83,7 +83,10 @@ public class AuthService {
         }
         if (user.getCoins() == null) {
             user.setCoins(0);
-        } //no
+        }
+        if (user.getXpBoostCharges() == null) {
+            user.setXpBoostCharges(0);
+        }
         user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(ageRaw));
         user.setRole(resolveRole(role));
         try {
@@ -147,6 +150,9 @@ public class AuthService {
         }
         if (user.getCoins() == null) {
             user.setCoins(0);
+        }
+        if (user.getXpBoostCharges() == null) {
+            user.setXpBoostCharges(0);
         }
         user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(age));
         user.setRole(adminRole);
@@ -265,7 +271,7 @@ public class AuthService {
         var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
                 .map(AchievementUserEntity::getAchievement)
                 .filter(a -> a != null && a.getAchievementId() != null && a.getName() != null)
-                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName()))
+                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName(), a.getIcon()))
                 .toList();
 
         return new ProfileDTO.PrivateProfileResponse(user.getUsername(), xp, level, coins, achievements);
@@ -281,7 +287,7 @@ public class AuthService {
         var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
                 .map(AchievementUserEntity::getAchievement)
                 .filter(a -> a != null && a.getAchievementId() != null && a.getName() != null)
-                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName()))
+                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName(), a.getIcon()))
                 .toList();
 
         return new ProfileDTO.PublicProfileResponse(user.getUsername(), level, exp, achievements);

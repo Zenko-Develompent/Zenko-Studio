@@ -37,6 +37,8 @@ public class SocialChatService {
     private final UserRepository userRepository;
     private final AppChatProperties appChatProperties;
     private final SocialRealtimeService socialRealtimeService;
+    private final ActivityEventService activityEventService;
+    private final AchievementProgressService achievementProgressService;
 
     @Transactional
     public SocialChatDTO.CreatePrivateChatResponse createPrivateChat(UUID userId, UUID otherUserId) {
@@ -155,6 +157,8 @@ public class SocialChatService {
 
         SocialChatDTO.MessageItem messageItem = toMessageItem(message);
         socialRealtimeService.publishMessageSent(chat, messageItem);
+        activityEventService.recordMessageSent(userId, chat.getChatId(), message.getMessageId());
+        achievementProgressService.evaluateForUser(userId);
         return new SocialChatDTO.SendMessageResponse(messageItem);
     }
 

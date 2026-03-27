@@ -20,6 +20,8 @@ public class TaskRunnerService {
     private final CodeRunnerService codeRunnerService;
     private final ProgressService progressService;
     private final LearningAccessService learningAccessService;
+    private final ActivityEventService activityEventService;
+    private final AchievementProgressService achievementProgressService;
 
     @Transactional
     public TaskStartResult startTask(UUID userId, UUID taskId) {
@@ -62,6 +64,18 @@ public class TaskRunnerService {
         ProgressService.TaskCompletionResult completion = null;
         if (correct) {
             completion = progressService.completeTask(userId, taskId);
+            if (!completion.firstCompletion()) {
+                achievementProgressService.evaluateForUser(userId);
+            }
+        } else {
+            String details = "status=" + execution.status();
+            activityEventService.recordCodeError(
+                    userId,
+                    task.getTasksId(),
+                    task.getExam() == null ? null : task.getExam().getExemId(),
+                    details
+            );
+            achievementProgressService.evaluateForUser(userId);
         }
 
         return new TaskRunResult(

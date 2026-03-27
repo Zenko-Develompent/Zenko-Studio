@@ -53,6 +53,7 @@ public class ParentControlService {
     private final ActivityEventRepository activityEventRepository;
     private final ProgressQueryService progressQueryService;
     private final SocialRealtimeService socialRealtimeService;
+    private final AchievementProgressService achievementProgressService;
 
     @Transactional
     public ParentControlDTO.SendRequestResponse sendRequest(UUID parentUserId, UUID childUserId) {
@@ -135,6 +136,7 @@ public class ParentControlService {
         socialRealtimeService.publishParentControlAccepted(request);
 
         ensureParentChildLink(request.getParentUserId(), request.getChildUserId());
+        achievementProgressService.evaluateForUser(request.getChildUserId());
         return new ParentControlDTO.AcceptRejectResponse(request.getRequestId(), request.getStatus());
     }
 

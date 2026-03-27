@@ -25,4 +25,6 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
     );
 
     long countByChat_ChatIdAndSenderUserIdNotAndMessageIdGreaterThan(UUID chatId, UUID senderUserId, Long messageId);
+
+    long countBySenderUserId(UUID senderUserId);
 }

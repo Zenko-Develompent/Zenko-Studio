@@ -21,6 +21,9 @@ public class ActivityEventService {
     public static final String TYPE_LEVEL_UP = "level_up";
     public static final String TYPE_ACHIEVEMENT_UNLOCKED = "achievement_unlocked";
     public static final String TYPE_STREAK_DAY = "streak_day";
+    public static final String TYPE_MESSAGE_SENT = "message_sent";
+    public static final String TYPE_CODE_ERROR = "code_error";
+    public static final String TYPE_LESSON_REPEATED = "lesson_repeated";
 
     private static final int SCORE_QUIZ_COMPLETED = 10;
     private static final int SCORE_TASK_COMPLETED = 15;
@@ -28,6 +31,9 @@ public class ActivityEventService {
     private static final int SCORE_LEVEL_UP = 10;
     private static final int SCORE_ACHIEVEMENT_UNLOCKED = 20;
     private static final int SCORE_STREAK_DAY = 5;
+    private static final int SCORE_MESSAGE_SENT = 1;
+    private static final int SCORE_CODE_ERROR = 1;
+    private static final int SCORE_LESSON_REPEATED = 2;
 
     private final ActivityEventRepository activityEventRepository;
     private final UserRepository userRepository;
@@ -147,6 +153,58 @@ public class ActivityEventService {
                 null,
                 null,
                 "days=" + streakDays
+        );
+    }
+
+    @Transactional
+    public void recordMessageSent(UUID userId, UUID chatId, Long messageId) {
+        String details = "chatId=" + chatId + ",messageId=" + messageId;
+        saveEvent(
+                userId,
+                TYPE_MESSAGE_SENT,
+                SCORE_MESSAGE_SENT,
+                0,
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                details
+        );
+    }
+
+    @Transactional
+    public void recordCodeError(UUID userId, UUID taskId, UUID examId, String details) {
+        saveEvent(
+                userId,
+                TYPE_CODE_ERROR,
+                SCORE_CODE_ERROR,
+                0,
+                0,
+                null,
+                null,
+                null,
+                taskId,
+                examId,
+                details
+        );
+    }
+
+    @Transactional
+    public void recordLessonRepeated(UUID userId, UUID lessonId, UUID quizId, UUID taskId) {
+        saveEvent(
+                userId,
+                TYPE_LESSON_REPEATED,
+                SCORE_LESSON_REPEATED,
+                0,
+                0,
+                100,
+                lessonId,
+                quizId,
+                taskId,
+                null,
+                null
         );
     }
 

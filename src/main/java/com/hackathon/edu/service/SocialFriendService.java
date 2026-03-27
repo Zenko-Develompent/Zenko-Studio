@@ -38,6 +38,7 @@ public class SocialFriendService {
     private final UserRepository userRepository;
     private final AppChatProperties appChatProperties;
     private final SocialRealtimeService socialRealtimeService;
+    private final AchievementProgressService achievementProgressService;
 
     @Transactional
     public SocialFriendDTO.SendRequestResponse sendRequest(UUID requesterUserId, UUID receiverUserId) {
@@ -131,6 +132,8 @@ public class SocialFriendService {
         ensureFriendship(request.getRequesterUserId(), request.getReceiverUserId());
         ensureFriendship(request.getReceiverUserId(), request.getRequesterUserId());
         socialRealtimeService.publishFriendAccepted(request);
+        achievementProgressService.evaluateForUser(request.getRequesterUserId());
+        achievementProgressService.evaluateForUser(request.getReceiverUserId());
 
         return new SocialFriendDTO.AcceptRejectResponse(request.getRequestId(), request.getStatus());
     }
@@ -198,6 +201,8 @@ public class SocialFriendService {
         friendshipRepository.deleteByUserIdAndFriendUserId(friendUserId, userId);
         if (existed) {
             socialRealtimeService.publishFriendRemoved(userId, friendUserId);
+            achievementProgressService.evaluateForUser(userId);
+            achievementProgressService.evaluateForUser(friendUserId);
         }
     }
 

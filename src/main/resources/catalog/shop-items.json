@@ -1,0 +1,14 @@
+[
+  {
+    "id": "xp_potion",
+    "name": "Зелье опыта",
+    "description": "Увеличивает получаемый опыт на 50%. Действует суммарно на 5 квизов/тасков или на 1 экзамен.",
+    "icon": "🧪",
+    "price": 100,
+    "shopGroup": "main",
+    "countsAsUpgrade": true,
+    "xpBoostPercent": 50,
+    "quizTaskCharges": 5,
+    "examChargeCost": 5
+  }
+]

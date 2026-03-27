@@ -42,6 +42,7 @@ public class QuizService {
     private final ProgressService progressService;
     private final LearningAccessService learningAccessService;
     private final ActivityEventService activityEventService;
+    private final AchievementProgressService achievementProgressService;
 
     @Transactional
     public QuizDTO.QuizDetailResponse createLessonQuiz(UUID lessonId, QuizDTO.QuizCreateRequest request) {
@@ -156,6 +157,10 @@ public class QuizService {
         List<QuestEntity> questions = orderedQuestions(quiz);
         if (questions.isEmpty() || isCompleted(attempt, questions.size())) {
             markCompleted(attempt);
+            if (quiz.getLesson() != null && quiz.getLesson().getLessonId() != null) {
+                activityEventService.recordLessonRepeated(userId, quiz.getLesson().getLessonId(), quiz.getQuizId(), null);
+                achievementProgressService.evaluateForUser(userId);
+            }
             return new QuizFlowDTO.SubmitAnswerResponse(true, true, 0, 0, null);
         }
 

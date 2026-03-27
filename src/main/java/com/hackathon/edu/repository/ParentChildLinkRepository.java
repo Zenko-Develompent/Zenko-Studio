@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface ParentChildLinkRepository extends JpaRepository<ParentChildLinkEntity, UUID> {
     boolean existsByParentUserIdAndChildUserId(UUID parentUserId, UUID childUserId);
 
+    long countByChildUserId(UUID childUserId);
+
     Optional<ParentChildLinkEntity> findByParentUserIdAndChildUserId(UUID parentUserId, UUID childUserId);
 
     List<ParentChildLinkEntity> findByParentUserIdOrderByCreatedAtDesc(UUID parentUserId);

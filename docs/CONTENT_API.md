@@ -1389,21 +1389,24 @@ Response `200`:
 }
 ```
 
-Current event types written by backend:
+Текущие типы событий, которые пишет backend:
 
 - `quiz_completed`
 - `task_completed`
 - `exam_completed`
 - `level_up`
-
-Anti-farming rule for ranking:
-
-- Completion events are written only on `firstCompletion=true` (no repeated farming from reruns/retries).
-
-Reserved event types (for next steps):
-
 - `achievement_unlocked`
+- `message_sent`
+- `code_error`
+- `lesson_repeated`
+
+Резервный тип (пока не используется):
+
 - `streak_day`
+
+Анти-фарм правило для рейтинга:
+
+- События прохождения (`quiz/task/exam`) пишутся только при `firstCompletion=true` (повторные перезапуски не фармят рейтинг).
 
 ## 7. Social (друзья + чат)
 
@@ -2156,4 +2159,83 @@ Read-only дашборд ребёнка для родителя.
 - `403 parent_control_forbidden`
 - `403 parent_control_child_role_required`
 - `404 user_not_found`
+
+## 10. Достижения
+
+### 10.1 Общая логика
+
+- Каталог достижений хранится в `src/main/resources/catalog/achievements.json`.
+- При старте backend синхронизирует каталог в БД (код, имя, иконка).
+- Иконка достижения (`icon`) возвращается как строка-эмодзи.
+- Прогресс достижений пересчитывается при ключевых действиях пользователя:
+  - прохождение квизов/тасков/экзаменов,
+  - отправка сообщений в чате,
+  - ошибки выполнения кода,
+  - повторное прохождение урока,
+  - принятие родительского контроля,
+  - действия с друзьями,
+  - покупки в магазине,
+  - явный запрос списка достижений с токеном.
+
+### 10.2 `GET /api/achievements`
+
+Вернуть список всех достижений из каталога с признаком открытия для текущего пользователя.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (optional)
+
+Поведение:
+
+- Без `Authorization`: ручка публичная, вернёт весь каталог с `unlocked=false` для всех элементов.
+- С корректным `Authorization`: перед ответом backend пересчитает достижения пользователя и вернёт актуальные `unlocked`.
+- С некорректным `Authorization`: `401 unauthorized`.
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "code": "A01_FIRST_CODE",
+      "name": "Первый код",
+      "icon": "🧩",
+      "order": 1,
+      "unlocked": true
+    },
+    {
+      "code": "A02_YOUNG_PROGRAMMER",
+      "name": "Юный программист",
+      "icon": "🧒",
+      "order": 2,
+      "unlocked": false
+    }
+  ]
+}
+```
+
+Поля:
+
+- `code`: стабильный код достижения.
+- `name`: отображаемое имя.
+- `icon`: эмодзи-иконка.
+- `order`: порядок для сортировки в UI.
+- `unlocked`: открыто ли у пользователя.
+
+### 10.3 Достижения в профиле пользователя
+
+Список уже открытых достижений также приходит в профилях:
+
+- `GET /api/auth/profile` (приватный профиль текущего пользователя)
+- `GET /api/users/{userId}/profile` (публичный профиль пользователя)
+
+Формат элемента в профиле:
+
+```json
+{
+  "achievementId": "uuid",
+  "name": "Первый код",
+  "icon": "🧩"
+}
+```
 

@@ -25,8 +25,14 @@ public class AchievementEntity {
     @Column(name = "achievement_id", nullable = false, updatable = false)
     private UUID achievementId;
 
-    @Column(unique = true, nullable = false, length = 50)
+    @Column(name = "code", unique = true, length = 64)
+    private String code;
+
+    @Column(unique = true, nullable = false, length = 120)
     private String name;
+
+    @Column(name = "icon", length = 255)
+    private String icon;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -42,6 +48,12 @@ public class AchievementEntity {
         OffsetDateTime now = OffsetDateTime.now();
         if (achievementId == null) {
             achievementId = UUID.randomUUID();
+        }
+        if (code == null || code.isBlank()) {
+            code = achievementId.toString();
+        }
+        if (icon == null || icon.isBlank()) {
+            icon = "🏆";
         }
         if (createdAt == null) {
             createdAt = now;

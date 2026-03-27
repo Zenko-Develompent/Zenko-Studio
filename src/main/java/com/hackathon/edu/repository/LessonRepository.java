@@ -46,6 +46,22 @@ public interface LessonRepository extends JpaRepository<LessonEntity, UUID> {
     Optional<LessonEntity> findWithRelationsByLessonId(UUID lessonId);
 
     @Query("""
+            select count(l)
+            from LessonEntity l
+            where (l.quiz is null or exists (
+                select 1
+                from QuizAttemptEntity qa
+                where qa.quiz = l.quiz and qa.userId = :userId and qa.completed = true
+            ))
+            and (l.task is null or exists (
+                select 1
+                from TaskAttemptEntity ta
+                where ta.task = l.task and ta.userId = :userId and ta.completed = true
+            ))
+            """)
+    long countCompletedByUserId(@Param("userId") UUID userId);
+
+    @Query("""
             select l
             from ModuleEntity m
             join m.lessons l

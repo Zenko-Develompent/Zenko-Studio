@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
@@ -18,7 +19,13 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "achievement_user")
+@Table(
+        name = "achievement_user",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_achievement_user_user_achievement",
+                columnNames = {"achievement_id", "user_id"}
+        )
+)
 @Getter
 @Setter
 public class AchievementUserEntity {

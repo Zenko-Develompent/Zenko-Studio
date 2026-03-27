@@ -33,6 +33,7 @@ public class ProgressService {
     private final GamificationService gamificationService;
     private final LearningAccessService learningAccessService;
     private final ActivityEventService activityEventService;
+    private final AchievementProgressService achievementProgressService;
 
     @Transactional
     public TaskCompletionResult completeTask(UUID userId, UUID taskId) {
@@ -63,6 +64,14 @@ public class ProgressService {
                     grant.xpGranted(),
                     grant.coinGranted()
             );
+        } else if (task.getLesson() != null && task.getLesson().getLessonId() != null) {
+            activityEventService.recordLessonRepeated(
+                    userId,
+                    task.getLesson().getLessonId(),
+                    null,
+                    task.getTasksId()
+            );
+            achievementProgressService.evaluateForUser(userId);
         }
 
         return new TaskCompletionResult(

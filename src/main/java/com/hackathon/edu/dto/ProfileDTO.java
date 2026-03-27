@@ -26,7 +26,8 @@ public final class ProfileDTO {
 
     public record AchievementItem(
             UUID achievementId,
-            String name
+            String name,
+            String icon
     ) {
     }
 }
