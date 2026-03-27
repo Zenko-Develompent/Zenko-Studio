@@ -5,8 +5,6 @@ public record AuthResponse(
         String accessExpiresAt,
         String refreshToken,
         String refreshExpiresAt,
-        String sessionId,
-        String deviceId,
         AuthUserDto user
 ) {
 }

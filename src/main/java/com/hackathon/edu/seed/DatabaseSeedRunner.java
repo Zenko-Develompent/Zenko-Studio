@@ -1,4 +1,4 @@
-﻿package com.hackathon.edu.seed;
+package com.hackathon.edu.seed;
 
 import com.hackathon.edu.config.AppSeedProperties;
 import com.hackathon.edu.entity.CourseEntity;

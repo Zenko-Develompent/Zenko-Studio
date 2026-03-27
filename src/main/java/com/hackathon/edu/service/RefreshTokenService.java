@@ -29,14 +29,14 @@ public class RefreshTokenService {
     private final AppSecurityProperties props;
 
     @Transactional
-    public TokenPair issue(UUID userId, String deviceId, String ip, String userAgent) {
+    public TokenPair issue(UUID userId, String ip) {
         UUID familyId = UUID.randomUUID();
-        return rotateInternal(userId, familyId, null, deviceId, ip, userAgent);
+        return rotateInternal(userId, familyId, null, ip);
     }
 
     @Transactional
-    public TokenPair rotate(RefreshTokenEntity old, String deviceId, String ip, String userAgent) {
-        return rotateInternal(old.getUserId(), old.getFamilyId(), old.getTokenId(), deviceId, ip, userAgent);
+    public TokenPair rotate(RefreshTokenEntity old, String ip) {
+        return rotateInternal(old.getUserId(), old.getFamilyId(), old.getTokenId(), ip);
     }
 
     @Transactional
@@ -74,7 +74,7 @@ public class RefreshTokenService {
         }
     }
 
-    private TokenPair rotateInternal(UUID userId, UUID familyId, UUID oldTokenId, String deviceId, String ip, String userAgent) {
+    private TokenPair rotateInternal(UUID userId, UUID familyId, UUID oldTokenId, String ip) {
         UUID newTokenId = UUID.randomUUID();
         String raw = newRawToken();
         String refresh = newTokenId + "." + raw;
