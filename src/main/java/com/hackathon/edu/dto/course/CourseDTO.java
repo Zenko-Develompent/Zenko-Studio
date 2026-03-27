@@ -55,6 +55,7 @@ public final class CourseDTO {
     public record CourseTreeResponse(
             UUID courseId,
             String name,
+            String description,
             List<CourseTreeModuleItem> modules
     ) {
     }

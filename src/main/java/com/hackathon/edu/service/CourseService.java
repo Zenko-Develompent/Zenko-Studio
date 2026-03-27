@@ -149,7 +149,7 @@ public class CourseService {
             ));
         }
 
-        return new CourseDTO.CourseTreeResponse(course.getCourseId(), course.getName(), modules);
+        return new CourseDTO.CourseTreeResponse(course.getCourseId(), course.getName(), course.getDescription(), modules);
     }
 
     private CourseDTO.CourseListItem toCourseListItem(CourseEntity course) {
