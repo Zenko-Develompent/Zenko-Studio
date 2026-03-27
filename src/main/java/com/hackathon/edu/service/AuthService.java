@@ -286,6 +286,7 @@ public class AuthService {
         return props.getRefreshTtlDays() * 86400L;
     }
 
+    @Transactional(readOnly = true)
     public ProfileDTO.PrivateProfileResponse getPrivateProfile(UUID userId) {
         UserEntity user = requireUser(userId);
         int xp = user.getXp() == null ? 0 : user.getXp();
