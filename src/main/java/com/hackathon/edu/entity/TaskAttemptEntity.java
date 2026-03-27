@@ -20,38 +20,32 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "quiz_attempt",
-        uniqueConstraints = @UniqueConstraint(name = "uq_quiz_attempt_quiz_user", columnNames = {"quiz_id", "user_id"})
+        name = "task_attempt",
+        uniqueConstraints = @UniqueConstraint(name = "uq_task_attempt_task_user", columnNames = {"tasks_id", "user_id"})
 )
 @Getter
 @Setter
-public class QuizAttemptEntity {
+public class TaskAttemptEntity {
     @Id
     @Column(name = "attempt_id", nullable = false, updatable = false)
     private UUID attemptId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "quiz_id", nullable = false)
+    @JoinColumn(name = "tasks_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private QuizEntity quiz;
+    private TasksEntity task;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "current_question_index", nullable = false)
-    private Integer currentQuestionIndex = 0;
-
     @Column(name = "completed", nullable = false)
     private Boolean completed = false;
 
-    @Column(name = "reward_granted", nullable = false)
-    private Boolean rewardGranted = false;
-
-    @Column(name = "started_at", nullable = false, updatable = false)
-    private OffsetDateTime startedAt;
-
     @Column(name = "completed_at")
     private OffsetDateTime completedAt;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
@@ -62,17 +56,11 @@ public class QuizAttemptEntity {
         if (attemptId == null) {
             attemptId = UUID.randomUUID();
         }
-        if (currentQuestionIndex == null || currentQuestionIndex < 0) {
-            currentQuestionIndex = 0;
-        }
         if (completed == null) {
             completed = false;
         }
-        if (rewardGranted == null) {
-            rewardGranted = false;
-        }
-        if (startedAt == null) {
-            startedAt = now;
+        if (createdAt == null) {
+            createdAt = now;
         }
         if (updatedAt == null) {
             updatedAt = now;

@@ -57,6 +57,9 @@
 - `task_not_found`
 - `answer_not_in_question`
 - `quiz_question_out_of_order`
+- `exam_not_completed`
+- `unauthorized`
+- `forbidden`
 
 Коды ошибок чтения markdown:
 
@@ -70,6 +73,8 @@ HTTP-коды:
 
 - `200 OK`: успех.
 - `400 Bad Request`: невалидный запрос/путь/тип файла.
+- `401 Unauthorized`: отсутствует/невалидный access token.
+- `403 Forbidden`: недостаточно прав (например, нужен admin).
 - `404 Not Found`: сущность или markdown не найден.
 - `409 Conflict`: для папки урока найдено более одного `.md`.
 - `500 Internal Server Error`: непредвиденная ошибка.
@@ -320,7 +325,9 @@ Query:
   "lessonId": "uuid",
   "examId": "uuid",
   "name": "Практическая задача",
-  "description": "Решить задачу"
+  "description": "Решить задачу",
+  "xpReward": 20,
+  "coinReward": 10
 }
 ```
 
@@ -431,6 +438,8 @@ Body:
 {
   "correct": true,
   "completed": false,
+  "xpGranted": 0,
+  "coinGranted": 0,
   "question": {
     "questionId": "uuid",
     "name": "Вопрос 2",
@@ -468,6 +477,8 @@ Body:
   "moduleId": "uuid",
   "name": "Экзамен по модулю",
   "description": "Финальная проверка",
+  "xpReward": 100,
+  "coinReward": 50,
   "questionsCount": 10,
   "tasksCount": 2
 }
@@ -511,7 +522,9 @@ Body:
       "examId": "uuid",
       "lessonId": "uuid",
       "name": "Экзаменационный таск",
-      "description": "Описание таска"
+      "description": "Описание таска",
+      "xpReward": 30,
+      "coinReward": 15
     }
   ]
 }
@@ -522,6 +535,191 @@ Body:
 Ошибки:
 
 - `404`: `exam_not_found`
+
+#### `POST /api/exams/{examId}/complete`
+
+Помечает экзамен завершенным для текущего пользователя и выдает награду только при первом полном завершении.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "completed": true,
+  "firstCompletion": true,
+  "xpGranted": 100,
+  "coinGranted": 50,
+  "questionsDone": 10,
+  "questionsTotal": 10,
+  "tasksDone": 2,
+  "tasksTotal": 2
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `exam_not_found`
+- `409`: `exam_not_completed`
+
+#### `PUT /api/exams/{examId}/rewards`
+
+Обновляет награды экзамена (только для admin).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required, role `admin`)
+
+Body:
+
+```json
+{
+  "xpReward": 100,
+  "coinReward": 50
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "examId": "uuid",
+  "moduleId": "uuid",
+  "name": "Экзамен по модулю",
+  "description": "Финальная проверка",
+  "xpReward": 100,
+  "coinReward": 50,
+  "questionsCount": 10,
+  "tasksCount": 2
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `403`: `forbidden`
+- `404`: `exam_not_found`
+
+### 3.6 Таски
+
+#### `POST /api/tasks/{taskId}/complete`
+
+Помечает таск завершенным для текущего пользователя.
+Награда выдается только при первом прохождении таска в рамках урока (`examId = null`).
+Для экзаменационных тасков (`examId != null`) отдельная награда не выдается.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Body: не требуется.
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "lessonId": "uuid",
+  "examId": null,
+  "completed": true,
+  "firstCompletion": true,
+  "xpGranted": 20,
+  "coinGranted": 10
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `task_not_found`
+
+#### `PUT /api/tasks/{taskId}/rewards`
+
+Обновляет награды таска (только для admin).
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required, role `admin`)
+
+Body:
+
+```json
+{
+  "xpReward": 20,
+  "coinReward": 10
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "taskId": "uuid",
+  "lessonId": "uuid",
+  "examId": null,
+  "xpReward": 20,
+  "coinReward": 10
+}
+```
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `403`: `forbidden`
+- `404`: `task_not_found`
+
+### 3.7 Вопросы
+
+#### `GET /api/quests/{questId}/answers`
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "answerId": "uuid",
+      "name": "Вариант A",
+      "description": "..."
+    }
+  ]
+}
+```
+
+#### `POST /api/quests/{questId}/check`
+
+Проверяет ответ на вопрос.
+`Authorization` необязателен: если передан и ответ правильный для экзаменационного вопроса, фиксируется прогресс вопроса для пользователя.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (optional)
+
+Body:
+
+```json
+{
+  "answerId": "uuid"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "correct": true
+}
+```
+
+Ошибки:
+
+- `400`: `answer_not_in_question`
+- `401`: `unauthorized` (только если передан невалидный токен)
 
 ## 4. Файловая система уроков (.md)
 
@@ -597,3 +795,9 @@ services:
 14. `GET /api/exams/{examId}`
 15. `GET /api/exams/{examId}/questions`
 16. `GET /api/exams/{examId}/tasks`
+17. `POST /api/exams/{examId}/complete`
+18. `PUT /api/exams/{examId}/rewards`
+19. `POST /api/tasks/{taskId}/complete`
+20. `PUT /api/tasks/{taskId}/rewards`
+21. `GET /api/quests/{questId}/answers`
+22. `POST /api/quests/{questId}/check`

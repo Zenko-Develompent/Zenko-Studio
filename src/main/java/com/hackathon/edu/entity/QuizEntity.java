@@ -1,4 +1,4 @@
-package com.hackathon.edu.entity;
+﻿package com.hackathon.edu.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,6 +41,12 @@ public class QuizEntity {
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestEntity> quests = new ArrayList<>();
 
+    @Column(name = "xp_reward")
+    private Integer xpReward = 0;
+
+    @Column(name = "coin_reward")
+    private Integer coinReward = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -58,6 +64,12 @@ public class QuizEntity {
         }
         if (updatedAt == null) {
             updatedAt = now;
+        }
+        if (xpReward == null) {
+            xpReward = 0;
+        }
+        if (coinReward == null) {
+            coinReward = 0;
         }
     }
 

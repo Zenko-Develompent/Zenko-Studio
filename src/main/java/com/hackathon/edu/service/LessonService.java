@@ -1,4 +1,4 @@
-package com.hackathon.edu.service;
+﻿package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.lesson.LessonDTO;
 import com.hackathon.edu.entity.LessonEntity;
@@ -179,7 +179,9 @@ public class LessonService {
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
                 task.getExam() == null ? null : task.getExam().getExemId(),
                 task.getName(),
-                task.getDescription()
+                task.getDescription(),
+                safeInt(task.getXpReward()),
+                safeInt(task.getCoinReward())
         );
     }
 
@@ -193,5 +195,9 @@ public class LessonService {
 
     private Supplier<ApiException> notFound(String errorCode) {
         return () -> new ApiException(HttpStatus.NOT_FOUND, errorCode);
+    }
+
+    private int safeInt(Integer value) {
+        return value == null ? 0 : value;
     }
 }

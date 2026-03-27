@@ -1,4 +1,4 @@
-package com.hackathon.edu.dto.quiz;
+﻿package com.hackathon.edu.dto.quiz;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -27,6 +27,8 @@ public final class QuizFlowDTO {
     public record SubmitAnswerResponse(
             boolean correct,
             boolean completed,
+            int xpGranted,
+            int coinGranted,
             QuestionItem question,
             TaskItem task
     ) {

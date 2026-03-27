@@ -1,4 +1,4 @@
-package com.hackathon.edu.dto;
+﻿package com.hackathon.edu.dto;
 
 public record AuthUserDto(
         String id,
@@ -7,6 +7,7 @@ public record AuthUserDto(
         Integer age,
         String role,
         Integer xp,
-        Integer level
+        Integer level,
+        Integer coins
 ) {
 }

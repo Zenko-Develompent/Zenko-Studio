@@ -1,4 +1,4 @@
-package com.hackathon.edu.dto.quiz;
+﻿package com.hackathon.edu.dto.quiz;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -17,6 +17,8 @@ public final class QuizDTO {
             UUID lessonId,
             String name,
             String description,
+            Integer xpReward,
+            Integer coinReward,
             List<QuestionDetailItem> questions
     ) {
     }
@@ -46,6 +48,8 @@ public final class QuizDTO {
             @Size(max = 50)
             String name,
             String description,
+            Integer xpReward,
+            Integer coinReward,
             @NotEmpty
             List<QuestionCreateRequest> questions
     ) {

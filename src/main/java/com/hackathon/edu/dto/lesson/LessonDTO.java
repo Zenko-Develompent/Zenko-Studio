@@ -1,4 +1,4 @@
-package com.hackathon.edu.dto.lesson;
+﻿package com.hackathon.edu.dto.lesson;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -34,7 +34,9 @@ public final class LessonDTO {
             UUID lessonId,
             UUID examId,
             String name,
-            String description
+            String description,
+            Integer xpReward,
+            Integer coinReward
     ) {
     }
 
