@@ -162,6 +162,30 @@ public class AuthService {
         );
     }
 
+    /**
+     * Creates admin user only if it doesn't exist yet.
+     * Does not reset password on every application restart.
+     */
+    @Transactional
+    public RegisterResponse ensureAdmin(String usernameRaw, String password, Integer ageRaw) {
+        String username = usernameRaw == null ? null : usernameRaw.trim();
+        if (username == null || !username.matches("[A-Za-z0-9_]{3,16}")) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_username");
+        }
+
+        UserEntity existing = userRepository.findByUsernameIgnoreCase(username).orElse(null);
+        if (existing != null) {
+            Integer age = existing.getBirthDate() == null ? null : calculateAge(existing.getBirthDate());
+            return new RegisterResponse(
+                    existing.getUserId().toString(),
+                    existing.getUsername(),
+                    age == null ? 0 : age,
+                    "admin"
+            );
+        }
+        return upsertAdmin(username, password, ageRaw);
+    }
+
     @Transactional
     public LoginResult login(LoginRequest request, RequestInfo requestInfo) {
         String ip = requestInfo.ip();

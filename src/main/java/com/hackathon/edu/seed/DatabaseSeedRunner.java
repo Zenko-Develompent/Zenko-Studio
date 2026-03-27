@@ -102,14 +102,26 @@ public class DatabaseSeedRunner implements CommandLineRunner {
     @Transactional
     public void run(String... args) {
         if (!props.isEnabled()) {
+            log.info("Seed skipped: app.seed.enabled=false (set SEED_ENABLED=true to enable)");
             return;
         }
+
+        if (props.isOnlyIfEmpty()) {
+            boolean alreadySeeded = courseRepository.existsByCategoryIgnoreCase("java")
+                    && courseRepository.existsByCategoryIgnoreCase("bash");
+            if (alreadySeeded) {
+                log.info("Seed skipped: app.seed.only-if-empty=true and seed data already exists (set SEED_ONLY_IF_EMPTY=false to force)");
+                return;
+            }
+        }
+
+        log.info("Seed starting (onlyIfEmpty={})", props.isOnlyIfEmpty());
         seed();
     }
 
     void seed() {
         var admin = props.getAdmin();
-        authService.upsertAdmin(admin.getUsername(), admin.getPassword(), admin.getAge());
+        authService.ensureAdmin(admin.getUsername(), admin.getPassword(), admin.getAge());
 
         CourseEntity javaCourse = ensureCourse(
                 "Java для школьников",
