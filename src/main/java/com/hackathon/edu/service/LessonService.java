@@ -148,7 +148,7 @@ public class LessonService {
     public LessonDTO.LessonDetailResponse getLesson(UUID userId, UUID lessonId) {
         LessonEntity lesson = lessonRepository.findWithRelationsByLessonId(lessonId)
                 .orElseThrow(notFound("lesson_not_found"));
-        Boolean unlocked = userId == null ? null : learningAccessService.isLessonUnlocked(userId, lessonId);
+        Boolean unlocked = learningAccessService.isLessonUnlocked(userId, lessonId);
         String content = Boolean.TRUE.equals(unlocked)
                 ? lessonContentService.readRawMarkdown(lesson.getBody())
                 : null;

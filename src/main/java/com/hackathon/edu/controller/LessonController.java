@@ -88,7 +88,7 @@ public class LessonController {
             @PathVariable("lessonId") UUID lessonId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         var resolved = lessonService.getLessonBodyFile(userId, lessonId);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resolved.filename() + "\"")
@@ -101,7 +101,7 @@ public class LessonController {
             @PathVariable("lessonId") UUID lessonId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return lessonService.getLessonQuiz(userId, lessonId);
     }
 
@@ -110,7 +110,7 @@ public class LessonController {
             @PathVariable("lessonId") UUID lessonId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return lessonService.getLessonTask(userId, lessonId);
     }
 

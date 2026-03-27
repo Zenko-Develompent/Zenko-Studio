@@ -36,7 +36,7 @@ public class QuizController {
             @PathVariable("lessonId") UUID lessonId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return quizService.getQuizByLesson(userId, lessonId);
     }
 
@@ -45,7 +45,7 @@ public class QuizController {
             @PathVariable("quizId") UUID quizId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return quizService.getQuiz(userId, quizId);
     }
 
@@ -54,7 +54,7 @@ public class QuizController {
             @PathVariable("quizId") UUID quizId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return quizService.getQuizQuestions(userId, quizId);
     }
 
@@ -75,5 +75,12 @@ public class QuizController {
     ) {
         UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
         return quizService.submitAnswer(userId, quizId, request);
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }

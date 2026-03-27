@@ -27,7 +27,7 @@ public class QuestController {
             @PathVariable("questId") UUID questId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return quizService.getQuestAnswers(userId, questId);
     }
     //zenkoz
@@ -37,8 +37,15 @@ public class QuestController {
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader,
             @Valid @RequestBody QuizDTO.CheckAnswerRequest request
     ) {
-        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        UUID userId = resolveOptionalUserId(authorizationHeader);
         return quizService.checkQuestAnswer(questId, request.answerId(), userId);
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }
 

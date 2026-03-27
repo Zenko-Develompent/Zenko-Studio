@@ -117,7 +117,7 @@ public class QuizService {
         assertQuestionUnlocked(userId, answer.getQuest());
 
         boolean correct = Boolean.TRUE.equals(answer.getCorrectly());
-        if (correct) {
+        if (correct && userId != null) {
             progressService.markExamQuestionCompleted(userId, answer.getQuest());
         }
         return new QuizDTO.CheckAnswerResponse(correct);
