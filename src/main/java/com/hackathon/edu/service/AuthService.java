@@ -19,7 +19,6 @@ import com.hackathon.edu.repository.UserRepository;
 import com.hackathon.edu.security.JwtService;
 import com.hackathon.edu.security.PasswordHasher;
 import com.hackathon.edu.util.PasswordPolicy;
-import com.hackathon.edu.util.ProfileUrlBuilder;
 import com.hackathon.edu.util.RequestInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -306,12 +305,10 @@ public class AuthService {
         return new AuthUserDto(
                 userId.toString(),
                 user.getUsername(),
-                user.getUsername(),
+                null,
                 birthDate == null ? null : birthDate.toString(),
                 birthDate == null ? null : calculateAge(birthDate),
-                toApiRole(user.getRole()),
-                ProfileUrlBuilder.avatarUrl(userId, 0),
-                List.of()
+                toApiRole(user.getRole())
         );
     }
 

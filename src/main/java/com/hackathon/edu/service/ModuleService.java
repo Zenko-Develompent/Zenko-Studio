@@ -1,7 +1,6 @@
 package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.module.ModuleDTO;
-import com.hackathon.edu.entity.CourseEntity;
 import com.hackathon.edu.entity.ExemEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
@@ -41,17 +40,16 @@ public class ModuleService {
 
     @Transactional
     public ModuleDTO.ModuleDetailResponse createModule(ModuleDTO.ModuleCreateRequest request) {
-        CourseEntity course = courseRepository.findById(request.courseId())
-                .orElseThrow(notFound("course_not_found"));
-
         ModuleEntity module = new ModuleEntity();
-        module.setCourse(course);
+        if (request.courseId() != null) {
+            module.setCourse(courseRepository.findById(request.courseId())
+                    .orElseThrow(notFound("course_not_found")));
+        }
         module.setName(request.name());
         module.setDescription(request.description());
 
         module = moduleRepository.save(module);
 
-        createLessons(module, request.lessons());
         attachLessonsToModule(module, request.lessonIds());
 
         return toDetailResponse(module);
@@ -62,10 +60,13 @@ public class ModuleService {
         ModuleEntity module = moduleRepository.findWithCourseAndExamByModuleId(moduleId)
                 .orElseThrow(notFound("module_not_found"));
 
+        if (request.courseId() != null) {
+            module.setCourse(courseRepository.findById(request.courseId())
+                    .orElseThrow(notFound("course_not_found")));
+        }
         module.setName(request.name());
         module.setDescription(request.description());
 
-        createLessons(module, request.lessons());
         attachLessonsToModule(module, request.lessonIds());
 
         return toDetailResponse(module);
@@ -170,24 +171,6 @@ public class ModuleService {
         );
     }
 
-    private void createLessons(ModuleEntity module, List<ModuleDTO.LessonCreateRequest> lessons) {
-        List<LessonEntity> entities = safeList(lessons).stream()
-                .map(request -> {
-                    LessonEntity lesson = new LessonEntity();
-                    lesson.setModule(module);
-                    lesson.setName(request.name());
-                    lesson.setDescription(request.description());
-                    lesson.setBody(request.body());
-                    lesson.setXp(request.xp() == null ? 0 : request.xp());
-                    return lesson;
-                })
-                .toList();
-
-        if (!entities.isEmpty()) {
-            lessonRepository.saveAll(entities);
-        }
-    }
-
     private void attachLessonsToModule(ModuleEntity module, List<UUID> lessonIds) {
         UUID courseId = module.getCourse() == null ? null : module.getCourse().getCourseId();
 
@@ -202,8 +185,13 @@ public class ModuleService {
             UUID lessonCourseId = lesson.getModule() == null || lesson.getModule().getCourse() == null
                     ? null
                     : lesson.getModule().getCourse().getCourseId();
+
             if (courseId != null && lessonCourseId != null && !courseId.equals(lessonCourseId)) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_course_mismatch");
+            }
+            if (courseId == null && lesson.getModule() != null && lesson.getModule().getCourse() != null) {
+                module.setCourse(lesson.getModule().getCourse());
+                courseId = module.getCourse().getCourseId();
             }
 
             lesson.setModule(module);

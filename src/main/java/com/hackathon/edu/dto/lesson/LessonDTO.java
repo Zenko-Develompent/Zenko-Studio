@@ -1,5 +1,8 @@
 package com.hackathon.edu.dto.lesson;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.util.UUID;
 
 public final class LessonDTO {
@@ -33,6 +36,15 @@ public final class LessonDTO {
             UUID examId,
             String name,
             String description
+    ) {
+    }
+
+    public record LessonUpdateRequest(
+            @NotBlank
+            @Size(max = 50)
+            String name,
+            String description,
+            Integer xp
     ) {
     }
 }
