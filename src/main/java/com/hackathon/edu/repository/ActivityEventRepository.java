@@ -61,6 +61,38 @@ public interface ActivityEventRepository extends JpaRepository<ActivityEventEnti
             """)
     List<FeedRow> findLatestFeed(Pageable pageable);
 
+    @Query("""
+            select e.eventId as eventId,
+                   e.createdAt as createdAt,
+                   e.user.userId as userId,
+                   e.user.username as username,
+                   e.eventType as eventType,
+                   e.activityScore as activityScore,
+                   e.xpGranted as xpGranted,
+                   e.coinGranted as coinGranted,
+                   e.progressPercent as progressPercent,
+                   e.lessonId as lessonId,
+                   e.quizId as quizId,
+                   e.taskId as taskId,
+                   e.examId as examId,
+                   e.details as details
+            from ActivityEventEntity e
+            where e.user.userId = :userId and e.eventType in :eventTypes
+            order by e.createdAt desc, e.eventId desc
+            """)
+    List<FeedRow> findLatestByUserIdAndEventTypeIn(
+            @Param("userId") UUID userId,
+            @Param("eventTypes") List<String> eventTypes,
+            Pageable pageable
+    );
+
+    @Query("""
+            select max(e.createdAt)
+            from ActivityEventEntity e
+            where e.user.userId = :userId
+            """)
+    OffsetDateTime findLastActivityAtByUserId(@Param("userId") UUID userId);
+
     interface LeaderboardRow {
         UUID getUserId();
 

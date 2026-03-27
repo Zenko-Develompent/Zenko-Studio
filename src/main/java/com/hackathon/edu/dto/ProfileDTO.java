@@ -7,11 +7,19 @@ public final class ProfileDTO {
     private ProfileDTO() {
     }
 
-    public record ProfileResponse(
+    public record PrivateProfileResponse(
             String username,
             int xp,
             int level,
             int coins,
+            List<AchievementItem> achievements
+    ) {
+    }
+
+    public record PublicProfileResponse(
+            String username,
+            int level,
+            int exp,
             List<AchievementItem> achievements
     ) {
     }

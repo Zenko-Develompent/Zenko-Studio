@@ -1,4 +1,4 @@
-# Content API Documentation
+﻿# Content API Documentation
 
 Документация по текущим read-ручкам контента и загрузке markdown для уроков.
 
@@ -62,6 +62,7 @@
 - `lesson_locked`
 - `lesson_quiz_not_completed`
 - `exam_locked`
+- `user_not_found`
 - `unauthorized`
 - `forbidden`
 - `runner_language_not_supported`
@@ -73,6 +74,26 @@
 - `runner_unavailable`
 - `community_period_invalid`
 - `community_metric_invalid`
+- `social_not_available_for_parent`
+- `chat_with_parent_forbidden`
+- `parent_control_request_self`
+- `parent_control_request_already_exists`
+- `parent_control_already_active`
+- `parent_control_request_not_found`
+- `parent_control_request_not_pending`
+- `parent_control_forbidden`
+- `parent_control_parent_role_required`
+- `parent_control_child_role_required`
+- `invalid_username`
+- `weak_password`
+- `invalid_age`
+- `invalid_role`
+- `conflict`
+- `too_many_attempts`
+- `invalid_credentials`
+- `invalid`
+- `invalid_access_token`
+- `access_token_expired`
 
 Коды ошибок чтения markdown:
 
@@ -102,6 +123,205 @@ HTTP-коды:
 ```
 
 ## 3. Эндпоинты
+
+### 3.0 Auth
+
+Базовый префикс auth: `/api/auth`.
+
+#### `POST /api/auth/register`
+
+Регистрация пользователя.
+
+Body:
+
+```json
+{
+  "username": "student_1",
+  "password": "Stud12345",
+  "age": 12,
+  "role": "student"
+}
+```
+
+`role`: `student | parent`.
+
+Ответ `201`:
+
+```json
+{
+  "accessToken": "jwt",
+  "accessExpiresAt": "2026-03-27T15:10:00Z",
+  "refreshToken": "tokenId.raw",
+  "refreshExpiresAt": "2026-04-26T15:10:00Z",
+  "user": {
+    "id": "uuid",
+    "username": "student_1",
+    "birthDate": "2014-03-27",
+    "age": 12,
+    "role": "student",
+    "xp": 0,
+    "level": 0,
+    "coins": 0
+  }
+}
+```
+
+Дополнительно backend ставит HttpOnly-cookie `refresh` (path `/api`).
+
+Ошибки:
+
+- `400 invalid_username`
+- `400 weak_password`
+- `400 invalid_age`
+- `400 invalid_role`
+- `409 conflict` (логин уже занят)
+
+#### `POST /api/auth/login`
+
+Логин пользователя.
+
+Body:
+
+```json
+{
+  "id": "student_1",
+  "password": "Stud12345"
+}
+```
+
+Допустимо передавать `username` вместо `id`.
+
+Ответ `200`:
+
+```json
+{
+  "accessToken": "jwt",
+  "accessExpiresAt": "2026-03-27T15:10:00Z",
+  "refreshToken": "tokenId.raw",
+  "refreshExpiresAt": "2026-04-26T15:10:00Z",
+  "user": {
+    "id": "uuid",
+    "username": "student_1",
+    "birthDate": "2014-03-27",
+    "age": 12,
+    "role": "student",
+    "xp": 0,
+    "level": 0,
+    "coins": 0
+  }
+}
+```
+
+Дополнительно backend ставит HttpOnly-cookie `refresh` (path `/api`).
+
+Ошибки:
+
+- `400 bad_request` (пустые поля)
+- `401 invalid_credentials`
+- `429 too_many_attempts`
+
+#### `POST /api/auth/refresh`
+
+Обновление access-токена по refresh-токену.
+
+Refresh можно передать:
+
+- в body: `{"refreshToken":"..."}`
+- или через cookie `refresh`
+
+Body (optional):
+
+```json
+{
+  "refreshToken": "tokenId.raw"
+}
+```
+
+Ответ `200`: формат такой же, как у `POST /api/auth/login`.
+
+При успехе refresh-cookie обновляется.
+
+Ошибки:
+
+- `401 invalid`
+
+#### `POST /api/auth/logout`
+
+Выход из сессии. Ревокация семейства refresh-токенов (если передан валидный refresh).
+
+Body (optional):
+
+```json
+{
+  "refreshToken": "tokenId.raw"
+}
+```
+
+Также может использоваться cookie `refresh`.
+
+Ответ `200` с пустым телом.  
+Backend очищает auth-cookie (`refresh`).
+
+#### `GET /api/auth/profile`
+
+Приватный профиль текущего пользователя.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "username": "student_1",
+  "xp": 120,
+  "level": 2,
+  "coins": 35,
+  "achievements": [
+    {
+      "achievementId": "uuid",
+      "name": "Первый шаг"
+    }
+  ]
+}
+```
+
+Ошибки:
+
+- `401 unauthorized` (нет/битый Bearer)
+- `401 invalid_access_token`
+- `401 access_token_expired`
+
+#### `GET /api/users/{userId}/profile`
+
+Публичный профиль пользователя (без приватных полей).
+
+Headers:
+
+- не требуется
+
+Ответ `200`:
+
+```json
+{
+  "username": "student_1",
+  "level": 2,
+  "exp": 120,
+  "achievements": [
+    {
+      "achievementId": "uuid",
+      "name": "Первый шаг"
+    }
+  ]
+}
+```
+
+В публичном профиле нет `coins`.
+
+Ошибки:
+
+- `404 user_not_found`
 
 ### 3.1 Курсы
 
@@ -1081,6 +1301,28 @@ services:
 28. `GET /api/courses/{courseId}/progress`
 29. `GET /api/community/leaderboard?period=day|week|month&metric=activity|xp&limit=9`
 30. `GET /api/community/feed?limit=10`
+31. `POST /api/social/friends/requests`
+32. `GET /api/social/friends/requests/incoming?limit=<n>`
+33. `GET /api/social/friends/requests/outgoing?limit=<n>`
+34. `POST /api/social/friends/requests/{requestId}/accept`
+35. `POST /api/social/friends/requests/{requestId}/reject`
+36. `GET /api/social/friends?limit=<n>`
+37. `DELETE /api/social/friends/{friendUserId}`
+38. `GET /api/social/users/search?q=<text>&limit=<n>`
+39. `POST /api/social/chats/private/{otherUserId}`
+40. `GET /api/social/chats?limit=<n>`
+41. `GET /api/social/chats/{chatId}/messages?beforeMessageId=<id>&limit=<n>`
+42. `POST /api/social/chats/{chatId}/messages`
+43. `PUT /api/social/chats/{chatId}/messages/{messageId}`
+44. `DELETE /api/social/chats/{chatId}/messages/{messageId}`
+45. `POST /api/social/chats/{chatId}/read`
+46. `POST /api/parent/requests`
+47. `GET /api/parent/requests/outgoing?limit=<n>`
+48. `GET /api/parent/requests/incoming?limit=<n>`
+49. `POST /api/parent/requests/{requestId}/accept`
+50. `POST /api/parent/requests/{requestId}/reject`
+51. `GET /api/parent/children`
+52. `GET /api/parent/children/{childId}/dashboard`
 
 ## 6. Community (Leaderboard + Feed)
 
@@ -1162,3 +1404,756 @@ Reserved event types (for next steps):
 
 - `achievement_unlocked`
 - `streak_day`
+
+## 7. Social (друзья + чат)
+
+Базовый префикс: `/api/social`.
+
+Для всех ручек social:
+
+- Header: `Authorization: Bearer <access_token>` (required)
+- При отсутствии/невалидном токене: `401 unauthorized`
+- Для пользователей роли `parent` social недоступен: `403 social_not_available_for_parent`
+
+### 7.1 Друзья
+
+#### `POST /api/social/friends/requests`
+
+Отправить заявку в друзья.
+
+Body:
+
+```json
+{
+  "userId": "uuid"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "requestId": "uuid",
+  "status": "PENDING"
+}
+```
+
+Ошибки:
+
+- `400 friend_request_self`
+- `404 user_not_found`
+- `409 friendship_already_exists`
+- `409 friend_request_already_exists`
+- `409 friend_request_incoming_exists`
+
+#### `GET /api/social/friends/requests/incoming?limit=<n>`
+
+Входящие заявки в друзья текущего пользователя (только `PENDING`).
+
+Параметры query:
+
+- `limit` (`int`, optional)
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "requestId": "uuid",
+      "requesterUserId": "uuid",
+      "requesterUsername": "student_1",
+      "receiverUserId": "uuid",
+      "receiverUsername": "student_2",
+      "status": "PENDING",
+      "createdAt": "2026-03-27T12:00:00Z",
+      "respondedAt": null
+    }
+  ]
+}
+```
+
+#### `GET /api/social/friends/requests/outgoing?limit=<n>`
+
+Исходящие заявки в друзья текущего пользователя (только `PENDING`).
+
+Параметры query:
+
+- `limit` (`int`, optional)
+
+Ответ `200`: формат такой же, как у incoming.
+
+#### `POST /api/social/friends/requests/{requestId}/accept`
+
+Принять входящую заявку.
+
+Ответ `200`:
+
+```json
+{
+  "requestId": "uuid",
+  "status": "ACCEPTED"
+}
+```
+
+Ошибки:
+
+- `404 friend_request_not_found`
+- `403 forbidden` (если заявка не адресована текущему пользователю)
+- `409 friend_request_not_pending`
+
+#### `POST /api/social/friends/requests/{requestId}/reject`
+
+Отклонить входящую заявку.
+
+Ответ `200`:
+
+```json
+{
+  "requestId": "uuid",
+  "status": "REJECTED"
+}
+```
+
+Ошибки:
+
+- `404 friend_request_not_found`
+- `403 forbidden`
+- `409 friend_request_not_pending`
+
+#### `GET /api/social/friends?limit=<n>`
+
+Список друзей текущего пользователя.
+
+Параметры query:
+
+- `limit` (`int`, optional)
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "userId": "uuid",
+      "username": "friend_name",
+      "since": "2026-03-27T12:03:00Z"
+    }
+  ]
+}
+```
+
+#### `DELETE /api/social/friends/{friendUserId}`
+
+Удалить дружбу (в обе стороны).
+
+Ответ `200`: пустое тело.
+
+#### `GET /api/social/users/search?q=<text>&limit=<n>`
+
+Поиск пользователей по `username` (кроме самого себя).
+
+Параметры query:
+
+- `q` (`string`, optional)
+- `limit` (`int`, optional)
+
+Поведение:
+
+- если длина `q < 2`, возвращается пустой список
+- если длина `q > 100`, ошибка `400 search_query_too_long`
+
+Ответ `200`:
+
+```json
+{
+  "users": [
+    {
+      "userId": "uuid",
+      "username": "student_3",
+      "friendStatus": "OUTGOING_REQUEST"
+    }
+  ]
+}
+```
+
+`friendStatus`: `ACCEPTED | OUTGOING_REQUEST | INCOMING_REQUEST | null`.
+
+### 7.2 Чат
+
+Ограничение:
+
+- чат с участием пользователя роли `parent` запрещён: `403 chat_with_parent_forbidden`
+
+#### `POST /api/social/chats/private/{otherUserId}`
+
+Создать приватный чат с пользователем.
+Если чат уже есть, возвращается существующий.
+
+Ответ `200`:
+
+```json
+{
+  "chatId": "uuid",
+  "otherUserId": "uuid",
+  "created": true
+}
+```
+
+`created=false` означает, что чат уже существовал.
+
+Ошибки:
+
+- `400 chat_self`
+- `404 user_not_found`
+
+#### `GET /api/social/chats?limit=<n>`
+
+Список чатов текущего пользователя.
+
+Параметры query:
+
+- `limit` (`int`, optional)
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "chatId": "uuid",
+      "otherUserId": "uuid",
+      "otherUsername": "student_2",
+      "lastMessage": {
+        "messageId": 12,
+        "senderUserId": "uuid",
+        "text": "Привет",
+        "createdAt": "2026-03-27T12:10:00Z"
+      },
+      "unreadCount": 3,
+      "updatedAt": "2026-03-27T12:10:00Z"
+    }
+  ]
+}
+```
+
+#### `GET /api/social/chats/{chatId}/messages?beforeMessageId=<id>&limit=<n>`
+
+Постраничная загрузка сообщений чата.
+
+Параметры query:
+
+- `beforeMessageId` (`long`, optional)
+- `limit` (`int`, optional)
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "messageId": 11,
+      "chatId": "uuid",
+      "senderUserId": "uuid",
+      "text": "Текст сообщения",
+      "replyToMessageId": null,
+      "createdAt": "2026-03-27T12:09:00Z"
+    }
+  ]
+}
+```
+
+Ошибки:
+
+- `404 chat_not_found`
+- `403 chat_access_denied`
+
+#### `POST /api/social/chats/{chatId}/messages`
+
+Отправить сообщение в чат.
+
+Body:
+
+```json
+{
+  "text": "Привет!",
+  "replyToMessageId": null
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "message": {
+    "messageId": 13,
+    "chatId": "uuid",
+    "senderUserId": "uuid",
+    "text": "Привет!",
+    "replyToMessageId": null,
+    "createdAt": "2026-03-27T12:11:00Z"
+  }
+}
+```
+
+Ошибки:
+
+- `400 message_empty`
+- `400 reply_message_not_found`
+- `404 chat_not_found`
+- `403 chat_access_denied`
+
+#### `PUT /api/social/chats/{chatId}/messages/{messageId}`
+
+Редактировать собственное сообщение.
+
+Body:
+
+```json
+{
+  "text": "Исправленный текст"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "message": {
+    "messageId": 13,
+    "chatId": "uuid",
+    "senderUserId": "uuid",
+    "text": "Исправленный текст",
+    "replyToMessageId": null,
+    "createdAt": "2026-03-27T12:11:00Z"
+  }
+}
+```
+
+Ошибки:
+
+- `400 message_empty`
+- `404 message_not_found`
+- `403 forbidden` (если сообщение не принадлежит текущему пользователю)
+
+#### `DELETE /api/social/chats/{chatId}/messages/{messageId}`
+
+Удалить собственное сообщение.
+
+Ответ `200`:
+
+```json
+{
+  "deleted": true,
+  "messageId": 13
+}
+```
+
+Ошибки:
+
+- `404 message_not_found`
+- `403 forbidden`
+
+#### `POST /api/social/chats/{chatId}/read`
+
+Обновить последнюю прочитанную позицию в чате.
+
+Body (optional):
+
+```json
+{
+  "lastReadMessageId": 13
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "ok": true,
+  "lastReadMessageId": 13
+}
+```
+
+Ошибки:
+
+- `400 last_read_message_invalid`
+- `400 message_not_found`
+- `404 chat_not_found`
+- `403 chat_access_denied`
+
+## 8. Social WebSocket (на том же порту backend)
+
+### 8.1 Подключение
+
+- Endpoint: `ws(s)://<host>:<backend_port>${CHAT_WS_ENDPOINT}` (default `/ws/social`)
+- Протокол: STOMP
+
+Авторизация на `CONNECT`:
+
+- `Authorization: Bearer <access_token>`
+- или `access_token: <access_token>`
+
+Если токен невалиден: соединение отклоняется.
+
+### 8.2 Подписки
+
+Подписываться нужно на user-destination:
+
+- чат: `/user${CHAT_WS_USER_CHAT_DESTINATION}` (по умолчанию `/user/queue/social/chat`)
+- социальные события (друзья): `/user${CHAT_WS_USER_FRIEND_DESTINATION}` (по умолчанию `/user/queue/social/friends`)
+- события родительского контроля: `/user${CHAT_WS_USER_PARENT_CONTROL_DESTINATION}` (по умолчанию `/user/queue/social/parent-control`)
+
+### 8.3 Формат событий
+
+Все события имеют общий envelope:
+
+```json
+{
+  "type": "message_sent",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {}
+}
+```
+
+#### 8.3.1 События чата
+
+`chat_created`:
+
+```json
+{
+  "type": "chat_created",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "chatId": "uuid",
+    "otherUserId": "uuid",
+    "initiatorUserId": "uuid"
+  }
+}
+```
+
+`message_sent` и `message_edited`:
+
+```json
+{
+  "type": "message_edited",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "chatId": "uuid",
+    "message": {
+      "messageId": 13,
+      "chatId": "uuid",
+      "senderUserId": "uuid",
+      "text": "Текст",
+      "replyToMessageId": null,
+      "createdAt": "2026-03-27T12:11:00Z"
+    }
+  }
+}
+```
+
+`message_deleted`:
+
+```json
+{
+  "type": "message_deleted",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "chatId": "uuid",
+    "messageId": 13,
+    "actorUserId": "uuid"
+  }
+}
+```
+
+`message_read`:
+
+```json
+{
+  "type": "message_read",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "chatId": "uuid",
+    "lastReadMessageId": 13,
+    "readerUserId": "uuid"
+  }
+}
+```
+
+#### 8.3.2 События друзей
+
+`friend_request`, `friend_accept`, `friend_reject`:
+
+```json
+{
+  "type": "friend_accept",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "requestId": "uuid",
+    "requesterUserId": "uuid",
+    "receiverUserId": "uuid",
+    "status": "ACCEPTED"
+  }
+}
+```
+
+`friend_removed`:
+
+```json
+{
+  "type": "friend_removed",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "friendUserId": "uuid"
+  }
+}
+```
+
+#### 8.3.3 События родительского контроля
+
+`parent_control_request`, `parent_control_accept`, `parent_control_reject`:
+
+```json
+{
+  "type": "parent_control_accept",
+  "timestamp": "2026-03-27T12:34:56Z",
+  "data": {
+    "requestId": "uuid",
+    "parentUserId": "uuid",
+    "childUserId": "uuid",
+    "status": "ACCEPTED"
+  }
+}
+```
+
+## 9. Родительский контроль
+
+Базовый префикс: `/api/parent`.
+Realtime-уведомления по заявкам приходят через WebSocket-события из раздела `8.3.3`.
+
+Для всех ручек родконтроля:
+
+- Header: `Authorization: Bearer <access_token>` (required)
+- При отсутствии/невалидном токене: `401 unauthorized`
+
+### 9.1 Заявки родительского контроля
+
+#### `POST /api/parent/requests`
+
+Отправить заявку на родконтроль (только роль `parent`).
+Получатель заявки должен быть пользователем роли `student`.
+
+Body:
+
+```json
+{
+  "childUserId": "uuid"
+}
+```
+
+Ответ `200`:
+
+```json
+{
+  "requestId": "uuid",
+  "status": "PENDING"
+}
+```
+
+Ошибки:
+
+- `400 parent_control_request_self`
+- `403 parent_control_parent_role_required`
+- `403 parent_control_child_role_required`
+- `404 user_not_found`
+- `409 parent_control_request_already_exists`
+- `409 parent_control_already_active`
+
+#### `GET /api/parent/requests/outgoing?limit=<n>`
+
+Исходящие `PENDING` заявки текущего родителя.
+
+Параметры query:
+
+- `limit` (`int`, optional)
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "requestId": "uuid",
+      "parentUserId": "uuid",
+      "parentUsername": "parent_1",
+      "childUserId": "uuid",
+      "childUsername": "student_1",
+      "status": "PENDING",
+      "createdAt": "2026-03-27T13:00:00Z",
+      "respondedAt": null
+    }
+  ]
+}
+```
+
+#### `GET /api/parent/requests/incoming?limit=<n>`
+
+Входящие `PENDING` заявки текущего ребёнка (`student`).
+
+Параметры query:
+
+- `limit` (`int`, optional)
+
+Ответ `200`: формат такой же, как у outgoing.
+
+#### `POST /api/parent/requests/{requestId}/accept`
+
+Принять заявку (выполняет ребёнок роли `student`).
+После принятия создаётся активная связь `parent -> child`.
+
+Ответ `200`:
+
+```json
+{
+  "requestId": "uuid",
+  "status": "ACCEPTED"
+}
+```
+
+Ошибки:
+
+- `403 parent_control_child_role_required`
+- `403 parent_control_forbidden`
+- `404 parent_control_request_not_found`
+- `409 parent_control_request_not_pending`
+
+#### `POST /api/parent/requests/{requestId}/reject`
+
+Отклонить заявку (выполняет ребёнок роли `student`).
+
+Ответ `200`:
+
+```json
+{
+  "requestId": "uuid",
+  "status": "REJECTED"
+}
+```
+
+Ошибки:
+
+- `403 parent_control_child_role_required`
+- `403 parent_control_forbidden`
+- `404 parent_control_request_not_found`
+- `409 parent_control_request_not_pending`
+
+### 9.2 Дети родителя
+
+#### `GET /api/parent/children`
+
+Список детей текущего родителя с активной связью.
+
+Ответ `200`:
+
+```json
+{
+  "items": [
+    {
+      "childUserId": "uuid",
+      "childUsername": "student_1",
+      "since": "2026-03-27T13:05:00Z"
+    }
+  ]
+}
+```
+
+Ошибка:
+
+- `403 parent_control_parent_role_required`
+
+### 9.3 Дашборд ребёнка
+
+#### `GET /api/parent/children/{childId}/dashboard`
+
+Read-only дашборд ребёнка для родителя.
+Доступ есть только при активной связи `parent -> child`.
+
+Ответ `200`:
+
+```json
+{
+  "child": {
+    "userId": "uuid",
+    "username": "student_1",
+    "xp": 120,
+    "level": 2,
+    "coins": 35,
+    "lastActivityAt": "2026-03-27T14:10:00Z"
+  },
+  "courses": [
+    {
+      "targetId": "uuid",
+      "name": "Java",
+      "courseId": "uuid",
+      "moduleId": null,
+      "percent": 40,
+      "completed": false,
+      "doneItems": 2,
+      "totalItems": 5
+    }
+  ],
+  "modules": [
+    {
+      "targetId": "uuid",
+      "name": "Циклы",
+      "courseId": "uuid",
+      "moduleId": "uuid",
+      "percent": 50,
+      "completed": false,
+      "doneItems": 1,
+      "totalItems": 2
+    }
+  ],
+  "lessons": [
+    {
+      "targetId": "uuid",
+      "name": "while",
+      "courseId": "uuid",
+      "moduleId": "uuid",
+      "percent": 100,
+      "completed": true,
+      "doneItems": 2,
+      "totalItems": 2
+    }
+  ],
+  "recentActivities": [
+    {
+      "eventId": "uuid",
+      "createdAt": "2026-03-27T14:00:00Z",
+      "eventType": "quiz_completed",
+      "progressPercent": 100,
+      "xpGranted": 12,
+      "coinGranted": 5,
+      "lessonId": "uuid",
+      "quizId": "uuid",
+      "taskId": null,
+      "examId": null,
+      "details": null
+    }
+  ]
+}
+```
+
+`recentActivities` включает только типы:
+
+- `quiz_completed`
+- `task_completed`
+- `exam_completed`
+
+Ошибки:
+
+- `403 parent_control_parent_role_required`
+- `403 parent_control_forbidden`
+- `403 parent_control_child_role_required`
+- `404 user_not_found`
+

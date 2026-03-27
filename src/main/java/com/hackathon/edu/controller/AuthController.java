@@ -31,9 +31,20 @@ public class AuthController {
     private final AppSecurityProperties properties;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(authService.register(request.username(), request.password(), request.age(), request.role()));
+    public ResponseEntity<?> register(
+            @Valid @RequestBody RegisterRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse
+    ) {
+        var result = authService.registerWithTokens(
+                request.username(),
+                request.password(),
+                request.age(),
+                request.role(),
+                RequestInfoResolver.resolve(httpRequest)
+        );
+        CookieUtils.addRefreshCookie(httpResponse, properties, result.refreshTokenForCookie(), authService.refreshMaxAgeSeconds());
+        return ResponseEntity.status(HttpStatus.CREATED).body(result.responseBody());
     }
 
     @PostMapping("/login")
@@ -75,9 +86,9 @@ public class AuthController {
     }
 
     @GetMapping("/profile")
-    public ProfileDTO.ProfileResponse profile(
+    public ProfileDTO.PrivateProfileResponse profile(
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        return authService.getProfile(authService.requireUserIdFromAccessHeader(authorizationHeader));
+        return authService.getPrivateProfile(authService.requireUserIdFromAccessHeader(authorizationHeader));
     }
 }

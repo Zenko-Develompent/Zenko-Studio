@@ -101,6 +101,21 @@ public class AuthService {
     }
 
     @Transactional
+    public LoginResult registerWithTokens(
+            String usernameRaw,
+            String password,
+            Integer ageRaw,
+            String roleRaw,
+            RequestInfo requestInfo
+    ) {
+        RegisterResponse registerResponse = register(usernameRaw, password, ageRaw, roleRaw);
+        UUID userId = UUID.fromString(registerResponse.userId());
+        UserEntity user = requireUser(userId);
+        RefreshTokenService.TokenPair pair = refreshTokenService.issue(userId, requestInfo.ip());
+        return buildLoginResult(pair, toUserDto(user));
+    }
+
+    @Transactional
     public RegisterResponse upsertAdmin(String usernameRaw, String password, Integer ageRaw) {
         String username = usernameRaw == null ? null : usernameRaw.trim();
 
@@ -241,7 +256,7 @@ public class AuthService {
         return props.getRefreshTtlDays() * 86400L;
     }
 
-    public ProfileDTO.ProfileResponse getProfile(UUID userId) {
+    public ProfileDTO.PrivateProfileResponse getPrivateProfile(UUID userId) {
         UserEntity user = requireUser(userId);
         int xp = user.getXp() == null ? 0 : user.getXp();
         int level = user.getLevel() == null ? 0 : user.getLevel();
@@ -253,7 +268,23 @@ public class AuthService {
                 .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName()))
                 .toList();
 
-        return new ProfileDTO.ProfileResponse(user.getUsername(), xp, level, coins, achievements);
+        return new ProfileDTO.PrivateProfileResponse(user.getUsername(), xp, level, coins, achievements);
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileDTO.PublicProfileResponse getPublicProfile(UUID userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "user_not_found"));
+        int level = user.getLevel() == null ? 0 : user.getLevel();
+        int exp = user.getXp() == null ? 0 : user.getXp();
+
+        var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
+                .map(AchievementUserEntity::getAchievement)
+                .filter(a -> a != null && a.getAchievementId() != null && a.getName() != null)
+                .map(a -> new ProfileDTO.AchievementItem(a.getAchievementId(), a.getName()))
+                .toList();
+
+        return new ProfileDTO.PublicProfileResponse(user.getUsername(), level, exp, achievements);
     }
 
     private LoginResult buildLoginResult(
