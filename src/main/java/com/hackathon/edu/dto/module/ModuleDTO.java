@@ -1,5 +1,9 @@
 package com.hackathon.edu.dto.module;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -49,5 +53,51 @@ public final class ModuleDTO {
             long tasksCount
     ) {
     }
-}
 
+    public record ModuleListResponse(
+            List<ModuleListItem> items
+    ) {
+    }
+
+    public record ModuleListItem(
+            UUID moduleId,
+            UUID courseId,
+            String name,
+            String description,
+            long lessonCount,
+            UUID examId
+    ) {
+    }
+
+    public record ModuleCreateRequest(
+            @NotNull
+            UUID courseId,
+            @NotBlank
+            @Size(max = 50)
+            String name,
+            String description,
+            List<UUID> lessonIds,
+            List<LessonCreateRequest> lessons
+    ) {
+    }
+
+    public record ModuleUpdateRequest(
+            @NotBlank
+            @Size(max = 50)
+            String name,
+            String description,
+            List<UUID> lessonIds,
+            List<LessonCreateRequest> lessons
+    ) {
+    }
+
+    public record LessonCreateRequest(
+            @NotBlank
+            @Size(max = 50)
+            String name,
+            String description,
+            String body,
+            Integer xp
+    ) {
+    }
+}
