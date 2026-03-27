@@ -3,11 +3,13 @@ package com.hackathon.edu.controller;
 import com.hackathon.edu.dto.course.CourseDTO;
 import com.hackathon.edu.service.CourseService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.http.HttpStatus;
+import com.hackathon.edu.dto.course.CourseDTO.CreateCourseRequest;
 
 import java.util.UUID;
 
@@ -38,6 +40,14 @@ public class CourseController {
     @GetMapping("/courses/{courseId}/tree")
     public CourseDTO.CourseTreeResponse courseTree(@PathVariable("courseId") UUID courseId) {
         return courseService.getCourseTree(courseId);
+    }
+
+    @PostMapping("/courses")
+    public ResponseEntity<CourseDTO.CourseDetailResponse> createLesson(
+            @Valid @RequestBody CreateCourseRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(courseService.createCourse(request));
     }
 }
 
