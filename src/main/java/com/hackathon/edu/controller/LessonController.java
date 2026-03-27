@@ -1,7 +1,10 @@
 package com.hackathon.edu.controller;
 
 import com.hackathon.edu.dto.lesson.LessonDTO;
+import com.hackathon.edu.dto.progress.ProgressDTO;
+import com.hackathon.edu.service.AuthService;
 import com.hackathon.edu.service.LessonService;
+import com.hackathon.edu.service.ProgressQueryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -29,6 +33,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LessonController {
     private final LessonService lessonService;
+    private final ProgressQueryService progressQueryService;
+    private final AuthService authService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<LessonDTO.LessonDetailResponse> createLesson(
@@ -90,6 +96,15 @@ public class LessonController {
     @GetMapping("/{lessonId}/task")
     public LessonDTO.LessonTaskResponse lessonTask(@PathVariable("lessonId") UUID lessonId) {
         return lessonService.getLessonTask(lessonId);
+    }
+
+    @GetMapping("/{lessonId}/progress")
+    public ProgressDTO.ProgressResponse lessonProgress(
+            @PathVariable("lessonId") UUID lessonId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        return progressQueryService.getLessonProgress(userId, lessonId);
     }
 
     @DeleteMapping("/{lessonId}")

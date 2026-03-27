@@ -11,4 +11,6 @@ import java.util.UUID;
 public interface ExamAttemptRepository extends JpaRepository<ExamAttemptEntity, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<ExamAttemptEntity> findByExam_ExemIdAndUserId(UUID examId, UUID userId);
+
+    boolean existsByExam_ExemIdAndUserIdAndCompletedTrue(UUID examId, UUID userId);
 }

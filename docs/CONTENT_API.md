@@ -4,7 +4,7 @@
 
 - Базовый префикс: `/api`
 - Формат ответов: `application/json`
-- Аутентификация: сейчас для этих GET-ручек не требуется
+- Аутентификация: для большинства read GET-ручек не требуется, но progress-ручки (`/progress`) требуют `Authorization: Bearer <access_token>`.
 
 ## 1. Общие правила
 
@@ -824,6 +824,92 @@ Body:
 - `400`: `answer_not_in_question`
 - `401`: `unauthorized` (только если передан невалидный токен)
 
+### 3.8 Прогресс
+
+#### `GET /api/lessons/{lessonId}/progress`
+
+Возвращает прогресс пользователя по уроку.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "targetId": "uuid",
+  "targetType": "lesson",
+  "percent": 50,
+  "completed": false,
+  "doneItems": 1,
+  "totalItems": 2
+}
+```
+
+`percent` возвращается всегда (`100` означает, что урок полностью пройден).
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `lesson_not_found`
+
+#### `GET /api/modules/{moduleId}/progress`
+
+Возвращает прогресс пользователя по модулю.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "targetId": "uuid",
+  "targetType": "module",
+  "percent": 33,
+  "completed": false,
+  "doneItems": 1,
+  "totalItems": 3
+}
+```
+
+Для модуля учитываются уроки модуля и экзамен модуля.
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `module_not_found`
+
+#### `GET /api/courses/{courseId}/progress`
+
+Возвращает прогресс пользователя по курсу.
+
+Headers:
+
+- `Authorization: Bearer <access_token>` (required)
+
+Ответ `200`:
+
+```json
+{
+  "targetId": "uuid",
+  "targetType": "course",
+  "percent": 7,
+  "completed": false,
+  "doneItems": 1,
+  "totalItems": 15
+}
+```
+
+Для курса агрегируется прогресс по всем модулям курса.
+
+Ошибки:
+
+- `401`: `unauthorized`
+- `404`: `course_not_found`
+
 ## 4. Файловая система уроков (.md)
 
 ### 4.1 Что хранится в БД
@@ -906,3 +992,6 @@ services:
 22. `POST /api/tasks/{taskId}/run`
 23. `GET /api/quests/{questId}/answers`
 24. `POST /api/quests/{questId}/check`
+25. `GET /api/lessons/{lessonId}/progress`
+26. `GET /api/modules/{moduleId}/progress`
+27. `GET /api/courses/{courseId}/progress`

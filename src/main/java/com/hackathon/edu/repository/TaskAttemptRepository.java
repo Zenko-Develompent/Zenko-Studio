@@ -12,5 +12,7 @@ public interface TaskAttemptRepository extends JpaRepository<TaskAttemptEntity, 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<TaskAttemptEntity> findByTask_TasksIdAndUserId(UUID taskId, UUID userId);
 
+    boolean existsByTask_TasksIdAndUserIdAndCompletedTrue(UUID taskId, UUID userId);
+
     long countByTask_Exam_ExemIdAndUserIdAndCompletedTrue(UUID examId, UUID userId);
 }
