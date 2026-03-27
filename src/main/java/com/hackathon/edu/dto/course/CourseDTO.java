@@ -1,11 +1,8 @@
 package com.hackathon.edu.dto.course;
 
-import com.hackathon.edu.entity.ModuleEntity;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 

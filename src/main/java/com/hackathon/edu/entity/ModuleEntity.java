@@ -39,7 +39,8 @@ public class ModuleEntity {
     @JoinColumn(name = "course_id")
     private CourseEntity course;
 
-    @OneToMany(mappedBy = "module", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "module_id", nullable = false)
     private List<LessonEntity> lessons = new ArrayList<>();
 
     @OneToOne(mappedBy = "module", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

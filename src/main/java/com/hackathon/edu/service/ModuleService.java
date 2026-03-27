@@ -18,8 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -173,28 +175,36 @@ public class ModuleService {
 
     private void attachLessonsToModule(ModuleEntity module, List<UUID> lessonIds) {
         UUID courseId = module.getCourse() == null ? null : module.getCourse().getCourseId();
+        Set<UUID> existing = new HashSet<>();
+        for (LessonEntity l : safeList(module.getLessons())) {
+            if (l != null && l.getLessonId() != null) {
+                existing.add(l.getLessonId());
+            }
+        }
 
         for (UUID lessonId : safeList(lessonIds)) {
             if (lessonId == null) {
                 continue;
             }
 
-            LessonEntity lesson = lessonRepository.findWithRelationsByLessonId(lessonId)
-                    .orElseThrow(notFound("lesson_not_found"));
+            if (existing.contains(lessonId)) {
+                continue;
+            }
 
-            UUID lessonCourseId = lesson.getModule() == null || lesson.getModule().getCourse() == null
-                    ? null
-                    : lesson.getModule().getCourse().getCourseId();
+            UUID lessonCourseId = moduleRepository.findCourseIdByLessonId(lessonId);
 
             if (courseId != null && lessonCourseId != null && !courseId.equals(lessonCourseId)) {
                 throw new ApiException(HttpStatus.BAD_REQUEST, "lesson_course_mismatch");
             }
-            if (courseId == null && lesson.getModule() != null && lesson.getModule().getCourse() != null) {
-                module.setCourse(lesson.getModule().getCourse());
-                courseId = module.getCourse().getCourseId();
+            if (courseId == null && lessonCourseId != null) {
+                module.setCourse(courseRepository.findById(lessonCourseId).orElse(null));
+                courseId = module.getCourse() == null ? null : module.getCourse().getCourseId();
             }
 
-            lesson.setModule(module);
+            LessonEntity lesson = lessonRepository.findById(lessonId)
+                    .orElseThrow(notFound("lesson_not_found"));
+            module.getLessons().add(lesson);
+            existing.add(lessonId);
         }
     }
 

@@ -69,18 +69,26 @@ public class DatabaseSeedRunner implements CommandLineRunner {
     }
 
     private void ensureLesson(ModuleEntity module, String name, String description, String body, int xp) {
-        LessonEntity lesson = lessonRepository.findByModule_ModuleIdAndNameIgnoreCase(module.getModuleId(), name)
+        LessonEntity lesson = lessonRepository.findByModuleIdAndNameIgnoreCase(module.getModuleId(), name)
                 .orElseGet(() -> {
                     LessonEntity entity = new LessonEntity();
-                    entity.setModule(module);
                     entity.setName(name);
                     return entity;
                 });
 
-        lesson.setModule(module);
         lesson.setDescription(description);
-        lesson.setBody(body);
         lesson.setXp(xp);
-        lessonRepository.save(lesson);
+
+        // `LessonEntity.body` stores a path to a .md/.txt file; keep it null for seeded lessons.
+        if (lesson.getBody() == null || lesson.getBody().isBlank()) {
+            lesson.setBody(null);
+        }
+
+        if (lesson.getLessonId() == null) {
+            module.getLessons().add(lesson);
+            moduleRepository.save(module);
+        } else {
+            lessonRepository.save(lesson);
+        }
     }
 }

@@ -17,21 +17,39 @@ public interface LessonRepository extends JpaRepository<LessonEntity, UUID> {
         long getCnt();
     }
 
-    long countByModule_ModuleId(UUID moduleId);
+    @Query("""
+            select count(l)
+            from ModuleEntity m
+            join m.lessons l
+            where m.moduleId = :moduleId
+            """)
+    long countByModuleId(@Param("moduleId") UUID moduleId);
 
-    @Query("select count(l) from LessonEntity l where l.module.course.courseId = :courseId")
+    @Query("""
+            select count(l)
+            from ModuleEntity m
+            join m.lessons l
+            where m.course.courseId = :courseId
+            """)
     long countByCourseId(@Param("courseId") UUID courseId);
 
     @Query("""
-            select l.module.moduleId as moduleId, count(l) as cnt
-            from LessonEntity l
-            where l.module.course.courseId = :courseId
-            group by l.module.moduleId
+            select m.moduleId as moduleId, count(l) as cnt
+            from ModuleEntity m
+            left join m.lessons l
+            where m.course.courseId = :courseId
+            group by m.moduleId
             """)
     List<ModuleLessonCount> countLessonsByModuleForCourse(@Param("courseId") UUID courseId);
 
-    @EntityGraph(attributePaths = {"module", "quiz", "task"})
+    @EntityGraph(attributePaths = {"quiz", "task"})
     Optional<LessonEntity> findWithRelationsByLessonId(UUID lessonId);
 
-    Optional<LessonEntity> findByModule_ModuleIdAndNameIgnoreCase(UUID moduleId, String name);
+    @Query("""
+            select l
+            from ModuleEntity m
+            join m.lessons l
+            where m.moduleId = :moduleId and lower(l.name) = lower(:name)
+            """)
+    Optional<LessonEntity> findByModuleIdAndNameIgnoreCase(@Param("moduleId") UUID moduleId, @Param("name") String name);
 }

@@ -50,7 +50,6 @@ public class LessonService {
 
         LessonEntity lesson = new LessonEntity();
         lesson.setLessonId(UUID.randomUUID());
-        lesson.setModule(module);
         lesson.setName(name);
         lesson.setDescription(description);
         lesson.setXp(xpRaw == null ? 0 : xpRaw);
@@ -58,12 +57,12 @@ public class LessonService {
         String storedPath = lessonContentService.storeLessonBody(lesson.getLessonId(), file);
         lesson.setBody(storedPath);
 
-        lessonRepository.saveAndFlush(lesson);
+        module.getLessons().add(lesson);
+        moduleRepository.saveAndFlush(module);
 
         String content = lessonContentService.readRawMarkdown(lesson.getBody());
         return new LessonDTO.LessonDetailResponse(
                 lesson.getLessonId(),
-                moduleId,
                 lesson.getName(),
                 lesson.getDescription(),
                 content,
@@ -87,7 +86,6 @@ public class LessonService {
         String content = lessonContentService.readRawMarkdown(lesson.getBody());
         return new LessonDTO.LessonDetailResponse(
                 lesson.getLessonId(),
-                lesson.getModule() == null ? null : lesson.getModule().getModuleId(),
                 lesson.getName(),
                 lesson.getDescription(),
                 content,
@@ -141,7 +139,6 @@ public class LessonService {
 
         return new LessonDTO.LessonDetailResponse(
                 lesson.getLessonId(),
-                lesson.getModule() == null ? null : lesson.getModule().getModuleId(),
                 lesson.getName(),
                 lesson.getDescription(),
                 content,

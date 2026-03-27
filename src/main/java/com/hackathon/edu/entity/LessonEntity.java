@@ -4,16 +4,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -38,11 +34,6 @@ public class LessonEntity {
 
     @Column(name = "xp")
     private Integer xp = 0;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "module_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private ModuleEntity module;
 
     @OneToOne(mappedBy = "lesson", fetch = FetchType.LAZY)
     private QuizEntity quiz;

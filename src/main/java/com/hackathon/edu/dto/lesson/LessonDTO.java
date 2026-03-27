@@ -11,7 +11,6 @@ public final class LessonDTO {
 
     public record LessonDetailResponse(
             UUID lessonId,
-            UUID moduleId,
             String name,
             String description,
             String content,
