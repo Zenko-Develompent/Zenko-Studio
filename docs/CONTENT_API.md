@@ -71,6 +71,8 @@
 - `code_too_large`
 - `task_input_too_large`
 - `runner_unavailable`
+- `community_period_invalid`
+- `community_metric_invalid`
 
 Коды ошибок чтения markdown:
 
@@ -1077,3 +1079,86 @@ services:
 26. `GET /api/lessons/{lessonId}/progress`
 27. `GET /api/modules/{moduleId}/progress`
 28. `GET /api/courses/{courseId}/progress`
+29. `GET /api/community/leaderboard?period=day|week|month&metric=activity|xp&limit=9`
+30. `GET /api/community/feed?limit=10`
+
+## 6. Community (Leaderboard + Feed)
+
+### `GET /api/community/leaderboard`
+
+Query:
+
+- `period` (`day | week | month`, optional, default `week`)
+- `metric` (`activity | xp`, optional, default `activity`)
+- `limit` (`int`, optional, default `9`, min `1`, max `9`)
+
+Response `200`:
+
+```json
+{
+  "period": "week",
+  "metric": "activity",
+  "fromInclusive": "2026-03-20T10:00:00Z",
+  "toInclusive": "2026-03-27T10:00:00Z",
+  "items": [
+    {
+      "rank": 1,
+      "userId": "uuid",
+      "username": "student_1",
+      "score": 145
+    }
+  ]
+}
+```
+
+Errors:
+
+- `400`: `community_period_invalid`
+- `400`: `community_metric_invalid`
+
+### `GET /api/community/feed`
+
+Query:
+
+- `limit` (`int`, optional, default `10`, min `1`, max `100`)
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "eventId": "uuid",
+      "createdAt": "2026-03-27T10:02:00Z",
+      "userId": "uuid",
+      "username": "student_1",
+      "eventType": "quiz_completed",
+      "activityScore": 10,
+      "xpGranted": 12,
+      "coinGranted": 6,
+      "progressPercent": 100,
+      "lessonId": "uuid",
+      "quizId": "uuid",
+      "taskId": null,
+      "examId": null,
+      "details": null
+    }
+  ]
+}
+```
+
+Current event types written by backend:
+
+- `quiz_completed`
+- `task_completed`
+- `exam_completed`
+- `level_up`
+
+Anti-farming rule for ranking:
+
+- Completion events are written only on `firstCompletion=true` (no repeated farming from reruns/retries).
+
+Reserved event types (for next steps):
+
+- `achievement_unlocked`
+- `streak_day`

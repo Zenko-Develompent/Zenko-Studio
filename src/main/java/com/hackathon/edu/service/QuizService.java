@@ -41,6 +41,7 @@ public class QuizService {
     private final GamificationService gamificationService;
     private final ProgressService progressService;
     private final LearningAccessService learningAccessService;
+    private final ActivityEventService activityEventService;
 
     @Transactional
     public QuizDTO.QuizDetailResponse createLessonQuiz(UUID lessonId, QuizDTO.QuizCreateRequest request) {
@@ -199,6 +200,15 @@ public class QuizService {
             grant = gamificationService.grantLessonQuizReward(userId, quiz);
             attempt.setRewardGranted(true);
             quizAttemptRepository.save(attempt);
+        }
+        if (firstCompletion) {
+            activityEventService.recordQuizCompleted(
+                    userId,
+                    quiz.getLesson() == null ? null : quiz.getLesson().getLessonId(),
+                    quiz.getQuizId(),
+                    grant.xpGranted(),
+                    grant.coinGranted()
+            );
         }
 
         return new QuizFlowDTO.SubmitAnswerResponse(

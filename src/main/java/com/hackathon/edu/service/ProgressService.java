@@ -32,6 +32,7 @@ public class ProgressService {
     private final ExamQuestionProgressRepository examQuestionProgressRepository;
     private final GamificationService gamificationService;
     private final LearningAccessService learningAccessService;
+    private final ActivityEventService activityEventService;
 
     @Transactional
     public TaskCompletionResult completeTask(UUID userId, UUID taskId) {
@@ -52,6 +53,16 @@ public class ProgressService {
         GamificationService.GrantResult grant = GamificationService.GrantResult.none();
         if (firstCompletion && task.getLesson() != null && task.getExam() == null) {
             grant = gamificationService.grantLessonTaskReward(userId, task);
+        }
+        if (firstCompletion) {
+            activityEventService.recordTaskCompleted(
+                    userId,
+                    task.getLesson() == null ? null : task.getLesson().getLessonId(),
+                    task.getTasksId(),
+                    task.getExam() == null ? null : task.getExam().getExemId(),
+                    grant.xpGranted(),
+                    grant.coinGranted()
+            );
         }
 
         return new TaskCompletionResult(
@@ -130,6 +141,9 @@ public class ProgressService {
         if (firstCompletion && !Boolean.TRUE.equals(attempt.getRewardGranted())) {
             grant = gamificationService.grantExamReward(userId, exam);
             attempt.setRewardGranted(true);
+        }
+        if (firstCompletion) {
+            activityEventService.recordExamCompleted(userId, examId, grant.xpGranted(), grant.coinGranted());
         }
 
         examAttemptRepository.save(attempt);

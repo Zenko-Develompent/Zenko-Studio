@@ -21,6 +21,7 @@ public class GamificationService {
     private static final int LEVEL_XP_STEP = 50;
 
     private final UserRepository userRepository;
+    private final ActivityEventService activityEventService;
 
     @Transactional
     public GrantResult grantLessonQuizReward(UUID userId, QuizEntity quiz) {
@@ -53,13 +54,18 @@ public class GamificationService {
 
         int grantedXp = Math.max(0, xp);
         int grantedCoins = Math.max(0, coin);
+        int levelBefore = safeInt(user.getLevel());
 
         int nextXp = safeInt(user.getXp()) + grantedXp;
         user.setXp(nextXp);
         user.setCoins(safeInt(user.getCoins()) + grantedCoins);
-        user.setLevel(calculateLevel(nextXp));
+        int levelAfter = calculateLevel(nextXp);
+        user.setLevel(levelAfter);
 
         userRepository.save(user);
+        if (levelAfter > levelBefore) {
+            activityEventService.recordLevelUp(userId, levelBefore, levelAfter);
+        }
         return new GrantResult(grantedXp, grantedCoins);
     }
 
