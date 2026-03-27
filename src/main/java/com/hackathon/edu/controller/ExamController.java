@@ -24,18 +24,30 @@ public class ExamController {
     private final AuthService authService;
 
     @GetMapping("/{examId}")
-    public ExamDTO.ExamDetailResponse exam(@PathVariable("examId") UUID examId) {
-        return examService.getExam(examId);
+    public ExamDTO.ExamDetailResponse exam(
+            @PathVariable("examId") UUID examId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return examService.getExam(userId, examId);
     }
     //zenkoa
     @GetMapping("/{examId}/questions")
-    public ExamDTO.QuestionsResponse examQuestions(@PathVariable("examId") UUID examId) {
-        return examService.getExamQuestions(examId);
+    public ExamDTO.QuestionsResponse examQuestions(
+            @PathVariable("examId") UUID examId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        return examService.getExamQuestions(userId, examId);
     }
 
     @GetMapping("/{examId}/tasks")
-    public ExamDTO.TasksResponse examTasks(@PathVariable("examId") UUID examId) {
-        return examService.getExamTasks(examId);
+    public ExamDTO.TasksResponse examTasks(
+            @PathVariable("examId") UUID examId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
+        return examService.getExamTasks(userId, examId);
     }
 
     @PostMapping("/{examId}/complete")
@@ -55,5 +67,12 @@ public class ExamController {
     ) {
         authService.requireAdminUserIdFromAccessHeader(authorizationHeader);
         return examService.updateExamRewards(examId, request);
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }

@@ -40,6 +40,15 @@ public class LearningAccessService {
         }
         assertLessonUnlocked(userId, quiz.getLesson().getLessonId());
     }
+
+    public void assertModuleUnlocked(UUID userId, UUID moduleId) {
+        ModuleEntity module = moduleRepository.findWithCourseAndExamByModuleId(moduleId)
+                .orElse(null);
+        if (module == null) {
+            return;
+        }
+        assertModuleUnlocked(userId, module);
+    }
     //Rogov
     public void assertTaskCanStart(UUID userId, TasksEntity task) {
         if (task == null) {
@@ -145,6 +154,21 @@ public class LearningAccessService {
             if (ex.getStatus() == HttpStatus.CONFLICT) {
                 String code = ex.getErrorCode();
                 if ("module_locked".equals(code) || "lesson_locked".equals(code)) {
+                    return false;
+                }
+            }
+            throw ex;
+        }
+    }
+
+    public boolean isExamUnlocked(UUID userId, ExemEntity exam) {
+        try {
+            assertExamUnlocked(userId, exam);
+            return true;
+        } catch (ApiException ex) {
+            if (ex.getStatus() == HttpStatus.CONFLICT) {
+                String code = ex.getErrorCode();
+                if ("module_locked".equals(code) || "lesson_locked".equals(code) || "exam_locked".equals(code)) {
                     return false;
                 }
             }

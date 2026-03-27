@@ -15,7 +15,8 @@ public final class ModuleDTO {
             UUID courseId,
             String name,
             String description,
-            ModuleExamSummary exam
+            ModuleExamSummary exam,
+            Boolean unlocked
     ) {
     }
 
@@ -49,7 +50,8 @@ public final class ModuleDTO {
             String name,
             String description,
             long questionsCount,
-            long tasksCount
+            long tasksCount,
+            Boolean unlocked
     ) {
     }
 

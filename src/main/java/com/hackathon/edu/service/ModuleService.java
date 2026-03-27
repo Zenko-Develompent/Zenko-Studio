@@ -133,9 +133,10 @@ public class ModuleService {
         return new ModuleDTO.ModuleListResponse(items);
     }
 
-    public ModuleDTO.ModuleDetailResponse getModule(UUID moduleId) {
+    public ModuleDTO.ModuleDetailResponse getModule(UUID moduleId, UUID userId) {
         ModuleEntity module = moduleRepository.findWithCourseAndExamByModuleId(moduleId)
                 .orElseThrow(notFound("module_not_found"));
+        Boolean unlocked = learningAccessService.isModuleUnlocked(userId, moduleId);
 
         ExemEntity exam = module.getExam();
         ModuleDTO.ModuleExamSummary summary = exam == null
@@ -152,7 +153,8 @@ public class ModuleService {
                 module.getCourse() == null ? null : module.getCourse().getCourseId(),
                 module.getName(),
                 module.getDescription(),
-                summary
+                summary,
+                unlocked
         );
     }
 
@@ -164,18 +166,15 @@ public class ModuleService {
         ModuleEntity module = moduleRepository.findWithLessonsByModuleId(moduleId)
                 .orElseThrow(notFound("module_not_found"));
 
-        Boolean moduleUnlocked = userId == null ? null : learningAccessService.isModuleUnlocked(userId, moduleId);
+        Boolean moduleUnlocked = learningAccessService.isModuleUnlocked(userId, moduleId);
         List<LessonEntity> orderedLessons = safeList(module.getLessons()).stream()
                 .sorted(LESSON_ORDER)
                 .toList();
         List<ModuleDTO.LessonCard> items = new java.util.ArrayList<>(orderedLessons.size());
         boolean previousCompleted = true;
         for (LessonEntity lesson : orderedLessons) {
-            Boolean unlocked = null;
-            if (userId != null) {
-                unlocked = Boolean.TRUE.equals(moduleUnlocked) && previousCompleted;
-                previousCompleted = progressQueryService.getLessonProgress(userId, lesson.getLessonId()).completed();
-            }
+            Boolean unlocked = Boolean.TRUE.equals(moduleUnlocked) && previousCompleted;
+            previousCompleted = progressQueryService.getLessonProgress(userId, lesson.getLessonId()).completed();
             items.add(new ModuleDTO.LessonCard(
                     lesson.getLessonId(),
                     lesson.getName(),
@@ -190,9 +189,10 @@ public class ModuleService {
         return new ModuleDTO.ModuleLessonsResponse(items);
     }
 
-    public ModuleDTO.ModuleExamResponse getModuleExam(UUID moduleId) {
+    public ModuleDTO.ModuleExamResponse getModuleExam(UUID moduleId, UUID userId) {
         ExemEntity exam = examRepository.findWithRelationsByModule_ModuleId(moduleId)
                 .orElseThrow(notFound("exam_not_found"));
+        Boolean unlocked = learningAccessService.isExamUnlocked(userId, exam);
 
         return new ModuleDTO.ModuleExamResponse(
                 exam.getExemId(),
@@ -200,7 +200,8 @@ public class ModuleService {
                 exam.getName(),
                 exam.getDescription(),
                 safeList(exam.getQuests()).size(),
-                safeList(exam.getTasks()).size()
+                safeList(exam.getTasks()).size(),
+                unlocked
         );
     }
 
@@ -255,7 +256,8 @@ public class ModuleService {
                 module.getCourse() == null ? null : module.getCourse().getCourseId(),
                 module.getName(),
                 module.getDescription(),
-                summary
+                summary,
+                null
         );
     }
 

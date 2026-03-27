@@ -22,4 +22,11 @@ public class UserProfileController {
     ) {
         return authService.getPublicProfile(userId);
     }
+
+    @GetMapping("/by-username/{username}/profile")
+    public ProfileDTO.PublicProfileResponse publicProfileByUsername(
+            @PathVariable("username") String username
+    ) {
+        return authService.getPublicProfileByUsername(username);
+    }
 }

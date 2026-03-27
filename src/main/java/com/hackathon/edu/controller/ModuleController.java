@@ -39,8 +39,12 @@ public class ModuleController {
     }
 
     @GetMapping("/{moduleId}")
-    public ModuleDTO.ModuleDetailResponse module(@PathVariable("moduleId") UUID moduleId) {
-        return moduleService.getModule(moduleId);
+    public ModuleDTO.ModuleDetailResponse module(
+            @PathVariable("moduleId") UUID moduleId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return moduleService.getModule(moduleId, userId);
     }
     //zenkol
     @GetMapping("/{moduleId}/lessons")
@@ -48,12 +52,17 @@ public class ModuleController {
             @PathVariable("moduleId") UUID moduleId,
             @RequestHeader(name = "Authorization", required = false) String authorizationHeader
     ) {
-        return moduleService.getModuleLessons(moduleId, resolveOptionalUserId(authorizationHeader));
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return moduleService.getModuleLessons(moduleId, userId);
     }
 
     @GetMapping("/{moduleId}/exam")
-    public ModuleDTO.ModuleExamResponse moduleExam(@PathVariable("moduleId") UUID moduleId) {
-        return moduleService.getModuleExam(moduleId);
+    public ModuleDTO.ModuleExamResponse moduleExam(
+            @PathVariable("moduleId") UUID moduleId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return moduleService.getModuleExam(moduleId, userId);
     }
 
     @GetMapping("/{moduleId}/progress")

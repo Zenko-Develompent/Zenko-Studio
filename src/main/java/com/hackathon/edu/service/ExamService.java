@@ -30,10 +30,12 @@ public class ExamService {
 
     private final ExemRepository examRepository;
     private final ProgressService progressService;
+    private final LearningAccessService learningAccessService;
 
-    public ExamDTO.ExamDetailResponse getExam(UUID examId) {
+    public ExamDTO.ExamDetailResponse getExam(UUID userId, UUID examId) {
         ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
                 .orElseThrow(notFound("exam_not_found"));
+        Boolean unlocked = userId == null ? null : learningAccessService.isExamUnlocked(userId, exam);
 
         return new ExamDTO.ExamDetailResponse(
                 exam.getExemId(),
@@ -43,13 +45,15 @@ public class ExamService {
                 safeInt(exam.getXpReward()),
                 safeInt(exam.getCoinReward()),
                 safeList(exam.getQuests()).size(),
-                safeList(exam.getTasks()).size()
+                safeList(exam.getTasks()).size(),
+                unlocked
         );
     }
 
-    public ExamDTO.QuestionsResponse getExamQuestions(UUID examId) {
+    public ExamDTO.QuestionsResponse getExamQuestions(UUID userId, UUID examId) {
         ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
                 .orElseThrow(notFound("exam_not_found"));
+        learningAccessService.assertExamUnlocked(userId, exam);
 
         List<ExamDTO.QuestionItem> items = safeList(exam.getQuests()).stream()
                 .sorted(QUESTION_ORDER)
@@ -59,9 +63,10 @@ public class ExamService {
         return new ExamDTO.QuestionsResponse(items);
     }
 
-    public ExamDTO.TasksResponse getExamTasks(UUID examId) {
+    public ExamDTO.TasksResponse getExamTasks(UUID userId, UUID examId) {
         ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
                 .orElseThrow(notFound("exam_not_found"));
+        learningAccessService.assertExamUnlocked(userId, exam);
 
         List<ExamDTO.TaskItem> items = safeList(exam.getTasks()).stream()
                 .sorted(TASK_ORDER)
@@ -127,7 +132,8 @@ public class ExamService {
                 safeInt(exam.getXpReward()),
                 safeInt(exam.getCoinReward()),
                 safeList(exam.getQuests()).size(),
-                safeList(exam.getTasks()).size()
+                safeList(exam.getTasks()).size(),
+                null
         );
     }
 

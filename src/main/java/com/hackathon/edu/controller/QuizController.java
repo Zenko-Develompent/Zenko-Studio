@@ -32,18 +32,30 @@ public class QuizController {
     }
     //ozenko
     @GetMapping("/lessons/{lessonId}")
-    public QuizDTO.QuizDetailResponse quizByLesson(@PathVariable("lessonId") UUID lessonId) {
-        return quizService.getQuizByLesson(lessonId);
+    public QuizDTO.QuizDetailResponse quizByLesson(
+            @PathVariable("lessonId") UUID lessonId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return quizService.getQuizByLesson(userId, lessonId);
     }
 
     @GetMapping("/{quizId}")
-    public QuizDTO.QuizDetailResponse quiz(@PathVariable("quizId") UUID quizId) {
-        return quizService.getQuiz(quizId);
+    public QuizDTO.QuizDetailResponse quiz(
+            @PathVariable("quizId") UUID quizId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return quizService.getQuiz(userId, quizId);
     }
 
     @GetMapping("/{quizId}/questions")
-    public QuizDTO.QuestionsResponse quizQuestions(@PathVariable("quizId") UUID quizId) {
-        return quizService.getQuizQuestions(quizId);
+    public QuizDTO.QuestionsResponse quizQuestions(
+            @PathVariable("quizId") UUID quizId,
+            @RequestHeader(name = "Authorization", required = false) String authorizationHeader
+    ) {
+        UUID userId = resolveOptionalUserId(authorizationHeader);
+        return quizService.getQuizQuestions(userId, quizId);
     }
 
     @PostMapping("/{quizId}/start")
@@ -63,5 +75,12 @@ public class QuizController {
     ) {
         UUID userId = authService.requireUserIdFromAccessHeader(authorizationHeader);
         return quizService.submitAnswer(userId, quizId, request);
+    }
+
+    private UUID resolveOptionalUserId(String authorizationHeader) {
+        if (authorizationHeader == null || authorizationHeader.isBlank()) {
+            return null;
+        }
+        return authService.requireUserIdFromAccessHeader(authorizationHeader);
     }
 }

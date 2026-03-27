@@ -305,8 +305,24 @@ public class AuthService {
     public ProfileDTO.PublicProfileResponse getPublicProfile(UUID userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "user_not_found"));
+        return toPublicProfile(user);
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileDTO.PublicProfileResponse getPublicProfileByUsername(String usernameRaw) {
+        String username = usernameRaw == null ? null : usernameRaw.trim();
+        if (username == null || username.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_username");
+        }
+        UserEntity user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "user_not_found"));
+        return toPublicProfile(user);
+    }
+
+    private ProfileDTO.PublicProfileResponse toPublicProfile(UserEntity user) {
         int level = user.getLevel() == null ? 0 : user.getLevel();
         int exp = user.getXp() == null ? 0 : user.getXp();
+        UUID userId = user.getUserId();
 
         var achievements = achievementUserRepository.findByUser_UserIdOrderByCreatedAtAsc(userId).stream()
                 .map(AchievementUserEntity::getAchievement)
