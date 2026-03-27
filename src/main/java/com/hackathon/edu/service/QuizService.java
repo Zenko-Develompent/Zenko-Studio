@@ -111,6 +111,7 @@ public class QuizService {
         return new QuizDTO.AnswersResponse(items);
     }
 
+    @Transactional
     public QuizDTO.CheckAnswerResponse checkQuestAnswer(UUID questId, UUID answerId, UUID userId) {
         AnswerEntity answer = answerRepository.findByAnswerIdAndQuest_QuestId(answerId, questId)
                 .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "answer_not_in_question"));
