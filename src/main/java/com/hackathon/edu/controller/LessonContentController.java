@@ -43,7 +43,7 @@ public class LessonContentController {
                 .toList();
         return new LessonContentListResponse(items);
     }
-
+    //zenkob
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> upload(
             @RequestParam("name") String name,

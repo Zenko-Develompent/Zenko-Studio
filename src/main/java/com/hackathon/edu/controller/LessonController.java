@@ -47,7 +47,7 @@ public class LessonController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(lessonService.createLesson(moduleId, name, description, xp, file));
     }
-
+    //zenkmo
     @GetMapping("/{lessonId}")
     public LessonDTO.LessonDetailResponse lesson(@PathVariable("lessonId") UUID lessonId) {
         return lessonService.getLesson(lessonId);

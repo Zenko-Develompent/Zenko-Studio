@@ -42,7 +42,7 @@ public class ModuleController {
     public ModuleDTO.ModuleDetailResponse module(@PathVariable("moduleId") UUID moduleId) {
         return moduleService.getModule(moduleId);
     }
-
+    //zenkol
     @GetMapping("/{moduleId}/lessons")
     public ModuleDTO.ModuleLessonsResponse moduleLessons(
             @PathVariable("moduleId") UUID moduleId,

@@ -30,7 +30,7 @@ public class QuizController {
     ) {
         return quizService.createLessonQuiz(lessonId, request);
     }
-
+    //ozenko
     @GetMapping("/lessons/{lessonId}")
     public QuizDTO.QuizDetailResponse quizByLesson(@PathVariable("lessonId") UUID lessonId) {
         return quizService.getQuizByLesson(lessonId);

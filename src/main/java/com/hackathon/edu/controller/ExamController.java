@@ -27,7 +27,7 @@ public class ExamController {
     public ExamDTO.ExamDetailResponse exam(@PathVariable("examId") UUID examId) {
         return examService.getExam(examId);
     }
-
+    //zenkoa
     @GetMapping("/{examId}/questions")
     public ExamDTO.QuestionsResponse examQuestions(@PathVariable("examId") UUID examId) {
         return examService.getExamQuestions(examId);

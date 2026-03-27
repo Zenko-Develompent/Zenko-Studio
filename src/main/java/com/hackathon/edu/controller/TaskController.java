@@ -38,7 +38,7 @@ public class TaskController {
                 result.completed()
         );
     }
-
+    //Oknez
     @PostMapping("/{taskId}/complete")
     public TaskDTO.CompleteResponse completeTask(
             @PathVariable("taskId") UUID taskId,

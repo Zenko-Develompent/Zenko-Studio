@@ -16,3 +16,5 @@ public class EnvConfig {
         System.out.println("DB URL: " + dbUrl);
     }
 }
+
+//zenko

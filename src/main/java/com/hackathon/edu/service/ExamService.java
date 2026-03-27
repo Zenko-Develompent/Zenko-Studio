@@ -55,7 +55,7 @@ public class ExamService {
                 .sorted(QUESTION_ORDER)
                 .map(this::toQuestionItem)
                 .toList();
-
+        //онко
         return new ExamDTO.QuestionsResponse(items);
     }
 

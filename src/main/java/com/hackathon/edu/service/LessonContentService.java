@@ -35,7 +35,7 @@ public class LessonContentService {
         if (bodyPath == null || bodyPath.isBlank()) {
             return null;
         }
-
+        //Baturin
         bodyPath = normalizeBodyReference(bodyPath);
         Path resolvedPath = resolveBodyPath(bodyPath);
         Path markdownFile = resolveTextFile(resolvedPath);

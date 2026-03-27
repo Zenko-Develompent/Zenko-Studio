@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
+
 import org.springframework.http.HttpStatus;
 import com.hackathon.edu.dto.course.CourseDTO.CreateCourseRequest;
 
@@ -72,7 +72,7 @@ public class CourseController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(courseService.createCourse(request));
     }
-
+    //zenkos
     private UUID resolveOptionalUserId(String authorizationHeader) {
         if (authorizationHeader == null || authorizationHeader.isBlank()) {
             return null;

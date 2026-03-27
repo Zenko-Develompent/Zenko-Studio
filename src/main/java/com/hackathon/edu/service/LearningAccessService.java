@@ -40,7 +40,7 @@ public class LearningAccessService {
         }
         assertLessonUnlocked(userId, quiz.getLesson().getLessonId());
     }
-
+    //Rogov
     public void assertTaskCanStart(UUID userId, TasksEntity task) {
         if (task == null) {
             return;

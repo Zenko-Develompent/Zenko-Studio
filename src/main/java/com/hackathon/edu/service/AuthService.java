@@ -34,7 +34,7 @@ import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
+    //ze
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -45,7 +45,7 @@ public class AuthService {
     private final RefreshTokenService refreshTokenService;
     private final JwtService jwtService;
     private final AppSecurityProperties props;
-
+    //ko
     private final ConcurrentHashMap<String, long[]> loginRateLimit = new ConcurrentHashMap<>();
 
     @Transactional
@@ -83,7 +83,7 @@ public class AuthService {
         }
         if (user.getCoins() == null) {
             user.setCoins(0);
-        }
+        } //no
         user.setBirthDate(LocalDate.now(ZoneOffset.UTC).minusYears(ageRaw));
         user.setRole(resolveRole(role));
         try {
