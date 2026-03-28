@@ -31,7 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
-.env
 .m2
 runner-images/
 *.tar
