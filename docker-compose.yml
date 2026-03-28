@@ -1,17 +1,19 @@
+version: '3.9'
+
 services:
   backend:
     build:
       context: ./Zenko-Studio
     container_name: edu-backend
     ports:
-      - "${BACKEND_PORT}:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     env_file:
       - ./Zenko-Studio/.env
     environment:
       LESSON_CONTENT_ROOT: /data/lessons
       CODE_RUNNER_WORKSPACE_ROOT: ${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}
     volumes:
-      - ${LESSON_CONTENT_HOST_PATH:-./lesson-content}:/data/lessons:rw
+      - ${LESSON_CONTENT_HOST_PATH:-./Zenko-Studio/lesson-content}:/data/lessons:rw
       - ${CODE_RUNNER_WORKSPACE_HOST_PATH:-/var/lib/edu-runner-work}:${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}:rw
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker:ro
@@ -43,12 +45,24 @@ services:
     env_file:
       - ./Zenko-Studio/.env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME:-edu_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - edu-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-edu_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
+networks:    
+  edu-network:
+    driver: bridge
