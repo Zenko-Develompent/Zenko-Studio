@@ -18,6 +18,7 @@ public final class ProfileDTO {
     }
 
     public record PublicProfileResponse(
+            String userId,
             String username,
             String role,
             int level,

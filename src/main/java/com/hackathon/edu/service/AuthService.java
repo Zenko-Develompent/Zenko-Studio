@@ -339,6 +339,7 @@ public class AuthService {
                 .toList();
 
         return new ProfileDTO.PublicProfileResponse(
+                userId.toString(),
                 user.getUsername(),
                 toApiRole(user.getRole()),
                 level,
