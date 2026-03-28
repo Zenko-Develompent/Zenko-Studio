@@ -300,6 +300,7 @@ public class AuthService {
                 .toList();
 
         return new ProfileDTO.PrivateProfileResponse(
+                userId.toString(),
                 user.getUsername(),
                 toApiRole(user.getRole()),
                 xp,

@@ -8,6 +8,7 @@ public final class ProfileDTO {
     }
 
     public record PrivateProfileResponse(
+            String userId,
             String username,
             String role,
             int xp,
