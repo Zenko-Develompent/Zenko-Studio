@@ -1,15 +1,23 @@
 #!/bin/sh
-set -e
+set -eu
 
-RUNNER_DIR=/app/runner-images
+RUNNER_DIR="${RUNNER_DIR:-/app/runner-images}"
 
-# Проверяем и загружаем образы, если они ещё не загружены
-for image_tar in $RUNNER_DIR/*.tar; do
-    image_name=$(basename "$image_tar" .tar)
-    if ! docker image inspect "$image_name" > /dev/null 2>&1; then
-        echo "Loading Docker image: $image_name"
-        docker load -i "$image_tar"
-    else
-        echo "Image $image_name already exists, skipping..."
-    fi
+if [ ! -d "$RUNNER_DIR" ]; then
+  echo "Runner image directory not found: $RUNNER_DIR"
+  exit 0
+fi
+
+found_any=0
+for image_tar in "$RUNNER_DIR"/*.tar; do
+  if [ ! -f "$image_tar" ]; then
+    continue
+  fi
+  found_any=1
+  echo "Loading Docker image archive: $(basename "$image_tar")"
+  docker load -i "$image_tar"
 done
+
+if [ "$found_any" -eq 0 ]; then
+  echo "No runner image archives found in $RUNNER_DIR, skipping preload."
+fi
