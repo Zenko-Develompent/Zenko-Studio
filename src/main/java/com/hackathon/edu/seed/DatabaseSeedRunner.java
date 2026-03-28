@@ -22,7 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -145,6 +148,20 @@ public class DatabaseSeedRunner implements CommandLineRunner {
         );
     }
 
+    private String loadLessonBody(String courseKey, String topicKey) {
+    // Формируем путь к файлу относительно корня проекта
+    Path path = Paths.get("lesson-content", "seed", courseKey, topicKey + ".md");
+
+    try {
+        // Читаем все строки и объединяем в одну строку с переносами
+        return Files.readString(path);
+    } catch (IOException e) {
+        // Если файл не найден, можно логировать и вернуть null
+        log.warn("Lesson file not found: {}", path.toAbsolutePath());
+        return null;
+    }
+}
+
     private void seedCourse(CourseEntity course, String courseKey, String language) {
         int moduleIndex = 1;
         for (TopicSeed topic : TOPICS) {
@@ -156,13 +173,14 @@ public class DatabaseSeedRunner implements CommandLineRunner {
 
             String lessonName = "Урок: " + topic.title();
             String lessonBodyPath = lessonBodyPath(courseKey, topic.key());
-            LessonEntity lesson = ensureLesson(
-                    module,
-                    lessonName,
-                    "Базовый урок по теме «" + topic.title() + "» для курса " + languageLabel(language) + ".",
-                    lessonBodyPath,
-                    15 + moduleIndex * 3
-            );
+           LessonEntity lesson = ensureLesson(
+                module,
+                lessonName,
+                "Базовый урок по теме «" + topic.title() + "» для курса " + languageLabel(language) + ".",
+                courseKey,       // добавили
+                 topic.key(),     // добавили
+                15 + moduleIndex * 3
+        );
 
             moduleRepository.saveAndFlush(module);
             lesson = lessonRepository.findByModuleIdAndNameIgnoreCase(module.getModuleId(), lessonName)
@@ -374,7 +392,8 @@ private LessonEntity ensureLesson(
         ModuleEntity module,
         String name,
         String description,
-        String bodyPath,
+        String courseKey,
+        String topicKey,
         int xp
 ) {
     LessonEntity lesson = module.getLessons().stream()
@@ -389,10 +408,10 @@ private LessonEntity ensureLesson(
 
     lesson.setName(name);
     lesson.setDescription(description);
-    lesson.setBody(bodyPath == null || bodyPath.isBlank() ? null : bodyPath);
+    lesson.setBody(loadLessonBody(courseKey, topicKey));
     lesson.setXp(Math.max(0, xp));
 
-    return lesson;
+    return lessonRepository.save(lesson);
 }
 
 private QuizEntity ensureLessonQuiz(
@@ -408,7 +427,7 @@ private QuizEntity ensureLessonQuiz(
     if (quiz == null) {
         quiz = new QuizEntity();
         quiz.setLesson(lesson);
-        lesson.setQuiz(quiz); // 🔥 критично (двусторонняя связь)
+        lesson.setQuiz(quiz); 
     }
 
     quiz.setName(quizName);
@@ -419,7 +438,7 @@ private QuizEntity ensureLessonQuiz(
     if (quiz.getQuests() == null) {
         quiz.setQuests(new ArrayList<>());
     } else {
-        quiz.getQuests().clear(); // ⚠️ только если есть orphanRemoval
+        quiz.getQuests().clear(); 
     }
 
     for (SeedQuestion seedQuestion : questions) {
@@ -459,7 +478,7 @@ private QuizEntity ensureLessonQuiz(
     if (task == null) {
         task = new TasksEntity();
         task.setLesson(lesson);
-        lesson.setTask(task); // 🔥 важно
+        lesson.setTask(task); 
     }
 
     task.setExam(null);
@@ -486,7 +505,7 @@ private QuizEntity ensureLessonQuiz(
     if (exam == null) {
         exam = new ExemEntity();
         exam.setModule(module);
-        module.setExam(exam); // 🔥 важно
+        module.setExam(exam); 
     }
 
     exam.setName(limit50(examName));
