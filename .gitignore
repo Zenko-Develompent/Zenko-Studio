@@ -33,6 +33,5 @@ build/
 .vscode/
 .env
 .m2
-lesson-content
 runner-images/
 *.tar
