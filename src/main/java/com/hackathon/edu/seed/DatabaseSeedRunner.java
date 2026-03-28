@@ -370,146 +370,157 @@ public class DatabaseSeedRunner implements CommandLineRunner {
         return moduleRepository.save(module);
     }
 
-    private LessonEntity ensureLesson(
-            ModuleEntity module,
-            String name,
-            String description,
-            String bodyPath,
-            int xp
-    ) {
-        LessonEntity lesson = safeList(module.getLessons()).stream()
-                .filter(existing -> existing.getName() != null && existing.getName().equalsIgnoreCase(name))
-                .findFirst()
-                .orElseGet(() -> {
-                    LessonEntity created = new LessonEntity();
-                    created.setName(name);
-                    module.getLessons().add(created);
-                    return created;
-                });
+private LessonEntity ensureLesson(
+        ModuleEntity module,
+        String name,
+        String description,
+        String bodyPath,
+        int xp
+) {
+    LessonEntity lesson = module.getLessons().stream()
+            .filter(existing -> existing.getName() != null && existing.getName().equalsIgnoreCase(name))
+            .findFirst()
+            .orElseGet(() -> {
+                LessonEntity created = new LessonEntity();
+                created.setModule(module);        
+                module.getLessons().add(created); 
+                return created;
+            });
 
-        lesson.setName(name);
-        lesson.setDescription(description);
-        lesson.setBody(bodyPath == null || bodyPath.isBlank() ? null : bodyPath);
-        lesson.setXp(Math.max(0, xp));
-        return lesson;
-    }
+    lesson.setName(name);
+    lesson.setDescription(description);
+    lesson.setBody(bodyPath == null || bodyPath.isBlank() ? null : bodyPath);
+    lesson.setXp(Math.max(0, xp));
 
-    private QuizEntity ensureLessonQuiz(
-            LessonEntity lesson,
-            String quizName,
-            String description,
-            int xpReward,
-            int coinReward,
-            List<SeedQuestion> questions
-    ) {
-        QuizEntity quiz = quizRepository.findWithQuestsByLesson_LessonId(lesson.getLessonId())
-                .orElseGet(QuizEntity::new);
+    return lesson;
+}
 
+private QuizEntity ensureLessonQuiz(
+        LessonEntity lesson,
+        String quizName,
+        String description,
+        int xpReward,
+        int coinReward,
+        List<SeedQuestion> questions
+) {
+    QuizEntity quiz = lesson.getQuiz();
+
+    if (quiz == null) {
+        quiz = new QuizEntity();
         quiz.setLesson(lesson);
-        quiz.setName(quizName);
-        quiz.setDescription(description);
-        quiz.setXpReward(Math.max(0, xpReward));
-        quiz.setCoinReward(Math.max(0, coinReward));
-
-        if (quiz.getQuests() == null) {
-            quiz.setQuests(new ArrayList<>());
-        }
-        quiz.getQuests().clear();
-
-        for (SeedQuestion seedQuestion : questions) {
-            QuestEntity quest = new QuestEntity();
-            quest.setQuiz(quiz);
-            quest.setName(limit50(seedQuestion.name()));
-            quest.setDescription(seedQuestion.description());
-
-            if (quest.getAnswers() == null) {
-                quest.setAnswers(new ArrayList<>());
-            }
-
-            for (SeedAnswer seedAnswer : seedQuestion.answers()) {
-                AnswerEntity answer = new AnswerEntity();
-                answer.setQuest(quest);
-                answer.setName(limit50(seedAnswer.name()));
-                answer.setDescription(null);
-                answer.setCorrectly(seedAnswer.correct());
-                quest.getAnswers().add(answer);
-            }
-            quiz.getQuests().add(quest);
-        }
-
-        return quizRepository.saveAndFlush(quiz);
+        lesson.setQuiz(quiz); // 🔥 критично (двусторонняя связь)
     }
 
-    private TasksEntity ensureLessonTask(
-            LessonEntity lesson,
-            String taskName,
-            String description,
-            String language,
-            String expectedOutput,
-            String inputData,
-            int xpReward,
-            int coinReward
-    ) {
-        TasksEntity task = tasksRepository.findByLesson_LessonId(lesson.getLessonId())
-                .orElseGet(TasksEntity::new);
+    quiz.setName(quizName);
+    quiz.setDescription(description);
+    quiz.setXpReward(Math.max(0, xpReward));
+    quiz.setCoinReward(Math.max(0, coinReward));
 
+    if (quiz.getQuests() == null) {
+        quiz.setQuests(new ArrayList<>());
+    } else {
+        quiz.getQuests().clear(); // ⚠️ только если есть orphanRemoval
+    }
+
+    for (SeedQuestion seedQuestion : questions) {
+        QuestEntity quest = new QuestEntity();
+        quest.setQuiz(quiz);
+        quest.setName(limit50(seedQuestion.name()));
+        quest.setDescription(seedQuestion.description());
+
+        quest.setAnswers(new ArrayList<>());
+
+        for (SeedAnswer seedAnswer : seedQuestion.answers()) {
+            AnswerEntity answer = new AnswerEntity();
+            answer.setQuest(quest);
+            answer.setName(limit50(seedAnswer.name()));
+            answer.setCorrectly(seedAnswer.correct());
+            quest.getAnswers().add(answer);
+        }
+
+        quiz.getQuests().add(quest);
+    }
+
+    return quizRepository.save(quiz);
+}
+
+ private TasksEntity ensureLessonTask(
+        LessonEntity lesson,
+        String taskName,
+        String description,
+        String language,
+        String expectedOutput,
+        String inputData,
+        int xpReward,
+        int coinReward
+) {
+    TasksEntity task = lesson.getTask();
+
+    if (task == null) {
+        task = new TasksEntity();
         task.setLesson(lesson);
-        task.setExam(null);
-        task.setName(limit50(taskName));
-        task.setDescription(description);
-        task.setRunnerLanguage(normalizeLanguage(language));
-        task.setExpectedOutput(expectedOutput);
-        task.setInputData(normalizeInputData(inputData));
-        task.setXpReward(Math.max(0, xpReward));
-        task.setCoinReward(Math.max(0, coinReward));
-        return tasksRepository.saveAndFlush(task);
+        lesson.setTask(task); // 🔥 важно
     }
 
-    private ExemEntity ensureModuleExam(
-            ModuleEntity module,
-            String examName,
-            String description,
-            int xpReward,
-            int coinReward,
-            List<SeedQuestion> questions
-    ) {
-        ExemEntity exam = examRepository.findWithRelationsByModule_ModuleId(module.getModuleId())
-                .orElseGet(ExemEntity::new);
+    task.setExam(null);
+    task.setName(limit50(taskName));
+    task.setDescription(description);
+    task.setRunnerLanguage(normalizeLanguage(language));
+    task.setExpectedOutput(expectedOutput);
+    task.setInputData(normalizeInputData(inputData));
+    task.setXpReward(Math.max(0, xpReward));
+    task.setCoinReward(Math.max(0, coinReward));
 
+    return tasksRepository.save(task);
+}
+   private ExemEntity ensureModuleExam(
+        ModuleEntity module,
+        String examName,
+        String description,
+        int xpReward,
+        int coinReward,
+        List<SeedQuestion> questions
+) {
+    ExemEntity exam = module.getExam();
+
+    if (exam == null) {
+        exam = new ExemEntity();
         exam.setModule(module);
-        exam.setName(limit50(examName));
-        exam.setDescription(description);
-        exam.setXpReward(Math.max(0, xpReward));
-        exam.setCoinReward(Math.max(0, coinReward));
-
-        if (exam.getQuests() == null) {
-            exam.setQuests(new ArrayList<>());
-        }
-        exam.getQuests().clear();
-
-        for (SeedQuestion seedQuestion : questions) {
-            QuestEntity quest = new QuestEntity();
-            quest.setExam(exam);
-            quest.setName(limit50(seedQuestion.name()));
-            quest.setDescription(seedQuestion.description());
-
-            if (quest.getAnswers() == null) {
-                quest.setAnswers(new ArrayList<>());
-            }
-
-            for (SeedAnswer seedAnswer : seedQuestion.answers()) {
-                AnswerEntity answer = new AnswerEntity();
-                answer.setQuest(quest);
-                answer.setName(limit50(seedAnswer.name()));
-                answer.setDescription(null);
-                answer.setCorrectly(seedAnswer.correct());
-                quest.getAnswers().add(answer);
-            }
-            exam.getQuests().add(quest);
-        }
-
-        return examRepository.saveAndFlush(exam);
+        module.setExam(exam); // 🔥 важно
     }
+
+    exam.setName(limit50(examName));
+    exam.setDescription(description);
+    exam.setXpReward(Math.max(0, xpReward));
+    exam.setCoinReward(Math.max(0, coinReward));
+
+    if (exam.getQuests() == null) {
+        exam.setQuests(new ArrayList<>());
+    } else {
+        exam.getQuests().clear();
+    }
+
+    for (SeedQuestion seedQuestion : questions) {
+        QuestEntity quest = new QuestEntity();
+        quest.setExam(exam);
+        quest.setName(limit50(seedQuestion.name()));
+        quest.setDescription(seedQuestion.description());
+
+        quest.setAnswers(new ArrayList<>());
+
+        for (SeedAnswer seedAnswer : seedQuestion.answers()) {
+            AnswerEntity answer = new AnswerEntity();
+            answer.setQuest(quest);
+            answer.setName(limit50(seedAnswer.name()));
+            answer.setCorrectly(seedAnswer.correct());
+            quest.getAnswers().add(answer);
+        }
+
+        exam.getQuests().add(quest);
+    }
+
+    return examRepository.save(exam);
+}
 
     private TasksEntity ensureExamTask(
             ExemEntity exam,
