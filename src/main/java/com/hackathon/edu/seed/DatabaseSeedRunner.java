@@ -177,8 +177,7 @@ public class DatabaseSeedRunner implements CommandLineRunner {
                 module,
                 lessonName,
                 "Базовый урок по теме «" + topic.title() + "» для курса " + languageLabel(language) + ".",
-                courseKey,       // добавили
-                 topic.key(),     // добавили
+                lessonBodyPath,
                 15 + moduleIndex * 3
         );
 
@@ -392,8 +391,7 @@ private LessonEntity ensureLesson(
         ModuleEntity module,
         String name,
         String description,
-        String courseKey,
-        String topicKey,
+        String lessonBodyPath,
         int xp
 ) {
     LessonEntity lesson = module.getLessons().stream()
@@ -408,7 +406,7 @@ private LessonEntity ensureLesson(
 
     lesson.setName(name);
     lesson.setDescription(description);
-    lesson.setBody(loadLessonBody(courseKey, topicKey));
+    lesson.setBody(lessonBodyPath);
     lesson.setXp(Math.max(0, xp));
 
     return lessonRepository.save(lesson);
