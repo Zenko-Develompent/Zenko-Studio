@@ -44,7 +44,7 @@ public class ModuleEntity {
     private List<LessonEntity> lessons = new ArrayList<>();
 
     @OneToOne(mappedBy = "module", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private ExemEntity exam;
+    private ExamEntity exam;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

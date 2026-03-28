@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ExamAttemptRepository extends JpaRepository<ExamAttemptEntity, UUID> {
-    Optional<ExamAttemptEntity> findByExam_ExemIdAndUserId(UUID examId, UUID userId);
+    Optional<ExamAttemptEntity> findByExam_ExamIdAndUserId(UUID examId, UUID userId);
 
-    boolean existsByExam_ExemIdAndUserIdAndCompletedTrue(UUID examId, UUID userId);
+    boolean existsByExam_ExamIdAndUserIdAndCompletedTrue(UUID examId, UUID userId);
 }

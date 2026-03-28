@@ -34,7 +34,7 @@ public class TaskRunnerService {
         return new TaskStartResult(
                 task.getTasksId(),
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
+                task.getExam() == null ? null : task.getExam().getExamId(),
                 completed
         );
     }
@@ -72,7 +72,7 @@ public class TaskRunnerService {
             activityEventService.recordCodeError(
                     userId,
                     task.getTasksId(),
-                    task.getExam() == null ? null : task.getExam().getExemId(),
+                    task.getExam() == null ? null : task.getExam().getExamId(),
                     details
             );
             achievementProgressService.evaluateForUser(userId);

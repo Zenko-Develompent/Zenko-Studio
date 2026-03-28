@@ -241,7 +241,7 @@ public class QuizService {
         return new QuizDTO.QuestionItem(
                 question.getQuestId(),
                 question.getQuiz() == null ? null : question.getQuiz().getQuizId(),
-                question.getExam() == null ? null : question.getExam().getExemId(),
+                question.getExam() == null ? null : question.getExam().getExamId(),
                 question.getName(),
                 question.getDescription()
         );

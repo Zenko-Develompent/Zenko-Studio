@@ -1,7 +1,7 @@
 package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.progress.ProgressDTO;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
 import com.hackathon.edu.entity.QuizEntity;
@@ -68,16 +68,16 @@ public class LearningAccessService {
             return;
         }
 
-        if (task.getExam() != null && task.getExam().getExemId() != null) {
+        if (task.getExam() != null && task.getExam().getExamId() != null) {
             assertExamUnlocked(userId, task.getExam());
         }
     }
 
-    public void assertExamUnlocked(UUID userId, ExemEntity exam) {
-        if (exam == null || exam.getExemId() == null) {
+    public void assertExamUnlocked(UUID userId, ExamEntity exam) {
+        if (exam == null || exam.getExamId() == null) {
             return;
         }
-        ModuleEntity module = moduleRepository.findWithCourseExamAndLessonsByExam_ExemId(exam.getExemId())
+        ModuleEntity module = moduleRepository.findWithCourseExamAndLessonsByExam_ExamId(exam.getExamId())
                 .orElse(null);
         if (module == null) {
             return;
@@ -161,7 +161,7 @@ public class LearningAccessService {
         }
     }
 
-    public boolean isExamUnlocked(UUID userId, ExemEntity exam) {
+    public boolean isExamUnlocked(UUID userId, ExamEntity exam) {
         try {
             assertExamUnlocked(userId, exam);
             return true;

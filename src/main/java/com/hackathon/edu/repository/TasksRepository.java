@@ -10,6 +10,6 @@ import java.util.UUID;
 public interface TasksRepository extends JpaRepository<TasksEntity, UUID> {
     Optional<TasksEntity> findByLesson_LessonId(UUID lessonId);
 
-    List<TasksEntity> findByExam_ExemIdOrderByCreatedAtAsc(UUID examId);
+    List<TasksEntity> findByExam_ExamIdOrderByCreatedAtAsc(UUID examId);
 }
 

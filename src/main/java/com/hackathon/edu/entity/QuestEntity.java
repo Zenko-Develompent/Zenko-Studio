@@ -41,8 +41,8 @@ public class QuestEntity {
     private QuizEntity quiz;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exem_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private ExemEntity exam;
+    @JoinColumn(name = "exam_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private ExamEntity exam;
 
     @OneToMany(mappedBy = "quest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerEntity> answers = new ArrayList<>();

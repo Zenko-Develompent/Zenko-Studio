@@ -2,14 +2,14 @@ package com.hackathon.edu.service;
 
 import com.hackathon.edu.entity.ExamAttemptEntity;
 import com.hackathon.edu.entity.ExamQuestionProgressEntity;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.QuestEntity;
 import com.hackathon.edu.entity.TaskAttemptEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.ExamAttemptRepository;
 import com.hackathon.edu.repository.ExamQuestionProgressRepository;
-import com.hackathon.edu.repository.ExemRepository;
+import com.hackathon.edu.repository.ExamRepository;
 import com.hackathon.edu.repository.TaskAttemptRepository;
 import com.hackathon.edu.repository.TasksRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 public class ProgressService {
     private final TasksRepository tasksRepository;
     private final TaskAttemptRepository taskAttemptRepository;
-    private final ExemRepository examRepository;
+    private final ExamRepository examRepository;
     private final ExamAttemptRepository examAttemptRepository;
     private final ExamQuestionProgressRepository examQuestionProgressRepository;
     private final GamificationService gamificationService;
@@ -61,7 +61,7 @@ public class ProgressService {
                     userId,
                     task.getLesson() == null ? null : task.getLesson().getLessonId(),
                     task.getTasksId(),
-                    task.getExam() == null ? null : task.getExam().getExemId(),
+                    task.getExam() == null ? null : task.getExam().getExamId(),
                     grant.xpGranted(),
                     grant.coinGranted()
             );
@@ -78,7 +78,7 @@ public class ProgressService {
         return new TaskCompletionResult(
                 task.getTasksId(),
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
+                task.getExam() == null ? null : task.getExam().getExamId(),
                 true,
                 firstCompletion,
                 grant.xpGranted(),
@@ -97,7 +97,7 @@ public class ProgressService {
         return new TaskRewardResult(
                 task.getTasksId(),
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
+                task.getExam() == null ? null : task.getExam().getExamId(),
                 safeInt(task.getXpReward()),
                 safeInt(task.getCoinReward())
         );
@@ -124,21 +124,21 @@ public class ProgressService {
 
     @Transactional
     public ExamCompletionResult completeExam(UUID userId, UUID examId) {
-        ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
+        ExamEntity exam = examRepository.findWithRelationsByExamId(examId)
                 .orElseThrow(notFound("exam_not_found"));
         learningAccessService.assertExamUnlocked(userId, exam);
 
         long totalQuestions = safeList(exam.getQuests()).size();
         long totalTasks = safeList(exam.getTasks()).size();
 
-        long doneQuestions = examQuestionProgressRepository.countByQuestion_Exam_ExemIdAndUserId(examId, userId);
-        long doneTasks = taskAttemptRepository.countByTask_Exam_ExemIdAndUserIdAndCompletedTrue(examId, userId);
+        long doneQuestions = examQuestionProgressRepository.countByQuestion_Exam_ExamIdAndUserId(examId, userId);
+        long doneTasks = taskAttemptRepository.countByTask_Exam_ExamIdAndUserIdAndCompletedTrue(examId, userId);
 
         if (doneQuestions < totalQuestions || doneTasks < totalTasks) {
             throw new ApiException(HttpStatus.CONFLICT, "exam_not_completed");
         }
 
-        ExamAttemptEntity attempt = examAttemptRepository.findByExam_ExemIdAndUserId(examId, userId)
+        ExamAttemptEntity attempt = examAttemptRepository.findByExam_ExamIdAndUserId(examId, userId)
                 .orElseGet(() -> createExamAttempt(exam, userId));
 
         boolean firstCompletion = !Boolean.TRUE.equals(attempt.getCompleted());
@@ -180,7 +180,7 @@ public class ProgressService {
         return taskAttemptRepository.save(created);
     }
 
-    private ExamAttemptEntity createExamAttempt(ExemEntity exam, UUID userId) {
+    private ExamAttemptEntity createExamAttempt(ExamEntity exam, UUID userId) {
         ExamAttemptEntity created = new ExamAttemptEntity();
         created.setExam(exam);
         created.setUserId(userId);
@@ -190,7 +190,7 @@ public class ProgressService {
         try {
             return examAttemptRepository.saveAndFlush(created);
         } catch (DataIntegrityViolationException ex) {
-            return examAttemptRepository.findByExam_ExemIdAndUserId(exam.getExemId(), userId)
+            return examAttemptRepository.findByExam_ExamIdAndUserId(exam.getExamId(), userId)
                     .orElseThrow(() -> new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "error"));
         }
     }

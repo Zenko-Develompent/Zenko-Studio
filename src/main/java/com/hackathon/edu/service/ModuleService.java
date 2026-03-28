@@ -1,14 +1,14 @@
 package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.module.ModuleDTO;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
 import com.hackathon.edu.entity.QuizEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
 import com.hackathon.edu.repository.CourseRepository;
-import com.hackathon.edu.repository.ExemRepository;
+import com.hackathon.edu.repository.ExamRepository;
 import com.hackathon.edu.repository.LessonRepository;
 import com.hackathon.edu.repository.ModuleRepository;
 import com.hackathon.edu.repository.QuizRepository;
@@ -42,7 +42,7 @@ public class ModuleService {
     private final ModuleRepository moduleRepository;
     private final LessonRepository lessonRepository;
     private final QuizRepository quizRepository;
-    private final ExemRepository examRepository;
+    private final ExamRepository examRepository;
     private final ProgressQueryService progressQueryService;
     private final LearningAccessService learningAccessService;
 
@@ -138,11 +138,11 @@ public class ModuleService {
                 .orElseThrow(notFound("module_not_found"));
         Boolean unlocked = learningAccessService.isModuleUnlocked(userId, moduleId);
 
-        ExemEntity exam = module.getExam();
+        ExamEntity exam = module.getExam();
         ModuleDTO.ModuleExamSummary summary = exam == null
                 ? null
                 : new ModuleDTO.ModuleExamSummary(
-                exam.getExemId(),
+                exam.getExamId(),
                 exam.getName(),
                 safeList(exam.getQuests()).size(),
                 safeList(exam.getTasks()).size()
@@ -190,12 +190,12 @@ public class ModuleService {
     }
 
     public ModuleDTO.ModuleExamResponse getModuleExam(UUID moduleId, UUID userId) {
-        ExemEntity exam = examRepository.findWithRelationsByModule_ModuleId(moduleId)
+        ExamEntity exam = examRepository.findWithRelationsByModule_ModuleId(moduleId)
                 .orElseThrow(notFound("exam_not_found"));
         Boolean unlocked = learningAccessService.isExamUnlocked(userId, exam);
 
         return new ModuleDTO.ModuleExamResponse(
-                exam.getExemId(),
+                exam.getExamId(),
                 exam.getModule() == null ? null : exam.getModule().getModuleId(),
                 exam.getName(),
                 exam.getDescription(),
@@ -241,11 +241,11 @@ public class ModuleService {
     }
 
     private ModuleDTO.ModuleDetailResponse toDetailResponse(ModuleEntity module) {
-        ExemEntity exam = module.getExam();
+        ExamEntity exam = module.getExam();
         ModuleDTO.ModuleExamSummary summary = exam == null
                 ? null
                 : new ModuleDTO.ModuleExamSummary(
-                exam.getExemId(),
+                exam.getExamId(),
                 exam.getName(),
                 safeList(exam.getQuests()).size(),
                 safeList(exam.getTasks()).size()
@@ -261,8 +261,8 @@ public class ModuleService {
         );
     }
 
-    private UUID toExamId(ExemEntity exam) {
-        return exam == null ? null : exam.getExemId();
+    private UUID toExamId(ExamEntity exam) {
+        return exam == null ? null : exam.getExamId();
     }
 
     private UUID toQuizId(QuizEntity quiz) {

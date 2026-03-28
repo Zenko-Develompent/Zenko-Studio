@@ -9,5 +9,5 @@ import java.util.UUID;
 public interface ExamQuestionProgressRepository extends JpaRepository<ExamQuestionProgressEntity, UUID> {
     Optional<ExamQuestionProgressEntity> findByQuestion_QuestIdAndUserId(UUID questionId, UUID userId);
 
-    long countByQuestion_Exam_ExemIdAndUserId(UUID examId, UUID userId);
+    long countByQuestion_Exam_ExamIdAndUserId(UUID examId, UUID userId);
 }

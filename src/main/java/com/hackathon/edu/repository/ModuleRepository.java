@@ -52,5 +52,5 @@ public interface ModuleRepository extends JpaRepository<ModuleEntity, UUID> {
     Optional<ModuleEntity> findWithCourseExamAndLessonsByLessonId(@Param("lessonId") UUID lessonId);
 
     @EntityGraph(attributePaths = {"course", "exam", "lessons", "lessons.quiz", "lessons.task"})
-    Optional<ModuleEntity> findWithCourseExamAndLessonsByExam_ExemId(UUID examId);
+    Optional<ModuleEntity> findWithCourseExamAndLessonsByExam_ExamId(UUID examId);
 }

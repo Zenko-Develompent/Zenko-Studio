@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "exem")
+@Table(name = "exam")
 @Getter
 @Setter
-public class ExemEntity {
+public class ExamEntity {
     @Id
-    @Column(name = "exem_id", nullable = false, updatable = false)
-    private UUID exemId;
+    @Column(name = "exam_id", nullable = false, updatable = false)
+    private UUID examId;
 
     @Column(nullable = false, length = 50)
     private String name;
@@ -61,8 +61,8 @@ public class ExemEntity {
     @PrePersist
     void prePersist() {
         OffsetDateTime now = OffsetDateTime.now();
-        if (exemId == null) {
-            exemId = UUID.randomUUID();
+        if (examId == null) {
+            examId = UUID.randomUUID();
         }
         if (createdAt == null) {
             createdAt = now;

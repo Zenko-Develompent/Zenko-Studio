@@ -3,7 +3,7 @@ package com.hackathon.edu.service;
 import com.hackathon.edu.dto.course.CourseDTO;
 import com.hackathon.edu.dto.module.ModuleDTO;
 import com.hackathon.edu.entity.CourseEntity;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
 import com.hackathon.edu.entity.QuizEntity;
@@ -178,8 +178,8 @@ public class CourseService {
         );
     }
 
-    private UUID toExamId(ExemEntity exam) {
-        return exam == null ? null : exam.getExemId();
+    private UUID toExamId(ExamEntity exam) {
+        return exam == null ? null : exam.getExamId();
     }
 
     private UUID toQuizId(QuizEntity quiz) {

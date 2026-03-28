@@ -1366,7 +1366,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.291+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -1375,7 +1375,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.310+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -1402,7 +1402,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -1462,7 +1462,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -1497,7 +1497,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.358+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -1564,7 +1564,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -1581,7 +1581,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.387+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -1590,7 +1590,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -1598,7 +1598,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.390+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -1608,7 +1608,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.396+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -1639,7 +1639,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.407+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -1674,7 +1674,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.416+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -1771,7 +1771,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -1782,10 +1782,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.447+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -1806,7 +1806,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.450+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -1815,7 +1815,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.456+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -1842,7 +1842,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -1902,7 +1902,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -1937,7 +1937,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.478+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2004,7 +2004,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -2021,7 +2021,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.496+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -2030,7 +2030,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -2038,7 +2038,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.498+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -2048,7 +2048,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.502+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -2079,7 +2079,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.510+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2114,7 +2114,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.517+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2211,7 +2211,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -2222,10 +2222,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.539+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2246,7 +2246,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.541+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -2255,7 +2255,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.546+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2282,7 +2282,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -2342,7 +2342,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -2377,7 +2377,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.568+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2444,7 +2444,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -2461,7 +2461,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.585+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -2470,7 +2470,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -2478,7 +2478,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.587+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -2488,7 +2488,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.590+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -2519,7 +2519,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.598+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2554,7 +2554,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.605+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2651,7 +2651,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -2662,10 +2662,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.627+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2686,7 +2686,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.629+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -2695,7 +2695,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.633+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2722,7 +2722,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -2782,7 +2782,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -2817,7 +2817,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.651+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2884,7 +2884,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -2901,7 +2901,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.669+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -2910,7 +2910,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -2918,7 +2918,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.670+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -2928,7 +2928,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.674+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -2959,7 +2959,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.680+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -2994,7 +2994,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.687+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3091,7 +3091,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -3102,10 +3102,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.708+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3126,7 +3126,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.710+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -3135,7 +3135,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.716+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3162,7 +3162,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -3222,7 +3222,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -3257,7 +3257,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.735+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3324,7 +3324,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -3341,7 +3341,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.752+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -3350,7 +3350,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -3358,7 +3358,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.755+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -3368,7 +3368,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.760+05:00  INFO 26092 --- [edu-platform] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
 2026-03-27T15:18:23.760+05:00  INFO 26092 --- [edu-platform] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
 2026-03-27T15:18:23.760+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
@@ -3408,7 +3408,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.770+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3444,7 +3444,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.780+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3542,7 +3542,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -3553,10 +3553,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.807+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3577,7 +3577,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.809+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -3586,7 +3586,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.810+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] org.hibernate.SQL                        : 
@@ -3627,7 +3627,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -3702,7 +3702,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -3747,7 +3747,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.829+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3814,7 +3814,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -3831,7 +3831,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.844+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -3840,7 +3840,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -3848,7 +3848,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.846+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -3858,7 +3858,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.848+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -3889,7 +3889,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.855+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -3924,7 +3924,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.861+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4023,7 +4023,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -4034,10 +4034,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.886+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4058,7 +4058,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.888+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -4067,7 +4067,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.893+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4094,7 +4094,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -4155,7 +4155,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -4190,7 +4190,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.912+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4257,7 +4257,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -4274,7 +4274,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:23.932+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -4283,7 +4283,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -4291,7 +4291,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:23.935+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -4301,7 +4301,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:23.937+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -4332,7 +4332,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.944+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4367,7 +4367,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.950+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4464,7 +4464,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -4475,10 +4475,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:23.969+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4499,7 +4499,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:23.972+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -4508,7 +4508,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:23.976+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4535,7 +4535,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -4595,7 +4595,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -4630,7 +4630,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:23.992+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4697,7 +4697,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -4714,7 +4714,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:24.009+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -4723,7 +4723,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -4731,7 +4731,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:24.013+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -4741,7 +4741,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:24.016+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -4772,7 +4772,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.022+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4807,7 +4807,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.029+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4904,7 +4904,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -4915,10 +4915,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:24.055+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4939,7 +4939,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:24.057+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -4948,7 +4948,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:24.062+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -4975,7 +4975,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -5035,7 +5035,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -5070,7 +5070,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.078+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5137,7 +5137,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -5154,7 +5154,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:24.094+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -5163,7 +5163,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -5171,7 +5171,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:24.097+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -5181,7 +5181,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:24.101+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -5212,7 +5212,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.106+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5247,7 +5247,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.114+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5344,7 +5344,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -5355,10 +5355,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:24.134+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5379,7 +5379,7 @@ Unconditional classes:
         and upper(me1_0.name)=upper(?)
 2026-03-27T15:18:24.136+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -5388,7 +5388,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:24.141+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5415,7 +5415,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -5475,7 +5475,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -5510,7 +5510,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.158+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5577,7 +5577,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -5594,7 +5594,7 @@ Unconditional classes:
         l1_0.lesson_id=?
 2026-03-27T15:18:24.173+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -5603,7 +5603,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -5611,7 +5611,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:18:24.175+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -5621,7 +5621,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:18:24.179+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
     select
         a1_0.quest_id,
@@ -5652,7 +5652,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.186+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5687,7 +5687,7 @@ Unconditional classes:
     insert 
     into
         public.quest
-        (created_at, description, exem_id, name, quiz_id, updated_at, quest_id) 
+        (created_at, description, exam_id, name, quiz_id, updated_at, quest_id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
 2026-03-27T15:18:24.191+05:00 DEBUG 26092 --- [edu-platform] [  restartedMain] org.hibernate.SQL                        : 
@@ -5784,7 +5784,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -5795,10 +5795,10 @@ Unconditional classes:
     from
         public.tasks te1_0 
     left join
-        public.exem e1_0 
-            on e1_0.exem_id=te1_0.exem_id 
+        public.exam e1_0 
+            on e1_0.exam_id=te1_0.exam_id 
     where
-        e1_0.exem_id=? 
+        e1_0.exam_id=? 
     order by
         te1_0.created_at
 2026-03-27T15:18:24.208+05:00  INFO 26092 --- [edu-platform] [  restartedMain] c.hackathon.edu.seed.DatabaseSeedRunner  : Seed done: javaCourseId=46bbaeba-7580-406a-9fcf-73b0ada4aa6a, bashCourseId=927a16f9-6888-42ed-aa51-93e51a1cd2c9, modulesPerCourse=5
@@ -5948,7 +5948,7 @@ Unconditional classes:
         m1_0.module_id,
         m1_0.created_at,
         m1_0.description,
-        e1_0.exem_id,
+        e1_0.exam_id,
         e1_0.coin_reward,
         e1_0.created_at,
         e1_0.description,
@@ -5966,7 +5966,7 @@ Unconditional classes:
         public.module m1_0 
             on ce1_0.course_id=m1_0.course_id 
     left join
-        public.exem e1_0 
+        public.exam e1_0 
             on m1_0.module_id=e1_0.module_id 
     where
         ce1_0.course_id=?
@@ -6004,7 +6004,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6050,7 +6050,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6096,7 +6096,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6142,7 +6142,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6188,7 +6188,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6215,7 +6215,7 @@ Unconditional classes:
         m1_0.module_id,
         m1_0.created_at,
         m1_0.description,
-        e1_0.exem_id,
+        e1_0.exam_id,
         e1_0.coin_reward,
         e1_0.created_at,
         e1_0.description,
@@ -6233,7 +6233,7 @@ Unconditional classes:
         public.module m1_0 
             on ce1_0.course_id=m1_0.course_id 
     left join
-        public.exem e1_0 
+        public.exam e1_0 
             on m1_0.module_id=e1_0.module_id 
     where
         ce1_0.course_id=?
@@ -6271,7 +6271,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6317,7 +6317,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6363,7 +6363,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6409,7 +6409,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6455,7 +6455,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6496,7 +6496,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -6522,7 +6522,7 @@ Unconditional classes:
         me1_0.module_id=?
 2026-03-27T15:18:51.392+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-7] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -6531,7 +6531,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:51.397+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-7] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
@@ -6558,7 +6558,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -6588,7 +6588,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6615,7 +6615,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6720,7 +6720,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -6746,7 +6746,7 @@ Unconditional classes:
         me1_0.module_id=?
 2026-03-27T15:18:53.620+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -6755,7 +6755,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:18:53.624+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
@@ -6769,7 +6769,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -6796,7 +6796,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7017,7 +7017,7 @@ Unconditional classes:
         m1_0.module_id,
         m1_0.created_at,
         m1_0.description,
-        e1_0.exem_id,
+        e1_0.exam_id,
         e1_0.coin_reward,
         e1_0.created_at,
         e1_0.description,
@@ -7035,7 +7035,7 @@ Unconditional classes:
         public.module m1_0 
             on ce1_0.course_id=m1_0.course_id 
     left join
-        public.exem e1_0 
+        public.exam e1_0 
             on m1_0.module_id=e1_0.module_id 
     where
         ce1_0.course_id=?
@@ -7073,7 +7073,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7119,7 +7119,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7165,7 +7165,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7211,7 +7211,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7257,7 +7257,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7298,7 +7298,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -7324,7 +7324,7 @@ Unconditional classes:
         me1_0.module_id=?
 2026-03-27T15:19:09.124+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-8] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -7333,7 +7333,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
         ee1_0.module_id=?
 2026-03-27T15:19:09.128+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-8] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
@@ -7360,7 +7360,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -7384,7 +7384,7 @@ Unconditional classes:
         te1_0.coin_reward,
         te1_0.created_at,
         te1_0.description,
-        te1_0.exem_id,
+        te1_0.exam_id,
         te1_0.expected_output,
         te1_0.input_data,
         te1_0.lesson_id,
@@ -7417,7 +7417,7 @@ Unconditional classes:
         t1_0.coin_reward,
         t1_0.created_at,
         t1_0.description,
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.expected_output,
         t1_0.input_data,
         t1_0.name,
@@ -7431,7 +7431,7 @@ Unconditional classes:
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.name,
         q1_0.updated_at,
         qe1_0.updated_at,
@@ -7488,7 +7488,7 @@ Unconditional classes:
 2026-03-27T15:19:09.171+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.hackathon.edu.controller.ModuleController#moduleExam(UUID)
 2026-03-27T15:19:09.174+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -7497,7 +7497,7 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     join
         public.module m1_0 
             on m1_0.module_id=ee1_0.module_id 
@@ -7505,7 +7505,7 @@ Unconditional classes:
         m1_0.module_id=?
 2026-03-27T15:19:09.176+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -7515,10 +7515,10 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:19:09.178+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] org.hibernate.SQL                        : 
     select
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.tasks_id,
         t1_0.coin_reward,
         t1_0.created_at,
@@ -7533,7 +7533,7 @@ Unconditional classes:
     from
         public.tasks t1_0 
     where
-        t1_0.exem_id=?
+        t1_0.exam_id=?
 2026-03-27T15:19:09.181+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
 2026-03-27T15:19:09.181+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] m.m.a.RequestResponseBodyMethodProcessor : Writing [ModuleExamResponse[examId=847d800c-d21b-4ccd-b082-43b8ec261993, moduleId=cfbc1b7a-e300-4855-b01e-909 (truncated)...]
 2026-03-27T15:19:09.182+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
@@ -7541,7 +7541,7 @@ Unconditional classes:
 2026-03-27T15:19:09.185+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-2] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.hackathon.edu.controller.ExamController#examQuestions(UUID)
 2026-03-27T15:19:09.187+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-2] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -7550,12 +7550,12 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
-        ee1_0.exem_id=?
+        ee1_0.exam_id=?
 2026-03-27T15:19:09.189+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-2] org.hibernate.SQL                        : 
     select
-        q1_0.exem_id,
+        q1_0.exam_id,
         q1_0.quest_id,
         q1_0.created_at,
         q1_0.description,
@@ -7565,7 +7565,7 @@ Unconditional classes:
     from
         public.quest q1_0 
     where
-        q1_0.exem_id=?
+        q1_0.exam_id=?
 2026-03-27T15:19:09.192+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-2] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
 2026-03-27T15:19:09.193+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-2] m.m.a.RequestResponseBodyMethodProcessor : Writing [QuestionsResponse[items=[QuestionItem[questId=14a35753-0624-49be-9401-ef71834f4801, quizId=null, exa (truncated)...]
 2026-03-27T15:19:09.195+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed 200 OK
@@ -7573,7 +7573,7 @@ Unconditional classes:
 2026-03-27T15:19:09.196+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-3] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.hackathon.edu.controller.ExamController#examTasks(UUID)
 2026-03-27T15:19:09.197+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
-        ee1_0.exem_id,
+        ee1_0.exam_id,
         ee1_0.coin_reward,
         ee1_0.created_at,
         ee1_0.description,
@@ -7582,12 +7582,12 @@ Unconditional classes:
         ee1_0.updated_at,
         ee1_0.xp_reward 
     from
-        public.exem ee1_0 
+        public.exam ee1_0 
     where
-        ee1_0.exem_id=?
+        ee1_0.exam_id=?
 2026-03-27T15:19:09.199+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-3] org.hibernate.SQL                        : 
     select
-        t1_0.exem_id,
+        t1_0.exam_id,
         t1_0.tasks_id,
         t1_0.coin_reward,
         t1_0.created_at,
@@ -7602,7 +7602,7 @@ Unconditional classes:
     from
         public.tasks t1_0 
     where
-        t1_0.exem_id=?
+        t1_0.exam_id=?
 2026-03-27T15:19:09.203+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-3] m.m.a.RequestResponseBodyMethodProcessor : Using 'application/json', given [*/*] and supported [application/json, application/*+json]
 2026-03-27T15:19:09.203+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-3] m.m.a.RequestResponseBodyMethodProcessor : Writing [TasksResponse[items=[TaskItem[taskId=ee163df7-0d0c-480a-95e3-fdcf97aff4b7, examId=847d800c-d21b-4ccd (truncated)...]
 2026-03-27T15:19:09.205+05:00 DEBUG 26092 --- [edu-platform] [nio-8080-exec-3] o.s.web.servlet.DispatcherServlet        : Completed 200 OK

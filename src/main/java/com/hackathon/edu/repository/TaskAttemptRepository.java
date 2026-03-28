@@ -14,5 +14,5 @@ public interface TaskAttemptRepository extends JpaRepository<TaskAttemptEntity, 
 
     boolean existsByTask_TasksIdAndUserIdAndCompletedTrue(UUID taskId, UUID userId);
 
-    long countByTask_Exam_ExemIdAndUserIdAndCompletedTrue(UUID examId, UUID userId);
+    long countByTask_Exam_ExamIdAndUserIdAndCompletedTrue(UUID examId, UUID userId);
 }
