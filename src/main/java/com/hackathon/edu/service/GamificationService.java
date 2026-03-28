@@ -1,6 +1,6 @@
 package com.hackathon.edu.service;
 
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.QuizEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.entity.UserEntity;
@@ -44,9 +44,9 @@ public class GamificationService {
     }
 
     @Transactional
-    public GrantResult grantExamReward(UUID userId, ExemEntity exam) {
+    public GrantResult grantExamReward(UUID userId, ExamEntity exam) {
         GrantResult result = grant(userId, safeInt(exam.getXpReward()), safeInt(exam.getCoinReward()), RewardSource.EXAM);
-        triggerAchievement(userId, "exam_completed", Map.of("examId", exam.getExemId().toString()));
+        triggerAchievement(userId, "exam_completed", Map.of("examId", exam.getExamId().toString()));
         return result;
     }
 

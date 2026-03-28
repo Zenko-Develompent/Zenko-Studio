@@ -34,8 +34,8 @@ public class TasksEntity {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "exem_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private ExemEntity exam;
+    @JoinColumn(name = "exam_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private ExamEntity exam;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", unique = true, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))

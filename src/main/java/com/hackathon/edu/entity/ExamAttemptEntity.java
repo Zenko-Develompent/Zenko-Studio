@@ -21,7 +21,7 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "exam_attempt",
-        uniqueConstraints = @UniqueConstraint(name = "uq_exam_attempt_exam_user", columnNames = {"exem_id", "user_id"})
+        uniqueConstraints = @UniqueConstraint(name = "uq_exam_attempt_exam_user", columnNames = {"exam_id", "user_id"})
 )
 @Getter
 @Setter
@@ -31,9 +31,9 @@ public class ExamAttemptEntity {
     private UUID attemptId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "exem_id", nullable = false)
+    @JoinColumn(name = "exam_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private ExemEntity exam;
+    private ExamEntity exam;
 
     @Column(name = "user_id", nullable = false)
     private UUID userId;

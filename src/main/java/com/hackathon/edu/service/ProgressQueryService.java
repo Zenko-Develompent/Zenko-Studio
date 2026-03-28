@@ -1,7 +1,7 @@
 package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.progress.ProgressDTO;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
 import com.hackathon.edu.entity.QuizEntity;
@@ -71,7 +71,7 @@ public class ProgressQueryService {
         return ProgressValue.of(done, total).toResponse(courseId, "course");
     }
 
-    private ProgressValue calculateModuleProgress(UUID userId, List<LessonEntity> lessons, ExemEntity exam) {
+    private ProgressValue calculateModuleProgress(UUID userId, List<LessonEntity> lessons, ExamEntity exam) {
         long total = 0;
         long done = 0;
 
@@ -81,9 +81,9 @@ public class ProgressQueryService {
             total += lessonProgress.totalItems();
         }
 
-        if (exam != null && exam.getExemId() != null) {
+        if (exam != null && exam.getExamId() != null) {
             total++;
-            if (examAttemptRepository.existsByExam_ExemIdAndUserIdAndCompletedTrue(exam.getExemId(), userId)) {
+            if (examAttemptRepository.existsByExam_ExamIdAndUserIdAndCompletedTrue(exam.getExamId(), userId)) {
                 done++;
             }
         }

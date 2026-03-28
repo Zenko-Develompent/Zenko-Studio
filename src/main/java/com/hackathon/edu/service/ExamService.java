@@ -1,11 +1,11 @@
 package com.hackathon.edu.service;
 
 import com.hackathon.edu.dto.exam.ExamDTO;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.QuestEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.exception.ApiException;
-import com.hackathon.edu.repository.ExemRepository;
+import com.hackathon.edu.repository.ExamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,17 +28,17 @@ public class ExamService {
             .comparing(TasksEntity::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(TasksEntity::getTasksId, Comparator.nullsLast(Comparator.naturalOrder()));
 
-    private final ExemRepository examRepository;
+    private final ExamRepository examRepository;
     private final ProgressService progressService;
     private final LearningAccessService learningAccessService;
 
     public ExamDTO.ExamDetailResponse getExam(UUID userId, UUID examId) {
-        ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
+        ExamEntity exam = examRepository.findWithRelationsByExamId(examId)
                 .orElseThrow(notFound("exam_not_found"));
         Boolean unlocked = userId == null ? null : learningAccessService.isExamUnlocked(userId, exam);
 
         return new ExamDTO.ExamDetailResponse(
-                exam.getExemId(),
+                exam.getExamId(),
                 exam.getModule() == null ? null : exam.getModule().getModuleId(),
                 exam.getName(),
                 exam.getDescription(),
@@ -51,7 +51,7 @@ public class ExamService {
     }
 
     public ExamDTO.QuestionsResponse getExamQuestions(UUID userId, UUID examId) {
-        ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
+        ExamEntity exam = examRepository.findWithRelationsByExamId(examId)
                 .orElseThrow(notFound("exam_not_found"));
         learningAccessService.assertExamUnlocked(userId, exam);
 
@@ -64,7 +64,7 @@ public class ExamService {
     }
 
     public ExamDTO.TasksResponse getExamTasks(UUID userId, UUID examId) {
-        ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
+        ExamEntity exam = examRepository.findWithRelationsByExamId(examId)
                 .orElseThrow(notFound("exam_not_found"));
         learningAccessService.assertExamUnlocked(userId, exam);
 
@@ -93,7 +93,7 @@ public class ExamService {
 
     @Transactional
     public ExamDTO.ExamDetailResponse updateExamRewards(UUID examId, ExamDTO.UpdateRewardsRequest request) {
-        ExemEntity exam = examRepository.findWithRelationsByExemId(examId)
+        ExamEntity exam = examRepository.findWithRelationsByExamId(examId)
                 .orElseThrow(notFound("exam_not_found"));
         exam.setXpReward(safeInt(request.xpReward()));
         exam.setCoinReward(safeInt(request.coinReward()));
@@ -105,7 +105,7 @@ public class ExamService {
         return new ExamDTO.QuestionItem(
                 question.getQuestId(),
                 question.getQuiz() == null ? null : question.getQuiz().getQuizId(),
-                question.getExam() == null ? null : question.getExam().getExemId(),
+                question.getExam() == null ? null : question.getExam().getExamId(),
                 question.getName(),
                 question.getDescription()
         );
@@ -114,7 +114,7 @@ public class ExamService {
     private ExamDTO.TaskItem toTaskItem(TasksEntity task) {
         return new ExamDTO.TaskItem(
                 task.getTasksId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
+                task.getExam() == null ? null : task.getExam().getExamId(),
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
                 task.getName(),
                 task.getDescription(),
@@ -124,9 +124,9 @@ public class ExamService {
         );
     }
 
-    private ExamDTO.ExamDetailResponse toExamDetail(ExemEntity exam) {
+    private ExamDTO.ExamDetailResponse toExamDetail(ExamEntity exam) {
         return new ExamDTO.ExamDetailResponse(
-                exam.getExemId(),
+                exam.getExamId(),
                 exam.getModule() == null ? null : exam.getModule().getModuleId(),
                 exam.getName(),
                 exam.getDescription(),

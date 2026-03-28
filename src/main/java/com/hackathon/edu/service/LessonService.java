@@ -187,7 +187,7 @@ public class LessonService {
         return new LessonDTO.LessonTaskResponse(
                 task.getTasksId(),
                 task.getLesson() == null ? null : task.getLesson().getLessonId(),
-                task.getExam() == null ? null : task.getExam().getExemId(),
+                task.getExam() == null ? null : task.getExam().getExamId(),
                 task.getName(),
                 task.getDescription(),
                 task.getRunnerLanguage(),

@@ -3,14 +3,14 @@ package com.hackathon.edu.seed;
 import com.hackathon.edu.config.AppSeedProperties;
 import com.hackathon.edu.entity.AnswerEntity;
 import com.hackathon.edu.entity.CourseEntity;
-import com.hackathon.edu.entity.ExemEntity;
+import com.hackathon.edu.entity.ExamEntity;
 import com.hackathon.edu.entity.LessonEntity;
 import com.hackathon.edu.entity.ModuleEntity;
 import com.hackathon.edu.entity.QuestEntity;
 import com.hackathon.edu.entity.QuizEntity;
 import com.hackathon.edu.entity.TasksEntity;
 import com.hackathon.edu.repository.CourseRepository;
-import com.hackathon.edu.repository.ExemRepository;
+import com.hackathon.edu.repository.ExamRepository;
 import com.hackathon.edu.repository.LessonRepository;
 import com.hackathon.edu.repository.ModuleRepository;
 import com.hackathon.edu.repository.QuizRepository;
@@ -96,7 +96,7 @@ public class DatabaseSeedRunner implements CommandLineRunner {
     private final LessonRepository lessonRepository;
     private final QuizRepository quizRepository;
     private final TasksRepository tasksRepository;
-    private final ExemRepository examRepository;
+    private final ExamRepository examRepository;
 
     @Override
     @Transactional
@@ -198,7 +198,7 @@ public class DatabaseSeedRunner implements CommandLineRunner {
                     8 + moduleIndex
             );
 
-            ExemEntity exam = ensureModuleExam(
+            ExamEntity exam = ensureModuleExam(
                     module,
                     "Экзамен: " + topic.title(),
                     "Итоговая проверка по теме «" + topic.title() + "».",
@@ -465,7 +465,7 @@ public class DatabaseSeedRunner implements CommandLineRunner {
         return tasksRepository.saveAndFlush(task);
     }
 
-    private ExemEntity ensureModuleExam(
+    private ExamEntity ensureModuleExam(
             ModuleEntity module,
             String examName,
             String description,
@@ -473,8 +473,8 @@ public class DatabaseSeedRunner implements CommandLineRunner {
             int coinReward,
             List<SeedQuestion> questions
     ) {
-        ExemEntity exam = examRepository.findWithRelationsByModule_ModuleId(module.getModuleId())
-                .orElseGet(ExemEntity::new);
+        ExamEntity exam = examRepository.findWithRelationsByModule_ModuleId(module.getModuleId())
+                .orElseGet(ExamEntity::new);
 
         exam.setModule(module);
         exam.setName(limit50(examName));
@@ -512,7 +512,7 @@ public class DatabaseSeedRunner implements CommandLineRunner {
     }
 
     private TasksEntity ensureExamTask(
-            ExemEntity exam,
+            ExamEntity exam,
             String taskName,
             String description,
             String language,
@@ -521,7 +521,7 @@ public class DatabaseSeedRunner implements CommandLineRunner {
             int xpReward,
             int coinReward
     ) {
-        TasksEntity task = tasksRepository.findByExam_ExemIdOrderByCreatedAtAsc(exam.getExemId()).stream()
+        TasksEntity task = tasksRepository.findByExam_ExamIdOrderByCreatedAtAsc(exam.getExamId()).stream()
                 .filter(existing -> existing.getName() != null && existing.getName().equalsIgnoreCase(taskName))
                 .findFirst()
                 .orElseGet(TasksEntity::new);

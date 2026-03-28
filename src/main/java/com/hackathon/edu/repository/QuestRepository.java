@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface QuestRepository extends JpaRepository<QuestEntity, UUID> {
     List<QuestEntity> findByQuiz_QuizIdOrderByCreatedAtAsc(UUID quizId);
 
-    List<QuestEntity> findByExam_ExemIdOrderByCreatedAtAsc(UUID examId);
+    List<QuestEntity> findByExam_ExamIdOrderByCreatedAtAsc(UUID examId);
 }
 
