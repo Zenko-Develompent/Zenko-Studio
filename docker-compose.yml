@@ -8,10 +8,10 @@ services:
       - .env
     environment:
       LESSON_CONTENT_ROOT: /data/lessons
-      CODE_RUNNER_WORKSPACE_ROOT: ${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}
+
     volumes:
       - ${LESSON_CONTENT_HOST_PATH:-./lesson-content}:/data/lessons:rw
-      - ${CODE_RUNNER_WORKSPACE_HOST_PATH:-/var/lib/edu-runner-work}:${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}:rw
+
       - /var/run/docker.sock:/var/run/docker.sock
       - /usr/bin/docker:/usr/bin/docker:ro
     depends_on:
