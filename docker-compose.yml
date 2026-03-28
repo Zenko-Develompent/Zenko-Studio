@@ -1,11 +1,12 @@
 services:
   backend:
-    build: .
+    build:
+      context: ./Zenko-Studio
     container_name: edu-backend
     ports:
       - "${BACKEND_PORT}:8080"
     env_file:
-      - .env
+      - ./Zenko-Studio/.env
     environment:
       LESSON_CONTENT_ROOT: /data/lessons
       CODE_RUNNER_WORKSPACE_ROOT: ${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}
@@ -19,9 +20,28 @@ services:
     networks:
       - edu-network
 
+  frontend:
+    build:
+      context: ./hackaton-front
+      dockerfile: Dockerfile
+    container_name: edu-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./hackaton-front/.env
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+      NEXT_PUBLIC_WS_URL: http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - edu-network
+
   edu-db:
     image: postgres:15
     container_name: edu-db
+    env_file:
+      - ./Zenko-Studio/.env
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -32,10 +52,3 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - edu-network
-
-volumes:
-  pgdata:
-
-networks:
-  edu-network:
-    driver: bridge
