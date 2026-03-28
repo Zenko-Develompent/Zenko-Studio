@@ -12,48 +12,23 @@
 - Свободные порты 8080 backend
 - Свободные потры 3000 front
 
-## Деплой на сервер через auto ci/cd
-для начло нужно заполнить .env пример заполнения находиться в .env.example, в принцепе можно полностью его скопировать и вставить в .env и всё запустится 
-есть так же work для ci/cd через git action он в папке .github/workflows/deploy.yml с его помошью можно развернуть репозиторий прям на сервере, нужно только заполнить переменные в репозитории они заполнены, нужно изменить только 
-![alt text](image.png) 
-в deploy keys указать pub ssh сервера, в action 
-
-ENV_SECRET - это env просто предать сюда env
-
-SERVER_USER - это пользователь сервреа для разработки мы использовали root
-
-SSH_PRIVATE_KEY - это приватный ключ при генерации у себя на клиенте выглядит примерно так 
-``` bash
------BEGIN OPENSSH PRIVATE KEY-----
-...
------END OPENSSH PRIVATE KEY-----
-```
-
-ZENKO1_HOST - сюда вводится ip серера 
-
-и на сервере нужно указать 
-```bash
-mkdir -p ~/.ssh 
-nano ~/.ssh/authorized_keys
-```
-сюда предаёться ключ ssh pub 
-
-в итоге в этом случае клонирование репозитория произойдёт по ssh 
-
 # Деплой ручной
-Для ручного деплоя, если не учитывать что нужно установить на сервре докер то всё весьма просто 
+Для ручного деплоя, если не учитывать что docker уже установлен
 
-нужно установить lfs
+1.нужно установить lfs
 ```bash
 apt-get update
 apt-get install -y git-lfs
 ```
 
-Клонируем репозиторий 
-```bash 
+2. делаем пространство и клонируем репозитории 
+```bash
+mkdir my-app && cd my-app
 git clone https://github.com/Zenko-Develompent/Zenko-Studio.git
+git clone https://github.com/Zenko-Develompent/hackaton-front.git
 ```
-Переходим в репозиторий 
+
+3. Переходим в репозиторий 
 ```bash
 cd ./Zenko-Studio
 ```
@@ -64,23 +39,28 @@ git lfs install
 git lfs pull --include="runner-images/*"
 ```
 
-Затем создаём .env
+4. Затем создаём .env и в hackaton-front, и в Zenko-Studio, но, хоть это и не правильно мы не удаляли env из репозитория и недобавляли в .gitignore
 ```bash
 nano .env
 ```
 заполняем согласно .env.exapmple
 
-затем поднимаем docker 
+5. Создаём docker-compose.yml его можно взять из репозитория Zenko-Studio, но не в коем случае не запускать его находясь в этой деректории, его нужно запустить из my-app, но пред этим нужно создать docker-compose.yml в my-app. 
 
+На всякий случай снизу там где и env прикрепляю docker-compose.yml 
+
+6.затем поднимаем docker  
+### !!НУЖНО НАХОДИТЬСЯ В my-app!!
 ```bash
 docker compose up -d --build
 ```
 
-После запуска проверьте контейнеры:
+7. После запуска проверьте контейнеры:
 
 ```bash
 docker ps
 ```
+
 
 вот .env рабочий на всякий случай 
 
@@ -151,4 +131,78 @@ PORT=
 JWT_TIME=
 REFRESH_TIME=
 # mayd by zenko
+```
+
+вот docker-compose.yml
+
+```m
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./Zenko-Studio
+    container_name: edu-backend
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    env_file:
+      - ./Zenko-Studio/.env
+    environment:
+      LESSON_CONTENT_ROOT: /data/lessons
+      CODE_RUNNER_WORKSPACE_ROOT: ${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}
+    volumes:
+      - ${LESSON_CONTENT_HOST_PATH:-./Zenko-Studio/lesson-content}:/data/lessons:rw
+      - ${CODE_RUNNER_WORKSPACE_HOST_PATH:-/var/lib/edu-runner-work}:${CODE_RUNNER_WORKSPACE_ROOT:-/var/lib/edu-runner-work}:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+    depends_on:
+      - edu-db
+    networks:
+      - edu-network
+
+  frontend:
+    build:
+      context: ./hackaton-front
+      dockerfile: Dockerfile
+    container_name: edu-frontend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./hackaton-front/.env
+    environment:
+      NEXT_PUBLIC_API_URL: http://backend:8080
+      NEXT_PUBLIC_WS_URL: http://backend:8080
+    depends_on:
+      - backend
+    networks:
+      - edu-network
+
+  edu-db:
+    image: postgres:15
+    container_name: edu-db
+    env_file:
+      - ./Zenko-Studio/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-edu_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASS:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - edu-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-edu_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
+networks:
+  edu-network:
+    driver: bridge
+
 ```
