@@ -47,6 +47,10 @@ nano .env
 
 5. Создаём docker-compose.yml его можно взять из репозитория Zenko-Studio, но не в коем случае не запускать его находясь в этой деректории, его нужно запустить из my-app, но пред этим нужно создать docker-compose.yml в my-app. 
 
+```bash
+nano docker-compose.yml
+```
+
 На всякий случай снизу там где и env прикрепляю docker-compose.yml 
 
 6.затем поднимаем docker  
